@@ -23,7 +23,7 @@ export function HeroSection() {
               fill 
               className="object-cover"
               priority
-              data-ai-hint="desert illustration"
+              data-ai-hint="desert road cars"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/70" />
             <div className="relative z-10 p-4 text-white">
@@ -38,7 +38,7 @@ export function HeroSection() {
                     </Button>
                     <Button size="lg" onClick={scrollToAiSuggester}>
                         <Bot className="mr-2 h-5 w-5" />
-                        gENIE
+                        Genie
                     </Button>
                 </div>
             </div>
