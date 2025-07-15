@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import type { Part } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { MapPin, ShoppingCart, CalendarPlus, ArrowRight } from "lucide-react";
+import { MapPin, ShoppingCart, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/cart-context";
-import { BookViewingDialog } from "./book-viewing-dialog";
 import Link from "next/link";
 import { getVendorMapUrl } from "@/lib/actions";
+import { Skeleton } from "./ui/skeleton";
 
 interface ProductCardProps {
   part: Part;
@@ -33,20 +33,55 @@ export function ProductCard({ part }: ProductCardProps) {
   }
 
   useEffect(() => {
-    const fetchMapUrl = async () => {
-      const url = await getVendorMapUrl(part.vendorAddress);
-      setMapUrl(url);
-    };
-    fetchMapUrl();
-  }, [part.vendorAddress]);
+    if (part?.vendorAddress) {
+      const fetchMapUrl = async () => {
+        const url = await getVendorMapUrl(part.vendorAddress);
+        setMapUrl(url);
+      };
+      fetchMapUrl();
+    }
+  }, [part?.vendorAddress]);
 
+  // Defensive check for part and imageUrls
+  if (!part || !part.imageUrls) {
+    return (
+        <Card className="flex flex-col h-full overflow-hidden">
+            <CardHeader className="p-0">
+                <Skeleton className="h-48 w-full" />
+                <div className="p-6 pb-2">
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow p-6 pt-2">
+                <Skeleton className="h-4 w-2/3 mb-4" />
+                <Skeleton className="h-8 w-1/3" />
+            </CardContent>
+            <CardFooter className="p-6 pt-0 mt-auto">
+                 <Skeleton className="h-6 w-1/4" />
+            </CardFooter>
+        </Card>
+    );
+  }
 
   return (
     <Link href={`/part/${part.id}`} className="group block">
       <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
         <CardHeader className="p-0">
           <div className="relative aspect-video w-full overflow-hidden">
-            <Image src={part.imageUrls[0]} alt={part.name} fill className="object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-105" data-ai-hint="car part" />
+            {part.imageUrls && part.imageUrls.length > 0 ? (
+                <Image 
+                    src={part.imageUrls[0]} 
+                    alt={part.name} 
+                    fill 
+                    className="object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-105" 
+                    data-ai-hint="car part" 
+                />
+            ) : (
+                <div className="bg-muted h-full w-full flex items-center justify-center">
+                    <span className="text-sm text-muted-foreground">No Image</span>
+                </div>
+            )}
              <div className="absolute bottom-2 right-2 flex items-center gap-2">
                 <Button variant="secondary" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={handleAddToCart} disabled={part.quantity === 0}>
                     <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
