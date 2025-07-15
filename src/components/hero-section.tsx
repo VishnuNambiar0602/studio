@@ -38,7 +38,7 @@ export function HeroSection() {
                     </Button>
                     <Button size="lg" onClick={scrollToAiSuggester}>
                         <Bot className="mr-2 h-5 w-5" />
-                        Talk with the AI, Genie
+                        Just Genie
                     </Button>
                 </div>
             </div>
