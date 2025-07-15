@@ -1,11 +1,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
 import { getCustomerOrders } from "@/lib/actions";
 import type { Order } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { cva } from "class-variance-authority";
 
