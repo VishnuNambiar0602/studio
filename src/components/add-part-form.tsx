@@ -26,6 +26,7 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useParts } from "@/context/part-context";
 
 const addPartFormSchema = z.object({
   name: z.string().min(3, "Part name must be at least 3 characters."),
@@ -42,18 +43,10 @@ const addPartFormSchema = z.object({
 
 type AddPartFormValues = z.infer<typeof addPartFormSchema>;
 
-// Mock action
-async function addPartAction(data: AddPartFormValues) {
-  console.log("Adding new part:", data);
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  // In a real app, you would handle the file upload and database update here.
-  return { success: true, message: "Part added successfully!" };
-}
-
 export function AddPartForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { addPart } = useParts();
 
   const form = useForm<AddPartFormValues>({
     resolver: zodResolver(addPartFormSchema),
@@ -71,23 +64,29 @@ export function AddPartForm() {
 
   async function onSubmit(data: AddPartFormValues) {
     setLoading(true);
-    const result = await addPartAction(data);
+
+    // Simulate API call and file upload
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    addPart({
+        id: `part-${Date.now()}`,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        imageUrl: 'https://placehold.co/600x400.png', // Placeholder for uploaded image
+        inStock: data.quantity > 0,
+        vendorAddress: data.companyName, // Using company name as vendor address for now
+    });
+
     setLoading(false);
 
-    if (result.success) {
-      toast({
-        title: "Success!",
-        description: result.message,
-      });
-      form.reset();
-      // Here you might want to close the dialog as well
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to add the part. Please try again.",
-      });
-    }
+    toast({
+      title: "Success!",
+      description: "Part added successfully! It is now visible to customers.",
+    });
+    
+    form.reset();
+    // In a real app, you would also close the dialog here.
   }
 
   return (

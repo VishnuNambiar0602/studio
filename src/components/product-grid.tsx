@@ -1,8 +1,13 @@
-import { parts } from "@/lib/data";
+"use client";
+
+import { useParts } from "@/context/part-context";
 import { ProductCard } from "./product-card";
 
-export async function ProductGrid() {
+export function ProductGrid() {
+  const { parts } = useParts();
+  
   // In a real app, this would be a database call.
+  // We are now getting parts from the context.
   const allParts = parts;
 
   return (

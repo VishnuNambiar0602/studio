@@ -9,9 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { useState } from "react";
 import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
-import { parts as availablePartsData } from "@/lib/data";
 import { Loader2, Sparkles } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { useParts } from "@/context/part-context";
 
 const FormSchema = z.object({
   partDescription: z.string().min(10, {
@@ -23,6 +23,7 @@ export function AiPartSuggester() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { parts } = useParts();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -38,7 +39,7 @@ export function AiPartSuggester() {
 
     try {
       const availableParts = JSON.stringify(
-        availablePartsData.map(({ id, name, description, price }) => ({ id, name, description, price }))
+        parts.map(({ id, name, description, price }) => ({ id, name, description, price }))
       );
 
       const response = await suggestParts({
