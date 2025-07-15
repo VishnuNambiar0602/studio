@@ -10,57 +10,58 @@ export default function AuthPage() {
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
       <main className="flex-1 flex items-center justify-center py-16 lg:py-24">
-        <Tabs defaultValue="customer-login" className="w-full max-w-md mx-auto">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="customer-login">Customer Login</TabsTrigger>
-            <TabsTrigger value="vendor-login">Vendor Login</TabsTrigger>
-            <TabsTrigger value="customer-signup">Sign Up</TabsTrigger>
-            <TabsTrigger value="vendor-signup">Join as Vendor</TabsTrigger>
+        <Tabs defaultValue="login" className="w-full max-w-2xl mx-auto">
+           <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-          <TabsContent value="customer-login">
-             <Card>
+          
+          <TabsContent value="login">
+            <Card>
               <CardHeader>
-                <CardTitle>Customer Login</CardTitle>
+                <CardTitle>Welcome Back</CardTitle>
                 <CardDescription>Enter your credentials to access your account.</CardDescription>
               </CardHeader>
               <CardContent>
-                <LoginForm />
+                 <Tabs defaultValue="customer-login" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="customer-login">Customer Login</TabsTrigger>
+                        <TabsTrigger value="vendor-login">Vendor Login</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="customer-login" className="pt-4">
+                        <LoginForm />
+                    </TabsContent>
+                    <TabsContent value="vendor-login" className="pt-4">
+                        <LoginForm />
+                    </TabsContent>
+                 </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="vendor-login">
-             <Card>
-              <CardHeader>
-                <CardTitle>Vendor Login</CardTitle>
-                <CardDescription>Enter your credentials to access your vendor dashboard.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <LoginForm />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="customer-signup">
+
+          <TabsContent value="signup">
             <Card>
               <CardHeader>
-                <CardTitle>Create Your Account</CardTitle>
-                <CardDescription>Create an account to start shopping and track your orders.</CardDescription>
+                  <CardTitle>Create an Account</CardTitle>
+                  <CardDescription>Choose your account type to get started.</CardDescription>
               </CardHeader>
               <CardContent>
-                <AuthForm userType="customer" />
+                <Tabs defaultValue="customer-signup" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="customer-signup">I'm a Customer</TabsTrigger>
+                        <TabsTrigger value="vendor-signup">I'm a Vendor</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="customer-signup" className="pt-6">
+                        <AuthForm userType="customer" />
+                    </TabsContent>
+                    <TabsContent value="vendor-signup" className="pt-6">
+                        <AuthForm userType="vendor" />
+                    </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="vendor-signup">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vendor Registration</CardTitle>
-                <CardDescription>Join our platform to list your parts and reach more customers.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AuthForm userType="vendor" />
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
       </main>
     </div>
