@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Noto_Serif as FontHeadline, Plus_Jakarta_Sans as FontBody } from 'next/font/google';
+import { CartProvider } from '@/context/cart-context';
 
 
 const fontBody = FontBody({
@@ -29,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontBody.variable} ${fontHeadline.variable} font-body`}>
-        {children}
+        <CartProvider>
+          {children}
+        </CartProvider>
         <Toaster />
       </body>
     </html>

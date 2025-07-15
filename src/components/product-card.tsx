@@ -9,6 +9,7 @@ import { MapPin, ShoppingCart, Wrench } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { holdPart } from "@/lib/actions";
 import { useState } from "react";
+import { useCart } from "@/context/cart-context";
 
 interface ProductCardProps {
   part: Part;
@@ -16,6 +17,7 @@ interface ProductCardProps {
 
 export function ProductCard({ part }: ProductCardProps) {
   const { toast } = useToast();
+  const { addToCart } = useCart();
   const [isHolding, setIsHolding] = useState(false);
 
   const handleHold = async () => {
@@ -35,6 +37,14 @@ export function ProductCard({ part }: ProductCardProps) {
     }
     setIsHolding(false);
   };
+  
+  const handleAddToCart = () => {
+    addToCart(part);
+    toast({
+      title: "Added to Cart",
+      description: `${part.name} has been added to your cart.`,
+    });
+  }
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
@@ -60,11 +70,11 @@ export function ProductCard({ part }: ProductCardProps) {
          <div className="text-3xl font-bold text-primary font-headline">${part.price.toFixed(2)}</div>
       </CardContent>
       <CardFooter className="grid grid-cols-2 gap-2 p-6 pt-0">
-        <Button disabled={!part.inStock}>
+        <Button variant="secondary" disabled={!part.inStock}>
           <Wrench className="mr-2 h-4 w-4" /> Rent
         </Button>
-        <Button disabled={!part.inStock}>
-          <ShoppingCart className="mr-2 h-4 w-4" /> Buy
+        <Button onClick={handleAddToCart} disabled={!part.inStock}>
+          <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
         </Button>
         <form action={handleHold} className="col-span-2">
             <Button variant="outline" className="w-full" disabled={!part.inStock || isHolding}>
