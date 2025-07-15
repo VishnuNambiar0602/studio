@@ -6,7 +6,7 @@ import { getDictionary } from "@/lib/i18n";
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { Camera, Bot } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { AiPartSuggester } from "./ai-part-suggester";
 import { TakeSnap } from "./take-snap";
 import { useState } from "react";
@@ -76,6 +76,12 @@ export function HeroSection() {
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
+                             <DialogHeader>
+                                <DialogTitle>Find a Part with an Image</DialogTitle>
+                                <DialogDescription>
+                                  Use your camera or upload a photo. The AI Genie will try to identify the part and find matches.
+                                </DialogDescription>
+                            </DialogHeader>
                              <TakeSnap 
                                 onGetSuggestion={onGetSuggestion} 
                                 setPhotoDataUri={setPhotoDataUri}
