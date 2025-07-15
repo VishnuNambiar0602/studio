@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { useState } from "react";
 import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
 import { parts as availablePartsData } from "@/lib/data";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wand2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 const FormSchema = z.object({
@@ -56,16 +56,17 @@ export function AiPartSuggester() {
   }
 
   return (
-    <section className="w-full py-12 lg:py-20 bg-accent/40">
+    <section className="w-full py-16 lg:py-24 bg-accent/20">
       <div className="container">
-        <Card className="max-w-3xl mx-auto shadow-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold font-headline">AI Part Suggester</CardTitle>
-            <CardDescription className="text-md">
+        <Card className="max-w-3xl mx-auto shadow-lg border-2 border-primary/20">
+          <CardHeader className="text-center p-8">
+             <Wand2 className="mx-auto h-12 w-12 text-primary" />
+            <CardTitle className="text-3xl font-bold font-headline mt-4">AI Part Suggester</CardTitle>
+            <CardDescription className="text-md text-muted-foreground mt-2">
               Can't find what you're looking for? Describe the part you need, and our AI will find the best match.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-8 pt-0">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -89,15 +90,19 @@ export function AiPartSuggester() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button type="submit" disabled={loading} className="w-full" size="lg">
+                  {loading ? (
+                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="mr-2 h-4 w-4" />
+                  )}
                   Find My Part
                 </Button>
               </form>
             </Form>
 
             {result && (
-              <div className="mt-6">
+              <div className="mt-8">
                 <Alert>
                   <AlertTitle className="font-headline">Suggested Parts</AlertTitle>
                   <AlertDescription>
@@ -107,7 +112,7 @@ export function AiPartSuggester() {
               </div>
             )}
              {error && (
-              <div className="mt-6">
+              <div className="mt-8">
                 <Alert variant="destructive">
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{error}</AlertDescription>
