@@ -15,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useParts } from "@/context/part-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { TakeSnap } from "./take-snap";
+import { useSettings } from "@/context/settings-context";
 
 const FormSchema = z.object({
   partDescription: z.string().min(10, {
@@ -33,6 +34,7 @@ export function AiPartSuggester() {
   const [error, setError] = useState<string | null>(null);
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   const { parts } = useParts();
+  const { language } = useSettings();
   
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -54,8 +56,8 @@ export function AiPartSuggester() {
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
-    // Let the backend handle language detection by setting it to be broad
-    recognition.lang = ''; 
+    // Set language based on context for better recognition accuracy
+    recognition.lang = language === 'ar' ? 'ar-SA' : 'en-US';
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -74,8 +76,14 @@ export function AiPartSuggester() {
     };
 
     recognition.onerror = (event: any) => {
-      setError(`Voice recognition error: ${event.error}. Please try again.`);
-      console.error('Speech recognition error', event);
+      let errorMessage = `Voice recognition error: ${event.error}. Please try again.`;
+      if (event.error === 'not-allowed') {
+        errorMessage = "Voice recognition was disabled. Please allow microphone access in your browser settings.";
+      } else if (event.error === 'no-speech') {
+        errorMessage = "No speech was detected. Please try again.";
+      }
+      setError(errorMessage);
+      console.error('Speech recognition error', event.error, event.message);
       setIsListening(false);
     };
     
@@ -88,7 +96,7 @@ export function AiPartSuggester() {
     return () => {
       recognition.stop();
     }
-  }, [form]);
+  }, [form, language]);
   
 
   const onSubmit = async (data: z.infer<typeof FormSchema> | { partDescription: string }) => {
@@ -129,6 +137,7 @@ export function AiPartSuggester() {
     if (isListening) {
       recognitionRef.current?.stop();
     } else {
+      setError(null); // Clear previous errors
       recognitionRef.current?.start();
     }
   };
@@ -254,4 +263,3 @@ export function AiPartSuggester() {
     </Card>
   );
 }
-
