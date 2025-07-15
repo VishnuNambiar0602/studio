@@ -4,11 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -23,6 +24,7 @@ interface AuthFormProps {
 export function AuthForm({ userType }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,8 +37,6 @@ export function AuthForm({ userType }: AuthFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    // Here you would typically call a server action or API endpoint
-    // to handle the actual user registration.
     console.log(`Simulating ${userType} sign up with:`, values);
     
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -48,6 +48,12 @@ export function AuthForm({ userType }: AuthFormProps) {
     
     setLoading(false);
     form.reset();
+
+    if (userType === 'vendor') {
+        router.push('/vendor/dashboard');
+    } else {
+        router.push('/');
+    }
   }
 
   return (
