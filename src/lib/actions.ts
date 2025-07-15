@@ -2,7 +2,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration } from "./types";
+import type { Part, UserRegistration, UserLogin } from "./types";
 import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts } from "./data";
 import { addUser, findUserByEmail, findUserByUsername } from "./users";
 
@@ -92,4 +92,26 @@ export async function registerUser(userData: UserRegistration) {
     });
 
     return { success: true, user: newUser, message: "User registered successfully." };
+}
+
+export async function loginUser(credentials: UserLogin) {
+    const { username, password } = credentials;
+
+    const user = await findUserByUsername(username);
+
+    if (!user) {
+        return { success: false, message: "Invalid username or password." };
+    }
+
+    // In a real app, you would use a secure password hashing and comparison library like bcrypt.
+    const isPasswordCorrect = user.password === password;
+
+    if (!isPasswordCorrect) {
+        return { success: false, message: "Invalid username or password." };
+    }
+
+    // Don't send the password back to the client
+    const { password: _, ...userWithoutPassword } = user;
+
+    return { success: true, user: userWithoutPassword };
 }

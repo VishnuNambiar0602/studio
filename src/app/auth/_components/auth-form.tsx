@@ -114,7 +114,7 @@ export function AuthForm({ userType }: AuthFormProps) {
                 <Input placeholder="e.g., CarEnthusiast21" {...field} />
               </FormControl>
                <FormDescription>
-                This is your unique identifier on the platform. If left blank, one will be generated for you.
+                This is your unique identifier on the platform.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -150,12 +150,6 @@ export function AuthForm({ userType }: AuthFormProps) {
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Account
         </Button>
-        <p className="text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <a href="#" className="underline font-medium text-primary">
-                Log in
-            </a>
-        </p>
       </form>
     </Form>
   );

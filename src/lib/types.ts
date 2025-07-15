@@ -28,3 +28,5 @@ export interface User {
 }
 
 export type UserRegistration = Omit<User, 'id'>;
+
+export type UserLogin = Pick<User, 'username' | 'password'>;

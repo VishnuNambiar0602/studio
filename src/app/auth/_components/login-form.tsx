@@ -1,0 +1,113 @@
+
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { useSettings } from "@/context/settings-context";
+import { loginUser } from "@/lib/actions";
+
+const formSchema = z.object({
+  username: z.string().min(1, { message: "Please enter your usernametag." }),
+  password: z.string().min(1, { message: "Please enter your password." }),
+});
+
+export function LoginForm() {
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+  const { setIsLoggedIn } = useSettings();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
+    
+    try {
+      const result = await loginUser(values);
+
+      if (!result.success || !result.user) {
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: result.message,
+        });
+        setLoading(false);
+        return;
+      }
+
+      setIsLoggedIn(true);
+
+      toast({
+        title: "Login Successful!",
+        description: `Welcome back, ${result.user.username}!`,
+      });
+      
+      form.reset();
+
+      if (result.user.role === 'vendor') {
+        router.push('/vendor/dashboard');
+      } else {
+        router.push('/');
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "An Error Occurred",
+        description: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Usernametag</FormLabel>
+              <FormControl>
+                <Input placeholder="Your usernametag" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="********" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Log In
+        </Button>
+      </form>
+    </Form>
+  );
+}
