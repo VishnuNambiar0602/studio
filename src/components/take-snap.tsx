@@ -35,30 +35,40 @@ export function TakeSnap({ onGetSuggestion, setPhotoDataUri, photoDataUri, loadi
   const { toast } = useToast();
 
   useEffect(() => {
+    // Cleanup: stop camera stream when component unmounts or camera is deactivated
     return () => {
-      // Cleanup: stop camera stream when component unmounts
       if (videoRef.current && videoRef.current.srcObject) {
         (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
       }
     };
   }, []);
 
-  const getCameraPermission = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      setHasCameraPermission(true);
-      setIsCameraActive(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+  const startCamera = async () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCameraPermission(true);
+        setIsCameraActive(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error("Error accessing camera:", error);
+        setHasCameraPermission(false);
+        setIsCameraActive(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings.',
+        });
       }
-    } catch (error) {
-      console.error('Error accessing camera:', error);
+    } else {
       setHasCameraPermission(false);
-      toast({
-        variant: 'destructive',
-        title: 'Camera Access Denied',
-        description: 'Please enable camera permissions in your browser settings to use this feature.',
-      });
+       toast({
+          variant: 'destructive',
+          title: 'Camera Not Supported',
+          description: 'Your browser does not support camera access.',
+        });
     }
   };
 
@@ -72,13 +82,17 @@ export function TakeSnap({ onGetSuggestion, setPhotoDataUri, photoDataUri, loadi
       context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
       const dataUri = canvas.toDataURL('image/png');
       setPhotoDataUri(dataUri);
-      setIsCameraActive(false); // Turn off camera view
-      // Stop the camera stream
-      if (video.srcObject) {
-        (video.srcObject as MediaStream).getTracks().forEach(track => track.stop());
-      }
+      stopCamera();
     }
   };
+
+  const stopCamera = () => {
+    setIsCameraActive(false);
+    if (videoRef.current && videoRef.current.srcObject) {
+        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+        videoRef.current.srcObject = null;
+    }
+  }
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -98,59 +112,57 @@ export function TakeSnap({ onGetSuggestion, setPhotoDataUri, photoDataUri, loadi
   
   const resetState = () => {
     setPhotoDataUri(null);
-    setIsCameraActive(false);
-    if(videoRef.current && videoRef.current.srcObject) {
-        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
-    }
+    setDescription("");
+    stopCamera();
   }
 
 
   return (
     <div className="space-y-4">
-      {!photoDataUri && !isCameraActive && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Button variant="outline" size="lg" onClick={getCameraPermission}>
-            <Camera className="mr-2 h-5 w-5" />
-            Use Camera
-          </Button>
-          <Button variant="outline" size="lg" onClick={() => fileInputRef.current?.click()}>
-            <Upload className="mr-2 h-5 w-5" />
-            Upload Image
-          </Button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept="image/png, image/jpeg, image/webp"
-            className="hidden"
-          />
+      {/* This section is now always rendered but hidden until active */}
+      <div className={isCameraActive ? "block" : "hidden"}>
+        <div className="relative w-full aspect-video bg-black rounded-md overflow-hidden">
+            <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+            <canvas ref={canvasRef} className="hidden" />
         </div>
-      )}
-
-      {isCameraActive && hasCameraPermission && (
-        <div className="space-y-4">
-            <div className="relative w-full aspect-video bg-black rounded-md overflow-hidden">
-                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                <canvas ref={canvasRef} className="hidden" />
-            </div>
-            <div className="flex justify-center gap-4">
-                <Button size="lg" onClick={handleCapture}>
-                    <Camera className="mr-2 h-4 w-4" /> Capture
-                </Button>
-                <Button size="lg" variant="ghost" onClick={() => setIsCameraActive(false)}>
-                    Cancel
-                </Button>
-            </div>
+        <div className="flex justify-center gap-4 mt-4">
+            <Button size="lg" onClick={handleCapture}>
+                <Camera className="mr-2 h-4 w-4" /> Capture
+            </Button>
+            <Button size="lg" variant="ghost" onClick={stopCamera}>
+                Cancel
+            </Button>
         </div>
-      )}
+      </div>
       
-      {hasCameraPermission === false && (
-          <Alert variant="destructive">
-            <AlertTitle>Camera Access Required</AlertTitle>
-            <AlertDescription>
-                Please allow camera access in your browser settings to use this feature.
-            </AlertDescription>
-          </Alert>
+      {!photoDataUri && !isCameraActive && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Button variant="outline" size="lg" onClick={startCamera}>
+              <Camera className="mr-2 h-5 w-5" />
+              Use Camera
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="mr-2 h-5 w-5" />
+              Upload Image
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept="image/png, image/jpeg, image/webp"
+              className="hidden"
+            />
+          </div>
+           {hasCameraPermission === false && (
+              <Alert variant="destructive">
+                <AlertTitle>Camera Access Required</AlertTitle>
+                <AlertDescription>
+                    Please allow camera access in your browser settings to use this feature.
+                </AlertDescription>
+              </Alert>
+          )}
+        </div>
       )}
 
       {photoDataUri && (
@@ -158,7 +170,8 @@ export function TakeSnap({ onGetSuggestion, setPhotoDataUri, photoDataUri, loadi
           <div className="relative w-full max-w-sm mx-auto aspect-square rounded-md overflow-hidden border">
             <Image src={photoDataUri} alt="Captured part" layout="fill" objectFit="contain" />
             <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-8 w-8" onClick={resetState}>
-                <X className="h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
+                <span className="sr-only">Retake or upload new photo</span>
             </Button>
           </div>
           <Textarea 
