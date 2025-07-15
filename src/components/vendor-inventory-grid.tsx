@@ -9,6 +9,7 @@ export function VendorInventoryGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
       {parts.length > 0 ? (
+        // We show all parts here, regardless of visibility, so vendors can manage them.
         parts.map((part) => (
           <VendorProductCard key={part.id} part={part} />
         ))

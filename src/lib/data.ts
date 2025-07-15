@@ -1,6 +1,6 @@
 import type { Part } from './types';
 
-export const parts: Part[] = [
+const partsData: Part[] = [
   {
     id: 'part-001',
     name: 'All-Terrain Tire Set',
@@ -9,6 +9,7 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
     vendorAddress: '123 Dune Way, Sandville, AZ',
+    isVisibleForSale: true,
   },
   {
     id: 'part-002',
@@ -18,6 +19,7 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
     vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
+    isVisibleForSale: true,
   },
   {
     id: 'part-003',
@@ -27,6 +29,7 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: false,
     vendorAddress: '123 Dune Way, Sandville, AZ',
+    isVisibleForSale: true,
   },
   {
     id: 'part-004',
@@ -36,6 +39,7 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
     vendorAddress: '789 Canyon Rd, Mirage City, CA',
+    isVisibleForSale: true,
   },
   {
     id: 'part-005',
@@ -45,6 +49,7 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
     vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
+    isVisibleForSale: true,
   },
   {
     id: 'part-006',
@@ -54,6 +59,7 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
     vendorAddress: '789 Canyon Rd, Mirage City, CA',
+    isVisibleForSale: true,
   },
   {
     id: 'part-007',
@@ -63,6 +69,7 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
     vendorAddress: '123 Dune Way, Sandville, AZ',
+    isVisibleForSale: true,
   },
   {
     id: 'part-008',
@@ -72,5 +79,30 @@ export const parts: Part[] = [
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
     vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
+    isVisibleForSale: true,
   },
 ];
+
+// In a real app, this would be a database call.
+// We'll use a global variable to simulate a database for now.
+if (!global.parts) {
+  global.parts = partsData;
+}
+
+export function getParts(): Part[] {
+    return global.parts;
+}
+
+export function addPart(part: Part) {
+    global.parts.unshift({ ...part, isVisibleForSale: true });
+    return part;
+}
+
+export function togglePartVisibility(partId: string): Part | undefined {
+    const part = global.parts.find((p) => p.id === partId);
+    if (part) {
+        part.isVisibleForSale = !part.isVisibleForSale;
+        return part;
+    }
+    return undefined;
+}

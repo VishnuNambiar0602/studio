@@ -1,10 +1,8 @@
-"use client";
-
-import { useParts } from "@/context/part-context";
 import { ProductCard } from "./product-card";
+import { getParts } from "@/lib/data";
 
-export function ProductGrid() {
-  const { parts } = useParts();
+export async function ProductGrid() {
+  const parts = await getParts();
   
   // Only show parts that are visible for sale
   const visibleParts = parts.filter(part => part.isVisibleForSale);

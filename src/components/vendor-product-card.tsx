@@ -7,6 +7,8 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Eye, EyeOff, MapPin } from "lucide-react";
 import { useParts } from "@/context/part-context";
+import * as actions from "@/lib/actions";
+import { useTransition } from "react";
 
 interface VendorProductCardProps {
   part: Part;
@@ -14,9 +16,14 @@ interface VendorProductCardProps {
 
 export function VendorProductCard({ part }: VendorProductCardProps) {
   const { togglePartVisibility } = useParts();
+  const [isPending, startTransition] = useTransition();
 
   const handleToggleVisibility = () => {
-    togglePartVisibility(part.id);
+    startTransition(async () => {
+        // Optimistic update
+        togglePartVisibility(part.id);
+        await actions.togglePartVisibility(part.id);
+    });
   };
 
   return (
@@ -52,10 +59,10 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
             variant={part.isVisibleForSale ? "outline" : "secondary"} 
             className="w-full"
             onClick={handleToggleVisibility}
-            disabled={!part.inStock}
+            disabled={!part.inStock || isPending}
         >
           {part.isVisibleForSale ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-          {part.isVisibleForSale ? "Hold Sales" : "Resume Sales"}
+          {isPending ? 'Updating...' : part.isVisibleForSale ? "Hold Sales" : "Resume Sales"}
         </Button>
       </CardFooter>
     </Card>

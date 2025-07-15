@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import type { Part } from "@/lib/types";
-import { parts as initialParts } from "@/lib/data";
 
 interface PartContextType {
   parts: Part[];
@@ -12,13 +11,16 @@ interface PartContextType {
 
 const PartContext = createContext<PartContextType | undefined>(undefined);
 
-export function PartProvider({ children }: { children: ReactNode }) {
-  const [parts, setParts] = useState<Part[]>(initialParts.map(p => ({...p, isVisibleForSale: true})));
+// The provider now receives initial parts from the server.
+export function PartProvider({ children, initialParts }: { children: ReactNode, initialParts: Part[] }) {
+  const [parts, setParts] = useState<Part[]>(initialParts);
 
+  // This will now be optimistic. In a real app, you'd revalidate the server data.
   const addPart = (part: Part) => {
     setParts((prevParts) => [{...part, isVisibleForSale: true}, ...prevParts]);
   };
   
+  // This is also optimistic.
   const togglePartVisibility = (partId: string) => {
     setParts((prevParts) =>
       prevParts.map((part) =>

@@ -1,5 +1,9 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import type { Part } from "./types";
+import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility } from "./data";
+
 export async function holdPart(partId: string) {
   // In a real app, you'd update the database and send an email.
   // Here, we'll just simulate the action.
@@ -11,4 +15,21 @@ export async function holdPart(partId: string) {
   console.log(`Simulating email notification to vendor for part ${partId}.`);
   
   return { success: true, message: "Part has been successfully put on hold for 12 hours." };
+}
+
+export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
+    const newPart = {
+        id: `part-${Date.now()}`,
+        ...part,
+    };
+    dbAddPart(newPart);
+    revalidatePath("/");
+    revalidatePath("/vendor/inventory");
+    return newPart;
+}
+
+export async function togglePartVisibility(partId: string) {
+    dbTogglePartVisibility(partId);
+    revalidatePath("/");
+    revalidatePath("/vendor/inventory");
 }

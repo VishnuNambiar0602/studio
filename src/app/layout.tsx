@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Noto_Serif as FontHeadline, Plus_Jakarta_Sans as FontBody } from 'next/font/google';
 import { CartProvider } from '@/context/cart-context';
 import { PartProvider } from '@/context/part-context';
+import { getParts } from '@/lib/data';
 
 
 const fontBody = FontBody({
@@ -28,10 +29,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch initial parts on the server
+  const initialParts = getParts();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontBody.variable} ${fontHeadline.variable} font-body`}>
-        <PartProvider>
+        <PartProvider initialParts={initialParts}>
           <CartProvider>
             {children}
           </CartProvider>
