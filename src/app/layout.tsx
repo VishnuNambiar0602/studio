@@ -5,6 +5,7 @@ import { Noto_Serif as FontHeadline, Plus_Jakarta_Sans as FontBody } from 'next/
 import { CartProvider } from '@/context/cart-context';
 import { PartProvider } from '@/context/part-context';
 import { getParts } from '@/lib/actions';
+import { SettingsProvider } from '@/context/settings-context';
 
 
 const fontBody = FontBody({
@@ -35,11 +36,13 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${fontBody.variable} ${fontHeadline.variable} font-body`}>
-        <PartProvider initialParts={initialParts}>
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </PartProvider>
+        <SettingsProvider>
+          <PartProvider initialParts={initialParts}>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </PartProvider>
+        </SettingsProvider>
         <Toaster />
       </body>
     </html>

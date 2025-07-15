@@ -1,4 +1,3 @@
-import { SettingsProvider } from "@/context/settings-context";
 
 export default function VendorLayout({
     children,
@@ -6,8 +5,8 @@ export default function VendorLayout({
     children: React.ReactNode;
 }) {
     return (
-        <SettingsProvider>
+        <>
             {children}
-        </SettingsProvider>
+        </>
     );
 }
