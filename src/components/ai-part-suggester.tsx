@@ -83,6 +83,8 @@ export function AiPartSuggester() {
         errorMessage = "Voice recognition was disabled. Please allow microphone access in your browser settings.";
       } else if (event.error === 'no-speech') {
         errorMessage = "No speech was detected. Please make sure your microphone is working and try again.";
+      } else if (event.error === 'network') {
+        errorMessage = "A network error occurred during voice recognition. Please check your internet connection and try again.";
       }
       setError(errorMessage);
       console.error('Speech recognition error', event.error, event.message);
