@@ -25,6 +25,9 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
     dbAddPart(newPart);
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
+    revalidatePath("/new-parts");
+    revalidatePath("/used-parts");
+    revalidatePath("/oem-parts");
     return newPart;
 }
 
@@ -32,4 +35,7 @@ export async function togglePartVisibility(partId: string) {
     dbTogglePartVisibility(partId);
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
+    revalidatePath("/new-parts");
+    revalidatePath("/used-parts");
+    revalidatePath("/oem-parts");
 }

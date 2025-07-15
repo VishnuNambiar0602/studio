@@ -10,6 +10,7 @@ const partsData: Part[] = [
     inStock: true,
     vendorAddress: '123 Dune Way, Sandville, AZ',
     isVisibleForSale: true,
+    category: 'new',
   },
   {
     id: 'part-002',
@@ -20,6 +21,7 @@ const partsData: Part[] = [
     inStock: true,
     vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
     isVisibleForSale: true,
+    category: 'oem',
   },
   {
     id: 'part-003',
@@ -30,6 +32,7 @@ const partsData: Part[] = [
     inStock: false,
     vendorAddress: '123 Dune Way, Sandville, AZ',
     isVisibleForSale: true,
+    category: 'used',
   },
   {
     id: 'part-004',
@@ -40,6 +43,7 @@ const partsData: Part[] = [
     inStock: true,
     vendorAddress: '789 Canyon Rd, Mirage City, CA',
     isVisibleForSale: true,
+    category: 'new',
   },
   {
     id: 'part-005',
@@ -50,6 +54,7 @@ const partsData: Part[] = [
     inStock: true,
     vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
     isVisibleForSale: true,
+    category: 'oem',
   },
   {
     id: 'part-006',
@@ -60,6 +65,7 @@ const partsData: Part[] = [
     inStock: true,
     vendorAddress: '789 Canyon Rd, Mirage City, CA',
     isVisibleForSale: true,
+    category: 'used',
   },
   {
     id: 'part-007',
@@ -70,6 +76,7 @@ const partsData: Part[] = [
     inStock: true,
     vendorAddress: '123 Dune Way, Sandville, AZ',
     isVisibleForSale: true,
+    category: 'new',
   },
   {
     id: 'part-008',
@@ -80,6 +87,7 @@ const partsData: Part[] = [
     inStock: true,
     vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
     isVisibleForSale: true,
+    category: 'oem',
   },
 ];
 

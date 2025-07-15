@@ -7,4 +7,5 @@ export type Part = {
   inStock: boolean;
   vendorAddress: string;
   isVisibleForSale?: boolean;
+  category: 'new' | 'used' | 'oem';
 };
