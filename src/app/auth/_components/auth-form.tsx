@@ -1,21 +1,24 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useSettings } from "@/context/settings-context";
+import { registerUser } from "@/lib/actions";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
+  username: z.string().optional(),
 });
 
 interface AuthFormProps {
@@ -34,29 +37,54 @@ export function AuthForm({ userType }: AuthFormProps) {
       email: "",
       password: "",
       name: "",
+      username: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    console.log(`Simulating ${userType} sign up with:`, values);
     
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsLoggedIn(true);
+    try {
+        const result = await registerUser({
+            name: values.name,
+            email: values.email,
+            password: values.password, // In a real app, this would be hashed
+            username: values.username,
+            role: userType,
+        });
 
-    toast({
-        title: "Account Created!",
-        description: `Your ${userType} account has been successfully created.`,
-    });
-    
-    setLoading(false);
-    form.reset();
+        if (!result.success) {
+            toast({
+                variant: "destructive",
+                title: "Registration Failed",
+                description: result.message,
+            });
+            setLoading(false);
+            return;
+        }
 
-    if (userType === 'vendor') {
-        router.push('/vendor/dashboard');
-    } else {
-        router.push('/');
+        setIsLoggedIn(true);
+
+        toast({
+            title: "Account Created!",
+            description: `Your ${userType} account has been successfully created. Welcome, ${result.user?.username}!`,
+        });
+        
+        form.reset();
+
+        if (userType === 'vendor') {
+            router.push('/vendor/dashboard');
+        } else {
+            router.push('/');
+        }
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "An Error Occurred",
+            description: "Something went wrong. Please try again.",
+        });
+    } finally {
+        setLoading(false);
     }
   }
 
@@ -72,6 +100,22 @@ export function AuthForm({ userType }: AuthFormProps) {
               <FormControl>
                 <Input placeholder={userType === 'vendor' ? 'Your Company LLC' : 'John Doe'} {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Usernametag (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., CarEnthusiast21" {...field} />
+              </FormControl>
+               <FormDescription>
+                This is your unique identifier on the platform. If left blank, one will be generated for you.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
