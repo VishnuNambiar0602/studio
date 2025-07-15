@@ -91,6 +91,23 @@ export async function registerUser(userData: UserRegistration) {
         id: `user-${Date.now()}`
     });
 
+    // Simulate sending a welcome email
+    console.log(`
+      --- SIMULATING WELCOME EMAIL ---
+      To: ${newUser.email}
+      Subject: Welcome to GulfCarX!
+      
+      Hi ${newUser.name},
+      
+      Thanks for registering! Your unique username is: ${newUser.username}
+      You can use this to log in to your account.
+      
+      Best,
+      The GulfCarX Team
+      ---------------------------------
+    `);
+
+
     return { success: true, user: newUser, message: "User registered successfully." };
 }
 
