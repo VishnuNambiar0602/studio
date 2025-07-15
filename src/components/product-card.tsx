@@ -18,32 +18,7 @@ interface ProductCardProps {
   part: Part;
 }
 
-export function ProductCard({ part }: ProductCardProps) {
-  const { toast } = useToast();
-  const { addToCart } = useCart();
-  const [mapUrl, setMapUrl] = useState<string | null>(null);
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent link navigation
-    addToCart(part);
-    toast({
-      title: "Added to Cart",
-      description: `${part.name} has been added to your cart.`,
-    });
-  }
-
-  useEffect(() => {
-    if (part?.vendorAddress) {
-      const fetchMapUrl = async () => {
-        const url = await getVendorMapUrl(part.vendorAddress);
-        setMapUrl(url);
-      };
-      fetchMapUrl();
-    }
-  }, [part?.vendorAddress]);
-
-  // Defensive check for part and imageUrls
-  if (!part || !part.imageUrls) {
+function ProductCardSkeleton() {
     return (
         <Card className="flex flex-col h-full overflow-hidden">
             <CardHeader className="p-0">
@@ -62,6 +37,35 @@ export function ProductCard({ part }: ProductCardProps) {
             </CardFooter>
         </Card>
     );
+}
+
+export function ProductCard({ part }: ProductCardProps) {
+  const { toast } = useToast();
+  const { addToCart } = useCart();
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (part?.vendorAddress) {
+      const fetchMapUrl = async () => {
+        const url = await getVendorMapUrl(part.vendorAddress);
+        setMapUrl(url);
+      };
+      fetchMapUrl();
+    }
+  }, [part?.vendorAddress]);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent link navigation
+    addToCart(part);
+    toast({
+      title: "Added to Cart",
+      description: `${part.name} has been added to your cart.`,
+    });
+  }
+
+  // Defensive check for part. If it's not available, render a skeleton.
+  if (!part) {
+    return <ProductCardSkeleton />;
   }
 
   return (
