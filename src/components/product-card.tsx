@@ -8,7 +8,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { MapPin, ShoppingCart, CalendarPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/cart-context";
 import { BookViewingDialog } from "./book-viewing-dialog";
 import Link from "next/link";
@@ -31,13 +31,13 @@ export function ProductCard({ part }: ProductCardProps) {
     });
   }
 
-  useState(() => {
+  useEffect(() => {
     const fetchMapUrl = async () => {
       const url = await getVendorMapUrl(part.vendorAddress);
       setMapUrl(url);
     };
     fetchMapUrl();
-  });
+  }, [part.vendorAddress]);
 
 
   return (
@@ -64,10 +64,10 @@ export function ProductCard({ part }: ProductCardProps) {
                     <span className="truncate hover:underline">{part.vendorAddress}</span>
                 </Link>
             ) : (
-                <>
+                <div className="flex items-center">
                     <MapPin className="mr-2 h-4 w-4 shrink-0" />
                     <span className="truncate">{part.vendorAddress}</span>
-                </>
+                </div>
             )}
         </div>
          <div className="text-3xl font-bold text-primary font-headline">${part.price.toFixed(2)}</div>
