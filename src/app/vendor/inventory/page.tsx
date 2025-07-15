@@ -26,7 +26,7 @@ export default function VendorInventoryPage() {
                             <DialogTitle>Add New Part</DialogTitle>
                             <DialogDescription>
                                 Fill in the details below to add a new part to your inventory.
-                            </Description>
+                            </DialogDescription>
                         </DialogHeader>
                         <AddPartForm />
                     </DialogContent>
