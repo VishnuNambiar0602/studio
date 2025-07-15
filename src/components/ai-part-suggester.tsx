@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
-import { Loader2, Sparkles, Upload, Camera } from "lucide-react";
+import { Loader2, Sparkles, Upload, Camera, Mic, MicOff } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useParts } from "@/context/part-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -22,12 +22,21 @@ const FormSchema = z.object({
   }),
 });
 
+// For cross-browser compatibility with the Web Speech API
+const SpeechRecognition =
+  (typeof window !== 'undefined' && (window.SpeechRecognition || (window as any).webkitSpeechRecognition));
+
+
 export function AiPartSuggester() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   const { parts } = useParts();
+  
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -35,6 +44,52 @@ export function AiPartSuggester() {
       partDescription: "",
     },
   });
+
+  // Effect to initialize and clean up speech recognition
+  useEffect(() => {
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    // Let the backend handle language detection by setting it to be broad
+    recognition.lang = ''; 
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0])
+        .map((result) => result.transcript)
+        .join('');
+      form.setValue('partDescription', transcript);
+
+      if (event.results[0].isFinal) {
+         form.trigger('partDescription');
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      setError(`Voice recognition error: ${event.error}. Please try again.`);
+      console.error('Speech recognition error', event);
+      setIsListening(false);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+    }
+  }, [form]);
+  
 
   const onSubmit = async (data: z.infer<typeof FormSchema> | { partDescription: string }) => {
     if (!data.partDescription && !photoDataUri) {
@@ -66,64 +121,115 @@ export function AiPartSuggester() {
     }
   };
 
+  const handleVoiceButtonClick = () => {
+    if (!SpeechRecognition) {
+      setError("Sorry, your browser does not support voice recognition.");
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+    }
+  };
+
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-lg border-2 border-primary/20">
       <CardHeader className="text-center p-8">
         <Sparkles className="mx-auto h-12 w-12 text-primary" />
         <CardTitle className="text-3xl font-bold font-headline mt-4">The Genie</CardTitle>
         <CardDescription className="text-md text-muted-foreground mt-2">
-          Describe the part you need, or upload an image, and our AI will find the perfect match from our inventory.
+          Describe the part you need, upload an image, or use your voice. Our AI will find the perfect match.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-8 pt-0">
           <Tabs defaultValue="text" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="text">Describe Part</TabsTrigger>
                 <TabsTrigger value="image">Use Image</TabsTrigger>
+                <TabsTrigger value="voice">Use Voice</TabsTrigger>
             </TabsList>
-            <TabsContent value="text">
-                  <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="partDescription"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Describe your part</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="e.g., 'A brake pad for a 2021 Lexus LX570, it should be OEM...'"
-                              className="resize-none"
-                              rows={4}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            For best results, include vehicle make, model, year, and any specific details. You can also use Arabic.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+             <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <TabsContent value="text">
+                        <FormField
+                        control={form.control}
+                        name="partDescription"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Describe your part</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                placeholder="e.g., 'A brake pad for a 2021 Lexus LX570, it should be OEM...'"
+                                className="resize-none"
+                                rows={4}
+                                {...field}
+                                />
+                            </FormControl>
+                            <FormDescription>
+                                For best results, include vehicle make, model, year, and any specific details. You can also use Arabic.
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                    </TabsContent>
+                    
+                    <TabsContent value="image">
+                        <TakeSnap 
+                            onGetSuggestion={onSubmit} 
+                            setPhotoDataUri={setPhotoDataUri}
+                            photoDataUri={photoDataUri}
+                            loading={loading}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="voice">
+                        <div className="flex flex-col items-center justify-center space-y-4 min-h-[200px]">
+                           <Button 
+                             type="button" 
+                             onClick={handleVoiceButtonClick} 
+                             size="lg" 
+                             variant={isListening ? "destructive" : "outline"}
+                             className="w-24 h-24 rounded-full"
+                           >
+                              {isListening ? <MicOff className="h-10 w-10" /> : <Mic className="h-10 w-10" />}
+                           </Button>
+                           <p className="text-muted-foreground">
+                             {isListening ? "Listening... Click to stop." : "Click the microphone to start speaking."}
+                           </p>
+                           <FormField
+                              control={form.control}
+                              name="partDescription"
+                              render={({ field }) => (
+                                <FormItem className="w-full">
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder="Your transcribed text will appear here..."
+                                      className="resize-none text-center"
+                                      rows={2}
+                                      {...field}
+                                      readOnly={isListening}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                           />
+                        </div>
+                    </TabsContent>
+
+                    {/* Submit button is outside the tabs content to be always visible */}
                     <Button type="submit" disabled={loading} className="w-full" size="lg">
-                      {loading ? (
+                    {loading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
+                    ) : (
                         <Sparkles className="mr-2 h-4 w-4" />
-                      )}
-                      Ask the Genie
+                    )}
+                    Ask the Genie
                     </Button>
-                  </form>
-                </Form>
-            </TabsContent>
-              <TabsContent value="image">
-                <TakeSnap 
-                    onGetSuggestion={onSubmit} 
-                    setPhotoDataUri={setPhotoDataUri}
-                    photoDataUri={photoDataUri}
-                    loading={loading}
-                />
-            </TabsContent>
+                </form>
+            </Form>
         </Tabs>
 
         {result && (
@@ -148,3 +254,4 @@ export function AiPartSuggester() {
     </Card>
   );
 }
+
