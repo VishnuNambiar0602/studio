@@ -1,17 +1,24 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Inter } from 'next/font/google';
+import { Noto_Serif as FontHeadline, Plus_Jakarta_Sans as FontBody } from 'next/font/google';
 
-const inter = Inter({
+
+const fontBody = FontBody({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-body',
+});
+
+const fontHeadline = FontHeadline({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-headline',
 });
 
 
 export const metadata: Metadata = {
-  title: 'Desert Drive Depot',
-  description: 'Your one-stop shop for auto part rentals and sales.',
+  title: 'GulfCarX',
+  description: 'AI-powered automotive parts platform for used, OEM, and new parts.',
 };
 
 export default function RootLayout({
@@ -21,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-body`}>
+      <body className={`${fontBody.variable} ${fontHeadline.variable} font-body`}>
         {children}
         <Toaster />
       </body>

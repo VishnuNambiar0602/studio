@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { useState } from "react";
 import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
 import { parts as availablePartsData } from "@/lib/data";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 const FormSchema = z.object({
@@ -60,10 +60,10 @@ export function AiPartSuggester() {
       <div className="container">
         <Card className="max-w-3xl mx-auto shadow-lg border-2 border-primary/20">
           <CardHeader className="text-center p-8">
-             <Wand2 className="mx-auto h-12 w-12 text-primary" />
-            <CardTitle className="text-3xl font-bold font-headline mt-4">AI Part Suggester</CardTitle>
+             <Sparkles className="mx-auto h-12 w-12 text-primary" />
+            <CardTitle className="text-3xl font-bold font-headline mt-4">The Genie</CardTitle>
             <CardDescription className="text-md text-muted-foreground mt-2">
-              Can't find what you're looking for? Describe the part you need, and our AI will find the best match.
+              Describe the part you need, or upload an image, and our AI will find the perfect match from our inventory.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-8 pt-0">
@@ -74,17 +74,17 @@ export function AiPartSuggester() {
                   name="partDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Part Description</FormLabel>
+                      <FormLabel>Describe your part</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="e.g., 'I need a brake pad for a 2018 Toyota Camry, it should be ceramic...'"
+                          placeholder="e.g., 'A brake pad for a 2021 Lexus LX570, it should be OEM...'"
                           className="resize-none"
                           rows={4}
                           {...field}
                         />
                       </FormControl>
                       <FormDescription>
-                        Be as descriptive as possible for the best results.
+                        For best results, include vehicle make, model, year, and any specific details. You can also use Arabic.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -94,9 +94,9 @@ export function AiPartSuggester() {
                   {loading ? (
                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <Wand2 className="mr-2 h-4 w-4" />
+                    <Sparkles className="mr-2 h-4 w-4" />
                   )}
-                  Find My Part
+                  Ask the Genie
                 </Button>
               </form>
             </Form>
