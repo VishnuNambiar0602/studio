@@ -11,7 +11,9 @@ export default function Home() {
       <main className="flex-1">
         <HeroSection />
         <ProductSection />
-        <AiPartSuggester />
+        <div id="ai-suggester">
+            <AiPartSuggester />
+        </div>
       </main>
       <Chatbot />
     </div>
