@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { useState, useEffect, useRef } from "react";
 import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
-import { Loader2, Sparkles, Upload, Camera, Mic, MicOff } from "lucide-react";
+import { Loader2, Bot, Upload, Camera, Mic, MicOff } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useParts } from "@/context/part-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -147,9 +147,9 @@ export function AiPartSuggester() {
   };
 
   return (
-    <Card className="w-full max-w-3xl mx-auto shadow-lg border-2 border-primary/20">
+    <Card className="w-full max-w-2xl mx-auto shadow-none border-none bg-transparent md:bg-card md:border-solid md:shadow-lg md:border">
       <CardHeader className="text-center p-8">
-        <Sparkles className="mx-auto h-12 w-12 text-primary" />
+        <Bot className="mx-auto h-12 w-12 text-primary" />
         <CardTitle className="text-3xl font-bold font-headline mt-4">The Genie</CardTitle>
         <CardDescription className="text-md text-muted-foreground mt-2">
           Describe the part you need, upload an image, or use your voice. Our AI will find the perfect match.
@@ -237,7 +237,7 @@ export function AiPartSuggester() {
                     {loading ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
-                        <Sparkles className="mr-2 h-4 w-4" />
+                        <Bot className="mr-2 h-4 w-4" />
                     )}
                     Ask the Genie
                     </Button>
