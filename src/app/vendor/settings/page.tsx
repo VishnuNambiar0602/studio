@@ -1,6 +1,7 @@
 import { VendorHeader } from "@/components/vendor-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { SettingsControls } from "./_components/settings-controls";
 
 export default function VendorSettingsPage() {
   return (
@@ -27,22 +28,7 @@ export default function VendorSettingsPage() {
               </div>
               <ThemeSwitcher />
             </div>
-             <div className="flex items-center justify-between p-4 bg-background rounded-lg border opacity-50">
-              <div>
-                <h3 className="font-semibold">Language (Coming Soon)</h3>
-                <p className="text-sm text-muted-foreground">
-                  Choose your preferred language for the dashboard.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between p-4 bg-background rounded-lg border opacity-50">
-              <div>
-                <h3 className="font-semibold">Font Size (Coming Soon)</h3>
-                <p className="text-sm text-muted-foreground">
-                  Adjust the text size for better readability.
-                </p>
-              </div>
-            </div>
+            <SettingsControls />
           </CardContent>
         </Card>
       </main>
