@@ -1,6 +1,6 @@
 "use client";
 
-import { Car, ShoppingCart } from "lucide-react";
+import { Car, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
@@ -31,6 +31,12 @@ export function Header() {
                   {itemCount}
                 </Badge>
               )}
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/auth">
+                <User className="mr-2 h-4 w-4" />
+                Sign Up / Login
             </Link>
           </Button>
         </div>
