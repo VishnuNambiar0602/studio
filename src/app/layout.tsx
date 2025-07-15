@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Noto_Serif as FontHeadline, Plus_Jakarta_Sans as FontBody } from 'next/font/google';
 import { CartProvider } from '@/context/cart-context';
 import { PartProvider } from '@/context/part-context';
-import { getParts } from '@/lib/data';
+import { getParts } from '@/lib/actions';
 
 
 const fontBody = FontBody({
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
   description: 'AI-powered automotive parts platform for used, OEM, and new parts.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // Fetch initial parts on the server
-  const initialParts = getParts();
+  const initialParts = await getParts();
 
   return (
     <html lang="en" suppressHydrationWarning>

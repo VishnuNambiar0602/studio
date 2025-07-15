@@ -1,5 +1,9 @@
 import type { Part } from './types';
 
+// This is a mock database. In a real-world scenario, you would use a proper database
+// like Firestore, PostgreSQL, etc. The data is stored in a global variable to simulate
+// persistence across requests during a single server session. It will reset when the
+// server restarts.
 const partsData: Part[] = [
   {
     id: 'part-001',
@@ -91,26 +95,41 @@ const partsData: Part[] = [
   },
 ];
 
-// In a real app, this would be a database call.
-// We'll use a global variable to simulate a database for now.
-if (!global.parts) {
-  global.parts = partsData;
+if (!(global as any).parts) {
+  (global as any).parts = partsData;
 }
 
-export function getParts(): Part[] {
-    return global.parts;
+const db: { parts: Part[] } = global as any;
+
+/**
+ * Simulates fetching all parts from a database.
+ */
+export async function getParts(): Promise<Part[]> {
+  // Simulate network latency
+  await new Promise(resolve => setTimeout(resolve, 250));
+  return db.parts;
 }
 
-export function addPart(part: Part) {
-    global.parts.unshift({ ...part, isVisibleForSale: true });
-    return part;
+/**
+ * Simulates adding a new part to the database.
+ */
+export async function addPart(part: Part): Promise<Part> {
+  // Simulate network latency
+  await new Promise(resolve => setTimeout(resolve, 250));
+  db.parts.unshift(part);
+  return part;
 }
 
-export function togglePartVisibility(partId: string): Part | undefined {
-    const part = global.parts.find((p) => p.id === partId);
-    if (part) {
-        part.isVisibleForSale = !part.isVisibleForSale;
-        return part;
-    }
-    return undefined;
+/**
+ * Simulates toggling the visibility of a part in the database.
+ */
+export async function togglePartVisibility(partId: string): Promise<Part | undefined> {
+  // Simulate network latency
+  await new Promise(resolve => setTimeout(resolve, 250));
+  const part = db.parts.find((p) => p.id === partId);
+  if (part) {
+      part.isVisibleForSale = !part.isVisibleForSale;
+      return part;
+  }
+  return undefined;
 }

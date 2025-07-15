@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part } from "./types";
-import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility } from "./data";
+import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts } from "./data";
 
 export async function holdPart(partId: string) {
   // In a real app, you'd update the database and send an email.
@@ -18,24 +18,34 @@ export async function holdPart(partId: string) {
 }
 
 export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
-    const newPart = {
+    const newPartData = {
         id: `part-${Date.now()}`,
         ...part,
+        isVisibleForSale: true,
     };
-    dbAddPart(newPart);
+    await dbAddPart(newPartData);
+    
+    // Revalidate paths to show the new part immediately
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
     revalidatePath("/new-parts");
     revalidatePath("/used-parts");
     revalidatePath("/oem-parts");
-    return newPart;
+
+    return newPartData;
 }
 
 export async function togglePartVisibility(partId: string) {
-    dbTogglePartVisibility(partId);
+    await dbTogglePartVisibility(partId);
+
+    // Revalidate paths to update visibility immediately
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
     revalidatePath("/new-parts");
     revalidatePath("/used-parts");
     revalidatePath("/oem-parts");
+}
+
+export async function getParts() {
+    return await dbGetParts();
 }
