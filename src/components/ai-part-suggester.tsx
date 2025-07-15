@@ -67,88 +67,84 @@ export function AiPartSuggester() {
   };
 
   return (
-    <section id="ai-suggester" className="w-full py-16 lg:py-24 bg-accent/20">
-      <div className="container">
-        <Card className="max-w-3xl mx-auto shadow-lg border-2 border-primary/20">
-          <CardHeader className="text-center p-8">
-            <Sparkles className="mx-auto h-12 w-12 text-primary" />
-            <CardTitle className="text-3xl font-bold font-headline mt-4">The Genie</CardTitle>
-            <CardDescription className="text-md text-muted-foreground mt-2">
-              Describe the part you need, or upload an image, and our AI will find the perfect match from our inventory.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-             <Tabs defaultValue="text" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="text">Describe Part</TabsTrigger>
-                    <TabsTrigger value="image">Use Image</TabsTrigger>
-                </TabsList>
-                <TabsContent value="text">
-                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <FormField
-                          control={form.control}
-                          name="partDescription"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Describe your part</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="e.g., 'A brake pad for a 2021 Lexus LX570, it should be OEM...'"
-                                  className="resize-none"
-                                  rows={4}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                For best results, include vehicle make, model, year, and any specific details. You can also use Arabic.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button type="submit" disabled={loading} className="w-full" size="lg">
-                          {loading ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="mr-2 h-4 w-4" />
-                          )}
-                          Ask the Genie
-                        </Button>
-                      </form>
-                    </Form>
-                </TabsContent>
-                 <TabsContent value="image">
-                    <TakeSnap 
-                        onGetSuggestion={onSubmit} 
-                        setPhotoDataUri={setPhotoDataUri}
-                        photoDataUri={photoDataUri}
-                        loading={loading}
+    <Card className="w-full max-w-3xl mx-auto shadow-lg border-2 border-primary/20">
+      <CardHeader className="text-center p-8">
+        <Sparkles className="mx-auto h-12 w-12 text-primary" />
+        <CardTitle className="text-3xl font-bold font-headline mt-4">The Genie</CardTitle>
+        <CardDescription className="text-md text-muted-foreground mt-2">
+          Describe the part you need, or upload an image, and our AI will find the perfect match from our inventory.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-8 pt-0">
+          <Tabs defaultValue="text" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="text">Describe Part</TabsTrigger>
+                <TabsTrigger value="image">Use Image</TabsTrigger>
+            </TabsList>
+            <TabsContent value="text">
+                  <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="partDescription"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Describe your part</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="e.g., 'A brake pad for a 2021 Lexus LX570, it should be OEM...'"
+                              className="resize-none"
+                              rows={4}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            For best results, include vehicle make, model, year, and any specific details. You can also use Arabic.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                </TabsContent>
-            </Tabs>
+                    <Button type="submit" disabled={loading} className="w-full" size="lg">
+                      {loading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-2 h-4 w-4" />
+                      )}
+                      Ask the Genie
+                    </Button>
+                  </form>
+                </Form>
+            </TabsContent>
+              <TabsContent value="image">
+                <TakeSnap 
+                    onGetSuggestion={onSubmit} 
+                    setPhotoDataUri={setPhotoDataUri}
+                    photoDataUri={photoDataUri}
+                    loading={loading}
+                />
+            </TabsContent>
+        </Tabs>
 
-            {result && (
-              <div className="mt-8">
-                <Alert>
-                  <AlertTitle className="font-headline">Suggested Parts</AlertTitle>
-                  <AlertDescription>
-                    <pre className="whitespace-pre-wrap font-body text-sm">{result}</pre>
-                  </AlertDescription>
-                </Alert>
-              </div>
-            )}
-             {error && (
-              <div className="mt-8">
-                <Alert variant="destructive">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+        {result && (
+          <div className="mt-8">
+            <Alert>
+              <AlertTitle className="font-headline">Suggested Parts</AlertTitle>
+              <AlertDescription>
+                <pre className="whitespace-pre-wrap font-body text-sm">{result}</pre>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+          {error && (
+          <div className="mt-8">
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

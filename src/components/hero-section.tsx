@@ -7,12 +7,12 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { Camera, Bot } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { AiPartSuggester } from "./ai-part-suggester";
 import { TakeSnap } from "./take-snap";
 import { useState } from "react";
 import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
 import { useParts } from "@/context/part-context";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import Link from "next/link";
 
 export function HeroSection() {
     const { language } = useSettings();
@@ -24,10 +24,6 @@ export function HeroSection() {
     const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
     const { parts } = useParts();
 
-
-    const scrollToAiSuggester = () => {
-        document.getElementById('ai-suggester')?.scrollIntoView({ behavior: 'smooth' });
-    }
 
     const onGetSuggestion = async (data: { partDescription: string }) => {
         setLoading(true);
@@ -108,9 +104,11 @@ export function HeroSection() {
                                 )}
                         </DialogContent>
                     </Dialog>
-                    <Button size="lg" onClick={scrollToAiSuggester}>
-                        <Bot className="mr-2 h-5 w-5" />
-                        Genie
+                    <Button size="lg" asChild>
+                        <Link href="/genie">
+                            <Bot className="mr-2 h-5 w-5" />
+                            Genie
+                        </Link>
                     </Button>
                 </div>
             </div>
