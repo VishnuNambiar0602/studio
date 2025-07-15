@@ -134,7 +134,7 @@ export async function loginUser(credentials: UserLogin) {
 }
 
 
-export async function sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string }> {
+export async function sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
     const user = await findUserByEmail(email);
     if (!user) {
         return { success: false, message: "No account found with that email address." };
@@ -159,7 +159,7 @@ export async function sendPasswordResetCode(email: string): Promise<{ success: b
         ---------------------------------
     `);
 
-    return { success: true, message: "Verification code sent.", code };
+    return { success: true, message: "Verification code sent.", code, username: user.username };
 }
 
 

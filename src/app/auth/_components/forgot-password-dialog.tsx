@@ -47,6 +47,7 @@ export function ForgotPasswordDialog() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>("enter-email");
   const [userEmail, setUserEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [simulatedCode, setSimulatedCode] = useState("");
   const [showCodeAlert, setShowCodeAlert] = useState(false);
   const { toast } = useToast();
@@ -65,9 +66,10 @@ export function ForgotPasswordDialog() {
     setLoading(true);
     const result = await sendPasswordResetCode(values.email);
 
-    if (result.success && result.code) {
+    if (result.success && result.code && result.username) {
       setUserEmail(values.email);
       setSimulatedCode(result.code);
+      setUsername(result.username);
       setShowCodeAlert(true); // Trigger the alert to show the code
     } else {
       toast({
@@ -220,13 +222,14 @@ export function ForgotPasswordDialog() {
       <AlertDialog open={showCodeAlert} onOpenChange={setShowCodeAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Verification Code (Simulation)</AlertDialogTitle>
+            <AlertDialogTitle>Account Recovery (Simulation)</AlertDialogTitle>
             <AlertDialogDescription>
-              In a real application, this code would be sent to your email. For now, please use the code below to proceed:
+              In a real application, this would be sent to your email.
+              <p className="mt-4">Your usernametag is: <span className="font-bold">{username}</span></p>
+              <p>Please use the code below to proceed:</p>
               <div className="text-center font-mono text-2xl tracking-widest py-4 bg-muted rounded-md my-4">
                 {simulatedCode}
               </div>
-              Your username is: <span className="font-bold">{userEmail}</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
