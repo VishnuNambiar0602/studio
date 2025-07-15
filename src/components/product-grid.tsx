@@ -3,8 +3,6 @@ import { ProductCard } from "./product-card";
 
 export async function ProductGrid() {
   // In a real app, this would be a database call.
-  // We'll add a delay to simulate fetching data
-  await new Promise(resolve => setTimeout(resolve, 1500));
   const allParts = parts;
 
   return (

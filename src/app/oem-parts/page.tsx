@@ -1,5 +1,7 @@
 import { Header } from "@/components/header";
 import { ProductGrid } from "@/components/product-grid";
+import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
+import { Suspense } from "react";
 
 export default function OemPartsPage() {
   return (
@@ -14,7 +16,9 @@ export default function OemPartsPage() {
                     Original Equipment Manufacturer parts for a perfect fit.
                 </p>
             </div>
-            <ProductGrid />
+            <Suspense fallback={<ProductGridSkeleton />}>
+              <ProductGrid />
+            </Suspense>
           </div>
         </section>
       </main>

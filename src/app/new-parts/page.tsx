@@ -1,5 +1,7 @@
 import { Header } from "@/components/header";
 import { ProductGrid } from "@/components/product-grid";
+import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
+import { Suspense } from "react";
 
 export default function NewPartsPage() {
   return (
@@ -14,7 +16,9 @@ export default function NewPartsPage() {
                     Brand new parts, ready for your vehicle.
                 </p>
             </div>
-            <ProductGrid />
+            <Suspense fallback={<ProductGridSkeleton />}>
+              <ProductGrid />
+            </Suspense>
           </div>
         </section>
       </main>
