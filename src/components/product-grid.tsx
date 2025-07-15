@@ -6,9 +6,8 @@ import { ProductCard } from "./product-card";
 export function ProductGrid() {
   const { parts } = useParts();
   
-  // In a real app, this would be a database call.
-  // We are now getting parts from the context.
-  const allParts = parts;
+  // Only show parts that are visible for sale
+  const visibleParts = parts.filter(part => part.isVisibleForSale);
 
   return (
     <section className="py-16 lg:py-24">
@@ -20,9 +19,9 @@ export function ProductGrid() {
             </p>
         </div>
         
-        {allParts.length > 0 ? (
+        {visibleParts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {allParts.map((part) => (
+            {visibleParts.map((part) => (
               <ProductCard key={part.id} part={part} />
             ))}
           </div>

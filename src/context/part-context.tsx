@@ -7,19 +7,30 @@ import { parts as initialParts } from "@/lib/data";
 interface PartContextType {
   parts: Part[];
   addPart: (part: Part) => void;
+  togglePartVisibility: (partId: string) => void;
 }
 
 const PartContext = createContext<PartContextType | undefined>(undefined);
 
 export function PartProvider({ children }: { children: ReactNode }) {
-  const [parts, setParts] = useState<Part[]>(initialParts);
+  const [parts, setParts] = useState<Part[]>(initialParts.map(p => ({...p, isVisibleForSale: true})));
 
   const addPart = (part: Part) => {
-    setParts((prevParts) => [part, ...prevParts]);
+    setParts((prevParts) => [{...part, isVisibleForSale: true}, ...prevParts]);
+  };
+  
+  const togglePartVisibility = (partId: string) => {
+    setParts((prevParts) =>
+      prevParts.map((part) =>
+        part.id === partId
+          ? { ...part, isVisibleForSale: !part.isVisibleForSale }
+          : part
+      )
+    );
   };
 
   return (
-    <PartContext.Provider value={{ parts, addPart }}>
+    <PartContext.Provider value={{ parts, addPart, togglePartVisibility }}>
       {children}
     </PartContext.Provider>
   );

@@ -6,4 +6,5 @@ export type Part = {
   imageUrl: string;
   inStock: boolean;
   vendorAddress: string;
+  isVisibleForSale?: boolean;
 };
