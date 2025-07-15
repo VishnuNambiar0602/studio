@@ -54,8 +54,8 @@ export function AiPartSuggester() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
+    recognition.continuous = false; // Process a single utterance
+    recognition.interimResults = true; // Get results as the user speaks
     // Set language based on context for better recognition accuracy
     recognition.lang = language === 'ar' ? 'ar-SA' : 'en-US';
 
@@ -68,8 +68,10 @@ export function AiPartSuggester() {
         .map((result: any) => result[0])
         .map((result) => result.transcript)
         .join('');
+      // Update the form value with the live transcript
       form.setValue('partDescription', transcript);
 
+      // If the speech is final, trigger validation
       if (event.results[0].isFinal) {
          form.trigger('partDescription');
       }
@@ -80,7 +82,7 @@ export function AiPartSuggester() {
       if (event.error === 'not-allowed') {
         errorMessage = "Voice recognition was disabled. Please allow microphone access in your browser settings.";
       } else if (event.error === 'no-speech') {
-        errorMessage = "No speech was detected. Please try again.";
+        errorMessage = "No speech was detected. Please make sure your microphone is working and try again.";
       }
       setError(errorMessage);
       console.error('Speech recognition error', event.error, event.message);
