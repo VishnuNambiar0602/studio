@@ -1,14 +1,21 @@
 "use client";
 
-import { Car, ShoppingCart, User } from "lucide-react";
+import { Car, LogOut, Settings, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
 import { Badge } from "./ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import Image from "next/image";
+import { useState } from "react";
 
 export function Header() {
   const { cart } = useCart();
   const itemCount = cart.length;
+  
+  // This is a simulation of a logged-in state.
+  // In a real app, this would come from an auth context.
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,12 +40,47 @@ export function Header() {
               )}
             </Link>
           </Button>
-          <Button asChild>
-            <Link href="/auth">
-                <User className="mr-2 h-4 w-4" />
-                Sign Up / Login
-            </Link>
-          </Button>
+
+          {isLoggedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="overflow-hidden rounded-full"
+                >
+                  <Image
+                      src="https://placehold.co/36x36.png"
+                      width={36}
+                      height={36}
+                      alt="Avatar"
+                      className="overflow-hidden rounded-full"
+                      data-ai-hint="person avatar"
+                    />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings"><Settings className="mr-2 h-4 w-4" />Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+             <Button asChild>
+              <Link href="/auth">
+                  <User className="mr-2 h-4 w-4" />
+                  Sign Up / Login
+              </Link>
+            </Button>
+          )}
+
         </div>
       </div>
     </header>

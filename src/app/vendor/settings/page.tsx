@@ -1,7 +1,6 @@
 import { VendorHeader } from "@/components/vendor-header";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { SettingsControls } from "./_components/settings-controls";
+import { SettingsForm } from "@/app/settings/_components/settings-form";
+
 
 export default function VendorSettingsPage() {
   return (
@@ -11,26 +10,7 @@ export default function VendorSettingsPage() {
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl">Settings</h1>
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>
-              Manage your dashboard appearance and settings.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
-              <div>
-                <h3 className="font-semibold">Appearance</h3>
-                <p className="text-sm text-muted-foreground">
-                  Switch between light and dark mode.
-                </p>
-              </div>
-              <ThemeSwitcher />
-            </div>
-            <SettingsControls />
-          </CardContent>
-        </Card>
+        <SettingsForm />
       </main>
     </div>
   );
