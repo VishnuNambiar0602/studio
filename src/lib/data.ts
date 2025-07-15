@@ -108,11 +108,19 @@ const bookingsData: Booking[] = [
 
 if (!(global as any).parts) {
   (global as any).parts = partsData;
+}
+if (!(global as any).orders) {
   (global as any).orders = ordersData;
+}
+if (!(global as any).bookings) {
   (global as any).bookings = bookingsData;
 }
 
-const db: { parts: Part[], orders: Order[], bookings: Booking[] } = global as any;
+const db: { parts: Part[], orders: Order[], bookings: Booking[] } = {
+    parts: (global as any).parts,
+    orders: (global as any).orders,
+    bookings: (global as any).bookings,
+};
 
 /**
  * Simulates fetching all parts from a database.
