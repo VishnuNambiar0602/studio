@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin } from "./types";
 import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts } from "./data";
-import { addUser, findUserByEmail, findUserByUsername } from "./users";
+import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword } from "./users";
 
 export async function holdPart(partId: string) {
   // In a real app, you'd update the database and send an email.
@@ -131,4 +131,39 @@ export async function loginUser(credentials: UserLogin) {
     const { password: _, ...userWithoutPassword } = user;
 
     return { success: true, user: userWithoutPassword };
+}
+
+
+export async function sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string }> {
+    const user = await findUserByEmail(email);
+    if (!user) {
+        return { success: false, message: "No account found with that email address." };
+    }
+
+    const code = await storeVerificationCode(email);
+
+    // In a real app, this is where you'd use an email service (e.g., SendGrid, Resend)
+    // For now, we return the code to be displayed in a popup for simulation.
+    console.log(`
+        --- SIMULATING PASSWORD RESET EMAIL ---
+        To: ${email}
+        Subject: Your Password Reset Code
+        
+        Your verification code is: ${code}
+        It will expire in 10 minutes.
+
+        Your username is: ${user.username}
+        
+        Best,
+        The GulfCarX Team
+        ---------------------------------
+    `);
+
+    return { success: true, message: "Verification code sent.", code };
+}
+
+
+export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+    const result = await verifyAndResetPassword(data.email, data.code, data.newPassword);
+    return result;
 }

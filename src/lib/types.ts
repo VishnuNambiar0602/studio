@@ -1,4 +1,5 @@
 
+
 export type Part = {
   id: string;
   name: string;
@@ -25,6 +26,8 @@ export interface User {
   // In a real app, you would never store the password in plain text.
   // It would be hashed and salted.
   password?: string; 
+  verificationCode?: string;
+  verificationCodeExpires?: Date;
 }
 
 export type UserRegistration = Omit<User, 'id'>;
