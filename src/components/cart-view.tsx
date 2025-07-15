@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useCart } from "@/context/cart-context";
@@ -30,7 +31,7 @@ export function CartView() {
             <div className="space-y-4">
             {cart.map((item) => (
                 <Card key={item.id} className="flex items-center p-4">
-                    <Image src={item.imageUrl} alt={item.name} width={100} height={100} className="rounded-md object-cover" />
+                    <Image src={item.imageUrls[0]} alt={item.name} width={100} height={100} className="rounded-md object-cover" />
                     <div className="ml-4 flex-grow">
                         <h2 className="font-semibold">{item.name}</h2>
                         <p className="text-sm text-muted-foreground">{item.description}</p>

@@ -83,7 +83,7 @@ export function BookViewingDialog({ part, children }: BookViewingDialogProps) {
           <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={loading}>
+          <Button onClick={handleSubmit} disabled={loading || part.quantity === 0}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Confirm Booking
           </Button>

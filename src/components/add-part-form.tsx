@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,12 +44,13 @@ const addPartFormSchema = z.object({
   category: z.enum(["new", "used", "oem"], {
     required_error: "You need to select a part category.",
   }),
-  image: z
+  images: z
     .any()
-    .refine((files) => files?.length === 1, "Image is required.")
-    .refine((files) => files?.[0]?.size <= 5000000, `Max file size is 5MB.`)
+    .refine((files) => files?.length > 0, "At least one image is required.")
+    .refine((files) => files?.length <= 5, "You can upload a maximum of 5 images.")
+    .refine((files) => Array.from(files).every((file: any) => file?.size <= 5000000), `Max file size is 5MB per image.`)
     .refine(
-      (files) => ["image/jpeg", "image/png", "image/webp"].includes(files?.[0]?.type),
+      (files) => Array.from(files).every((file: any) => ["image/jpeg", "image/png", "image/webp"].includes(file?.type)),
       "Only .jpg, .png, and .webp formats are supported."
     ),
 });
@@ -81,20 +83,21 @@ export function AddPartForm() {
     }
   });
 
-  const fileRef = form.register("image");
+  const fileRef = form.register("images");
 
   async function onSubmit(data: AddPartFormValues) {
     setLoading(true);
 
     try {
-        const imageUrl = await fileToDataUrl(data.image[0]);
+        const imagePromises = Array.from(data.images).map((file: any) => fileToDataUrl(file));
+        const imageUrls = await Promise.all(imagePromises);
 
         const newPartData = {
             name: data.name,
             description: data.description,
             price: data.price,
-            imageUrl: imageUrl,
-            inStock: data.quantity > 0,
+            imageUrls: imageUrls,
+            quantity: data.quantity,
             vendorAddress: data.companyName,
             category: data.category,
         };
@@ -292,15 +295,15 @@ export function AddPartForm() {
         />
         <FormField
           control={form.control}
-          name="image"
+          name="images"
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Part Image</FormLabel>
+              <FormLabel>Part Images</FormLabel>
               <FormControl>
-                <Input type="file" accept="image/png, image/jpeg, image/webp" {...fileRef} />
+                <Input type="file" accept="image/png, image/jpeg, image/webp" {...fileRef} multiple />
               </FormControl>
                <FormDescription>
-                Upload a clear image of the part (PNG, JPG, or WEBP, max 5MB).
+                Upload up to 5 images (PNG, JPG, or WEBP, max 5MB each).
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -26,11 +27,13 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
     });
   };
 
+  const isInStock = part.quantity > 0;
+
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-0">
         <div className="relative aspect-video w-full overflow-hidden">
-          <Image src={part.imageUrl} alt={part.name} fill className="object-cover rounded-t-lg" data-ai-hint="car part" />
+          <Image src={part.imageUrls[0]} alt={part.name} fill className="object-cover rounded-t-lg" data-ai-hint="car part" />
           {!part.isVisibleForSale && (
              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <p className="text-white font-bold text-lg">SALE PAUSED</p>
@@ -40,8 +43,8 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
         <div className="p-6 pb-2">
           <div className="flex justify-between items-start">
             <CardTitle className="pr-2 font-headline text-lg">{part.name}</CardTitle>
-             <Badge variant={part.inStock ? "secondary" : "destructive"} className="shrink-0 mt-1">
-              {part.inStock ? "In Stock" : "Out of Stock"}
+             <Badge variant={isInStock ? "secondary" : "destructive"} className="shrink-0 mt-1">
+              {isInStock ? `${part.quantity} in Stock` : "Out of Stock"}
             </Badge>
           </div>
           <CardDescription className="pt-2 text-sm">{part.description}</CardDescription>
@@ -59,7 +62,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
             variant={part.isVisibleForSale ? "outline" : "secondary"} 
             className="w-full"
             onClick={handleToggleVisibility}
-            disabled={!part.inStock || isPending}
+            disabled={!isInStock || isPending}
         >
           {part.isVisibleForSale ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
           {isPending ? 'Updating...' : part.isVisibleForSale ? "Hold Sales" : "Resume Sales"}

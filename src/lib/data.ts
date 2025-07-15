@@ -1,4 +1,5 @@
 
+
 import type { Part, Order, Booking } from './types';
 import { users } from './users'; // We need user data for some functions
 
@@ -12,8 +13,8 @@ const partsData: Part[] = [
     name: 'All-Terrain Tire Set',
     description: 'A set of four durable tires designed for off-road desert conditions. Excellent grip and longevity.',
     price: 899.99,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: true,
+    imageUrls: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
+    quantity: 10,
     vendorAddress: 'AutoParts Inc.', // Changed to vendor name
     isVisibleForSale: true,
     category: 'new',
@@ -23,8 +24,8 @@ const partsData: Part[] = [
     name: 'Heavy-Duty Radiator',
     description: 'High-performance radiator to keep your engine cool under the scorching desert sun.',
     price: 349.50,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: true,
+    imageUrls: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
+    quantity: 5,
     vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
     category: 'oem',
@@ -34,8 +35,8 @@ const partsData: Part[] = [
     name: 'Performance Air Filter',
     description: 'Protects your engine from sand and dust while improving airflow and horsepower.',
     price: 75.00,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: false,
+    imageUrls: ['https://placehold.co/600x400.png'],
+    quantity: 0,
     vendorAddress: 'AutoParts Inc.',
     isVisibleForSale: true,
     category: 'used',
@@ -45,8 +46,8 @@ const partsData: Part[] = [
     name: 'LED Light Bar',
     description: '22-inch light bar for superior visibility during night-time desert drives.',
     price: 199.99,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: true,
+    imageUrls: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
+    quantity: 15,
     vendorAddress: 'Desert Off-Road Supply',
     isVisibleForSale: true,
     category: 'new',
@@ -56,8 +57,8 @@ const partsData: Part[] = [
     name: 'Premium Ceramic Brake Pads',
     description: 'Low-dust, quiet operation brake pads with excellent stopping power for any vehicle.',
     price: 120.75,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: true,
+    imageUrls: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
+    quantity: 30,
     vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
     category: 'oem',
@@ -67,8 +68,8 @@ const partsData: Part[] = [
     name: 'Upgraded Suspension Kit',
     description: 'Provides a smoother ride on rough terrain and increases ground clearance.',
     price: 1250.00,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: true,
+    imageUrls: ['https://placehold.co/600x400.png'],
+    quantity: 3,
     vendorAddress: 'Desert Off-Road Supply',
     isVisibleForSale: true,
     category: 'used',
@@ -78,8 +79,8 @@ const partsData: Part[] = [
     name: 'Engine Oil - Synthetic Blend',
     description: 'High-mileage synthetic blend oil for superior engine protection in extreme temperatures.',
     price: 45.99,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: true,
+    imageUrls: ['https://placehold.co/600x400.png'],
+    quantity: 50,
     vendorAddress: 'AutoParts Inc.',
     isVisibleForSale: true,
     category: 'new',
@@ -89,8 +90,8 @@ const partsData: Part[] = [
     name: 'Car Battery - 750 CCA',
     description: 'Reliable car battery with 750 cold cranking amps for consistent starts in all weather.',
     price: 180.00,
-    imageUrl: 'https://placehold.co/600x400.png',
-    inStock: true,
+    imageUrls: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'],
+    quantity: 25,
     vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
     category: 'oem',
@@ -128,6 +129,14 @@ const db: { parts: Part[], orders: Order[], bookings: Booking[] } = {
 export async function getParts(): Promise<Part[]> {
   await new Promise(resolve => setTimeout(resolve, 250));
   return db.parts;
+}
+
+/**
+ * Simulates fetching a single part by its ID.
+ */
+export async function getPartById(id: string): Promise<Part | undefined> {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  return db.parts.find(p => p.id === id);
 }
 
 /**

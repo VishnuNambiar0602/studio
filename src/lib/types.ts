@@ -5,8 +5,8 @@ export type Part = {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
-  inStock: boolean;
+  imageUrls: string[]; // Changed from imageUrl to imageUrls
+  quantity: number; // Changed from inStock boolean
   vendorAddress: string;
   isVisibleForSale?: boolean;
   category: 'new' | 'used' | 'oem';
