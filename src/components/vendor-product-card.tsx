@@ -56,7 +56,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
               {isInStock ? `${part.quantity} in Stock` : "Out of Stock"}
             </Badge>
           </div>
-          <CardDescription className="pt-2 text-sm">{part.description}</CardDescription>
+          <CardDescription className="pt-2 text-sm line-clamp-2">{part.description}</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="flex-grow space-y-4 p-6 pt-2">
