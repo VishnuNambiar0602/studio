@@ -5,7 +5,7 @@ import type { Part } from "@/lib/types";
 interface ProductGridProps {
     title?: string;
     description?: string;
-    category?: Part['category'];
+    category?: 'new' | 'used' | 'oem';
 }
 
 export async function ProductGrid({ title, description, category }: ProductGridProps) {
@@ -14,7 +14,7 @@ export async function ProductGrid({ title, description, category }: ProductGridP
   let visibleParts = parts.filter(part => part.isVisibleForSale);
   
   if (category) {
-    visibleParts = visibleParts.filter(part => part.category === category);
+    visibleParts = visibleParts.filter(part => part.category.includes(category));
   }
 
   return (

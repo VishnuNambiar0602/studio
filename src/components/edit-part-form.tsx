@@ -21,7 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -31,6 +31,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useParts } from "@/context/part-context";
 import { updatePart } from "@/lib/actions";
 import type { Part } from "@/lib/types";
+
+const categories = ["new", "used", "oem"] as const;
 
 // Schema for editing is slightly different, images are optional
 const editPartFormSchema = z.object({
@@ -43,8 +45,8 @@ const editPartFormSchema = z.object({
     required_error: "A date of manufacture is required.",
   }),
   price: z.coerce.number().positive("Price must be a positive number."),
-  category: z.enum(["new", "used", "oem"], {
-    required_error: "You need to select a part category.",
+  category: z.array(z.string()).refine((value) => value.some((item) => item), {
+    message: "You have to select at least one category.",
   }),
   // Images are optional on update, as they might not change them
   images: z
@@ -62,8 +64,7 @@ interface EditPartFormProps {
 export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  // We'll need a way to update the state in the context if we implement that fully
-  const { parts, addPart } = useParts(); 
+  const { updatePartState } = useParts(); 
 
   const form = useForm<EditPartFormValues>({
     resolver: zodResolver(editPartFormSchema),
@@ -96,16 +97,18 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
     setLoading(true);
 
     try {
-        const updatedData = {
+        const updatedData: Part = {
             ...part,
             name: data.name,
             description: data.description,
             price: data.price,
             quantity: data.quantity,
             vendorAddress: data.companyName,
-            category: data.category,
+            category: data.category as ('new' | 'used' | 'oem')[],
         };
 
+        // Optimistic UI update
+        updatePartState(part.id, updatedData);
         await updatePart(part.id, updatedData);
         
         toast({
@@ -249,44 +252,50 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
             </FormItem>
           )}
         />
-         <FormField
+        <FormField
           control={form.control}
           name="category"
-          render={({ field }) => (
+          render={() => (
             <FormItem className="space-y-3 md:col-span-2">
               <FormLabel>Part Category</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8"
-                >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="new" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      New Part
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="used" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      Used Part
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="oem" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      OEM Part
-                    </FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
+              <FormDescription>
+                Select one or more categories that apply to the part.
+              </FormDescription>
+              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8">
+                {categories.map((item) => (
+                  <FormField
+                    key={item}
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={item}
+                          className="flex flex-row items-start space-x-3 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(item)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...(field.value || []), item])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== item
+                                      )
+                                    );
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">
+                            {item} Part
+                          </FormLabel>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}

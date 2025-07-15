@@ -9,7 +9,7 @@ export type Part = {
   quantity: number; // Changed from inStock boolean
   vendorAddress: string;
   isVisibleForSale?: boolean;
-  category: 'new' | 'used' | 'oem';
+  category: ('new' | 'used' | 'oem')[];
 };
 
 export type FontSize = 'sm' | 'md' | 'lg';

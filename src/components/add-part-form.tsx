@@ -21,7 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -30,6 +30,8 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useParts } from "@/context/part-context";
 import { createPart } from "@/lib/actions";
+
+const categories = ["new", "used", "oem"] as const;
 
 const addPartFormSchema = z.object({
   name: z.string().min(3, "Part name must be at least 3 characters."),
@@ -41,8 +43,8 @@ const addPartFormSchema = z.object({
     required_error: "A date of manufacture is required.",
   }),
   price: z.coerce.number().positive("Price must be a positive number."),
-  category: z.enum(["new", "used", "oem"], {
-    required_error: "You need to select a part category.",
+  category: z.array(z.string()).refine((value) => value.some((item) => item), {
+    message: "You have to select at least one category.",
   }),
   images: z
     .any()
@@ -80,6 +82,7 @@ export function AddPartForm() {
       companyName: "",
       price: 0,
       quantity: 1,
+      category: [],
     }
   });
 
@@ -99,7 +102,7 @@ export function AddPartForm() {
             imageUrls: imageUrls,
             quantity: data.quantity,
             vendorAddress: data.companyName,
-            category: data.category,
+            category: data.category as ('new' | 'used' | 'oem')[],
         };
 
         addPart({
@@ -251,44 +254,50 @@ export function AddPartForm() {
             </FormItem>
           )}
         />
-         <FormField
+        <FormField
           control={form.control}
           name="category"
-          render={({ field }) => (
+          render={() => (
             <FormItem className="space-y-3 md:col-span-2">
               <FormLabel>Part Category</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8"
-                >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="new" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      New Part
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="used" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      Used Part
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="oem" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      OEM Part
-                    </FormLabel>
-                  </FormItem>
-                </RadioGroup>
-              </FormControl>
+               <FormDescription>
+                Select one or more categories that apply to the part.
+              </FormDescription>
+              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8">
+                {categories.map((item) => (
+                  <FormField
+                    key={item}
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => {
+                      return (
+                        <FormItem
+                          key={item}
+                          className="flex flex-row items-start space-x-3 space-y-0"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(item)}
+                              onCheckedChange={(checked) => {
+                                return checked
+                                  ? field.onChange([...(field.value || []), item])
+                                  : field.onChange(
+                                      field.value?.filter(
+                                        (value) => value !== item
+                                      )
+                                    )
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal capitalize">
+                            {item} Part
+                          </FormLabel>
+                        </FormItem>
+                      )
+                    }}
+                  />
+                ))}
+              </div>
               <FormMessage />
             </FormItem>
           )}

@@ -17,7 +17,7 @@ const partsData: Part[] = [
     quantity: 10,
     vendorAddress: 'AutoParts Inc.', // Changed to vendor name
     isVisibleForSale: true,
-    category: 'new',
+    category: ['new'],
   },
   {
     id: 'part-002',
@@ -28,7 +28,7 @@ const partsData: Part[] = [
     quantity: 5,
     vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
-    category: 'oem',
+    category: ['oem'],
   },
   {
     id: 'part-003',
@@ -39,7 +39,7 @@ const partsData: Part[] = [
     quantity: 0,
     vendorAddress: 'AutoParts Inc.',
     isVisibleForSale: true,
-    category: 'used',
+    category: ['used'],
   },
   {
     id: 'part-004',
@@ -50,7 +50,7 @@ const partsData: Part[] = [
     quantity: 15,
     vendorAddress: 'Desert Off-Road Supply',
     isVisibleForSale: true,
-    category: 'new',
+    category: ['new'],
   },
   {
     id: 'part-005',
@@ -61,7 +61,7 @@ const partsData: Part[] = [
     quantity: 30,
     vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
-    category: 'oem',
+    category: ['oem'],
   },
   {
     id: 'part-006',
@@ -72,7 +72,7 @@ const partsData: Part[] = [
     quantity: 3,
     vendorAddress: 'Desert Off-Road Supply',
     isVisibleForSale: true,
-    category: 'used',
+    category: ['used'],
   },
   {
     id: 'part-007',
@@ -83,7 +83,7 @@ const partsData: Part[] = [
     quantity: 50,
     vendorAddress: 'AutoParts Inc.',
     isVisibleForSale: true,
-    category: 'new',
+    category: ['new'],
   },
   {
     id: 'part-008',
@@ -94,7 +94,7 @@ const partsData: Part[] = [
     quantity: 25,
     vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
-    category: 'oem',
+    category: ['oem'],
   },
 ];
 

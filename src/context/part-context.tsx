@@ -22,9 +22,9 @@ export function PartProvider({ children, initialParts }: { children: ReactNode, 
     setParts((prevParts) => [{...part, isVisibleForSale: true}, ...prevParts]);
   };
   
-  const updatePartState = (partId: string, updatedPart: Part) => {
+  const updatePartState = (partId: string, updatedPartData: Part) => {
     setParts((prevParts) => 
-      prevParts.map((part) => (part.id === partId ? updatedPart : part))
+      prevParts.map((part) => (part.id === partId ? updatedPartData : part))
     );
   };
   
