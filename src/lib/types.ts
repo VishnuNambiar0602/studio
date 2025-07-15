@@ -23,6 +23,7 @@ export interface User {
   email: string;
   username: string; // This is the usernametag
   role: UserRole;
+  googleMapsUrl?: string; // For vendors
   // In a real app, you would never store the password in plain text.
   // It would be hashed and salted.
   password?: string; 
@@ -33,3 +34,26 @@ export interface User {
 export type UserRegistration = Omit<User, 'id'>;
 
 export type UserLogin = Pick<User, 'username' | 'password'>;
+
+
+export type OrderStatus = 'Placed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+
+export interface Order {
+  id: string;
+  userId: string;
+  items: Part[];
+  total: number;
+  status: OrderStatus;
+  orderDate: Date;
+}
+
+export interface Booking {
+  id: string;
+  partId: string;
+  partName: string;
+  userId: string;
+  userName: string;
+  bookingDate: Date;
+  status: 'Pending' | 'Completed';
+  cost: number;
+}

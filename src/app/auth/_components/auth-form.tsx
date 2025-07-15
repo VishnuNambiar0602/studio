@@ -19,6 +19,7 @@ const formSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
   username: z.string().optional(),
+  googleMapsUrl: z.string().url({ message: "Please enter a valid Google Maps URL." }).optional(),
 });
 
 interface AuthFormProps {
@@ -38,12 +39,20 @@ export function AuthForm({ userType }: AuthFormProps) {
       password: "",
       name: "",
       username: "",
+      googleMapsUrl: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     
+    // Validate googleMapsUrl for vendors
+    if (userType === 'vendor' && !values.googleMapsUrl) {
+      form.setError("googleMapsUrl", { type: "manual", message: "Google Maps URL is required for vendors." });
+      setLoading(false);
+      return;
+    }
+
     try {
         const result = await registerUser({
             name: values.name,
@@ -51,6 +60,7 @@ export function AuthForm({ userType }: AuthFormProps) {
             password: values.password, // In a real app, this would be hashed
             username: values.username,
             role: userType,
+            googleMapsUrl: values.googleMapsUrl,
         });
 
         if (!result.success) {
@@ -146,6 +156,24 @@ export function AuthForm({ userType }: AuthFormProps) {
             </FormItem>
           )}
         />
+        {userType === 'vendor' && (
+          <FormField
+            control={form.control}
+            name="googleMapsUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Google Maps URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://maps.app.goo.gl/..." {...field} />
+                </FormControl>
+                 <FormDescription>
+                  Paste the full URL of your location from Google Maps.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <Button type="submit" disabled={loading} className="w-full">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Account

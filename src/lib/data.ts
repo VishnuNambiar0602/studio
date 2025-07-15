@@ -1,4 +1,6 @@
-import type { Part } from './types';
+
+import type { Part, Order, Booking } from './types';
+import { users } from './users'; // We need user data for some functions
 
 // This is a mock database. In a real-world scenario, you would use a proper database
 // like Firestore, PostgreSQL, etc. The data is stored in a global variable to simulate
@@ -12,7 +14,7 @@ const partsData: Part[] = [
     price: 899.99,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
-    vendorAddress: '123 Dune Way, Sandville, AZ',
+    vendorAddress: 'AutoParts Inc.', // Changed to vendor name
     isVisibleForSale: true,
     category: 'new',
   },
@@ -23,7 +25,7 @@ const partsData: Part[] = [
     price: 349.50,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
-    vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
+    vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
     category: 'oem',
   },
@@ -34,7 +36,7 @@ const partsData: Part[] = [
     price: 75.00,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: false,
-    vendorAddress: '123 Dune Way, Sandville, AZ',
+    vendorAddress: 'AutoParts Inc.',
     isVisibleForSale: true,
     category: 'used',
   },
@@ -45,7 +47,7 @@ const partsData: Part[] = [
     price: 199.99,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
-    vendorAddress: '789 Canyon Rd, Mirage City, CA',
+    vendorAddress: 'Desert Off-Road Supply',
     isVisibleForSale: true,
     category: 'new',
   },
@@ -56,7 +58,7 @@ const partsData: Part[] = [
     price: 120.75,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
-    vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
+    vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
     category: 'oem',
   },
@@ -67,7 +69,7 @@ const partsData: Part[] = [
     price: 1250.00,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
-    vendorAddress: '789 Canyon Rd, Mirage City, CA',
+    vendorAddress: 'Desert Off-Road Supply',
     isVisibleForSale: true,
     category: 'used',
   },
@@ -78,7 +80,7 @@ const partsData: Part[] = [
     price: 45.99,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
-    vendorAddress: '123 Dune Way, Sandville, AZ',
+    vendorAddress: 'AutoParts Inc.',
     isVisibleForSale: true,
     category: 'new',
   },
@@ -89,23 +91,33 @@ const partsData: Part[] = [
     price: 180.00,
     imageUrl: 'https://placehold.co/600x400.png',
     inStock: true,
-    vendorAddress: '456 Oasis Blvd, Rock Springs, NV',
+    vendorAddress: 'Global Auto Spares',
     isVisibleForSale: true,
     category: 'oem',
   },
 ];
 
+const ordersData: Order[] = [
+    { id: 'order-1', userId: 'user-123', items: [partsData[0]], total: 899.99, status: 'Delivered', orderDate: new Date('2024-05-20') },
+    { id: 'order-2', userId: 'user-123', items: [partsData[4], partsData[6]], total: 166.74, status: 'Processing', orderDate: new Date('2024-05-28') },
+];
+
+const bookingsData: Booking[] = [
+    { id: 'booking-1', partId: 'part-002', partName: 'Heavy-Duty Radiator', userId: 'user-456', userName: 'Jane Smith', bookingDate: new Date('2024-06-10'), status: 'Pending', cost: 349.50 },
+];
+
 if (!(global as any).parts) {
   (global as any).parts = partsData;
+  (global as any).orders = ordersData;
+  (global as any).bookings = bookingsData;
 }
 
-const db: { parts: Part[] } = global as any;
+const db: { parts: Part[], orders: Order[], bookings: Booking[] } = global as any;
 
 /**
  * Simulates fetching all parts from a database.
  */
 export async function getParts(): Promise<Part[]> {
-  // Simulate network latency
   await new Promise(resolve => setTimeout(resolve, 250));
   return db.parts;
 }
@@ -114,7 +126,6 @@ export async function getParts(): Promise<Part[]> {
  * Simulates adding a new part to the database.
  */
 export async function addPart(part: Part): Promise<Part> {
-  // Simulate network latency
   await new Promise(resolve => setTimeout(resolve, 250));
   db.parts.unshift(part);
   return part;
@@ -124,7 +135,6 @@ export async function addPart(part: Part): Promise<Part> {
  * Simulates toggling the visibility of a part in the database.
  */
 export async function togglePartVisibility(partId: string): Promise<Part | undefined> {
-  // Simulate network latency
   await new Promise(resolve => setTimeout(resolve, 250));
   const part = db.parts.find((p) => p.id === partId);
   if (part) {
@@ -132,4 +142,56 @@ export async function togglePartVisibility(partId: string): Promise<Part | undef
       return part;
   }
   return undefined;
+}
+
+/**
+ * Simulates fetching orders for a specific user.
+ */
+export async function getOrdersByUserId(userId: string): Promise<Order[]> {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return db.orders.filter(order => order.userId === userId);
+}
+
+
+/**
+ * Simulates creating a new booking.
+ */
+export async function createBooking(bookingData: Omit<Booking, 'id' | 'status'>): Promise<Booking> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const newBooking: Booking = {
+        id: `booking-${Date.now()}`,
+        status: 'Pending',
+        ...bookingData,
+    };
+    db.bookings.unshift(newBooking);
+    return newBooking;
+}
+
+/**
+ * Simulates fetching all bookings.
+ */
+export async function getBookings(): Promise<Booking[]> {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return db.bookings;
+}
+
+/**
+ * Simulates updating a booking's status.
+ */
+export async function updateBookingStatus(bookingId: string, status: 'Pending' | 'Completed'): Promise<Booking | undefined> {
+    await new Promise(resolve => setTimeout(resolve, 150));
+    const booking = db.bookings.find(b => b.id === bookingId);
+    if (booking) {
+        booking.status = status;
+        return booking;
+    }
+    return undefined;
+}
+
+/**
+ * Finds a vendor by their name (used as vendorAddress in Part)
+ */
+export async function getVendorByAddress(vendorName: string) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    return users.find(u => u.role === 'vendor' && u.name === vendorName);
 }

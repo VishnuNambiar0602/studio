@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -5,11 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import type { Part } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { MapPin, ShoppingCart, Wrench } from "lucide-react";
+import { MapPin, ShoppingCart, CalendarPlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { holdPart } from "@/lib/actions";
 import { useState } from "react";
 import { useCart } from "@/context/cart-context";
+import { BookViewingDialog } from "./book-viewing-dialog";
+import Link from "next/link";
+import { getVendorMapUrl } from "@/lib/actions";
 
 interface ProductCardProps {
   part: Part;
@@ -18,26 +21,8 @@ interface ProductCardProps {
 export function ProductCard({ part }: ProductCardProps) {
   const { toast } = useToast();
   const { addToCart } = useCart();
-  const [isHolding, setIsHolding] = useState(false);
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
 
-  const handleHold = async () => {
-    setIsHolding(true);
-    const result = await holdPart(part.id);
-    if (result.success) {
-      toast({
-        title: "Part on Hold!",
-        description: result.message,
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request.",
-      });
-    }
-    setIsHolding(false);
-  };
-  
   const handleAddToCart = () => {
     addToCart(part);
     toast({
@@ -45,6 +30,15 @@ export function ProductCard({ part }: ProductCardProps) {
       description: `${part.name} has been added to your cart.`,
     });
   }
+
+  useState(() => {
+    const fetchMapUrl = async () => {
+      const url = await getVendorMapUrl(part.vendorAddress);
+      setMapUrl(url);
+    };
+    fetchMapUrl();
+  });
+
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 group">
@@ -64,23 +58,29 @@ export function ProductCard({ part }: ProductCardProps) {
       </CardHeader>
       <CardContent className="flex-grow space-y-4 p-6 pt-2">
         <div className="flex items-center text-sm text-muted-foreground">
-          <MapPin className="mr-2 h-4 w-4 shrink-0" />
-          <span className="truncate">{part.vendorAddress}</span>
+            {mapUrl ? (
+                <Link href={mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center hover:text-primary transition-colors">
+                    <MapPin className="mr-2 h-4 w-4 shrink-0" />
+                    <span className="truncate hover:underline">{part.vendorAddress}</span>
+                </Link>
+            ) : (
+                <>
+                    <MapPin className="mr-2 h-4 w-4 shrink-0" />
+                    <span className="truncate">{part.vendorAddress}</span>
+                </>
+            )}
         </div>
          <div className="text-3xl font-bold text-primary font-headline">${part.price.toFixed(2)}</div>
       </CardContent>
       <CardFooter className="grid grid-cols-2 gap-2 p-6 pt-0">
-        <Button variant="secondary" disabled={!part.inStock}>
-          <Wrench className="mr-2 h-4 w-4" /> Rent
-        </Button>
+        <BookViewingDialog part={part}>
+            <Button variant="secondary" className="w-full" disabled={!part.inStock}>
+              <CalendarPlus className="mr-2 h-4 w-4" /> Book a Viewing
+            </Button>
+        </BookViewingDialog>
         <Button onClick={handleAddToCart} disabled={!part.inStock}>
           <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
         </Button>
-        <form action={handleHold} className="col-span-2">
-            <Button variant="outline" className="w-full" disabled={!part.inStock || isHolding}>
-                {isHolding ? 'Holding...' : 'Hold (12hr)'}
-            </Button>
-        </form>
       </CardFooter>
     </Card>
   );

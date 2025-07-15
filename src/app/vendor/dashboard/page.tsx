@@ -1,4 +1,4 @@
-import { VendorHeader } from "@/components/vendor-header";
+
 import { VendorDashboardStats } from "@/components/vendor-dashboard-stats";
 import { VendorRevenueChart } from "@/components/vendor-revenue-chart";
 import { VendorRecentSales } from "@/components/vendor-recent-sales";
@@ -10,7 +10,6 @@ import { AddPartForm } from "@/components/add-part-form";
 export default function VendorDashboard() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <VendorHeader />
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="flex items-center">
             <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>

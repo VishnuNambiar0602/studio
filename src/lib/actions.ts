@@ -2,8 +2,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration, UserLogin } from "./types";
-import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts } from "./data";
+import type { Part, UserRegistration, UserLogin, Order, Booking } from "./types";
+import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getVendorByAddress } from "./data";
 import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword } from "./users";
 
 export async function holdPart(partId: string) {
@@ -166,4 +166,42 @@ export async function sendPasswordResetCode(email: string): Promise<{ success: b
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
     const result = await verifyAndResetPassword(data.email, data.code, data.newPassword);
     return result;
+}
+
+export async function getCustomerOrders(userId: string): Promise<Order[]> {
+    return getOrdersByUserId(userId);
+}
+
+export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number) {
+    // In a real app, you'd get the logged-in user's ID and name
+    const MOCK_USER = { id: 'user-123', name: 'John Doe' };
+    
+    const newBooking: Omit<Booking, 'id' | 'status'> = {
+        partId,
+        partName,
+        bookingDate,
+        userId: MOCK_USER.id,
+        userName: MOCK_USER.name,
+        cost,
+    };
+    await createBooking(newBooking);
+
+    revalidatePath('/vendor/tasks');
+    return { success: true, message: "Viewing booked successfully!" };
+}
+
+export async function getVendorBookings(): Promise<Booking[]> {
+    // In a real app, you'd filter bookings by the logged-in vendor's ID
+    return getBookings();
+}
+
+export async function completeBooking(bookingId: string) {
+    await updateBookingStatus(bookingId, 'Completed');
+    revalidatePath('/vendor/tasks');
+    return { success: true };
+}
+
+export async function getVendorMapUrl(vendorAddress: string): Promise<string | null> {
+    const vendor = await getVendorByAddress(vendorAddress);
+    return vendor?.googleMapsUrl || null;
 }

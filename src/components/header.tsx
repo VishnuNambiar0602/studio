@@ -1,6 +1,7 @@
+
 "use client";
 
-import { Car, LogOut, Settings, ShoppingCart, User } from "lucide-react";
+import { Car, LogOut, Settings, ShoppingCart, User, ListOrdered } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
@@ -9,15 +10,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import Image from "next/image";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
+import { useRouter } from "next/navigation";
 
 export function Header() {
   const { cart } = useCart();
   const { language, isLoggedIn, setIsLoggedIn } = useSettings();
   const t = getDictionary(language);
   const itemCount = cart.length;
+  const router = useRouter();
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    router.push('/');
   }
 
   return (
@@ -65,6 +69,9 @@ export function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t.header.myAccount}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                 <DropdownMenuItem asChild>
+                  <Link href="/my-orders"><ListOrdered className="mr-2 h-4 w-4" />My Orders</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings"><Settings className="mr-2 h-4 w-4" />{t.header.settings}</Link>
                 </DropdownMenuItem>

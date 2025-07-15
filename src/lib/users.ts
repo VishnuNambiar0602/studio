@@ -1,5 +1,4 @@
 
-
 import type { User } from './types';
 
 // This is a mock user database. In a real-world scenario, you would use a proper
@@ -7,13 +6,42 @@ import type { User } from './types';
 // to simulate persistence across requests during a single server session. It will
 // reset when the server restarts.
 
-const usersData: User[] = [];
+const usersData: User[] = [
+    {
+        id: 'vendor-1',
+        name: 'AutoParts Inc.',
+        email: 'contact@autopartsinc.com',
+        username: 'autopartsinc',
+        role: 'vendor',
+        password: 'password123',
+        googleMapsUrl: 'https://maps.app.goo.gl/example1'
+    },
+    {
+        id: 'vendor-2',
+        name: 'Global Auto Spares',
+        email: 'sales@globalauto.com',
+        username: 'globalauto',
+        role: 'vendor',
+        password: 'password123',
+        googleMapsUrl: 'https://maps.app.goo.gl/example2'
+    },
+    {
+        id: 'vendor-3',
+        name: 'Desert Off-Road Supply',
+        email: 'info@desertoffroad.com',
+        username: 'desertoffroad',
+        role: 'vendor',
+        password: 'password123',
+        googleMapsUrl: 'https://maps.app.goo.gl/example3'
+    },
+];
 
 if (!(global as any).users) {
   (global as any).users = usersData;
 }
 
 const db: { users: User[] } = global as any;
+export const users: User[] = db.users; // Export for access in other mock data files
 
 /**
  * Simulates adding a new user to the database.
