@@ -33,7 +33,13 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
     <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group">
       <CardHeader className="p-0">
         <div className="relative aspect-video w-full overflow-hidden">
-          <Image src={part.imageUrls[0]} alt={part.name} fill className="object-cover rounded-t-lg" data-ai-hint="car part" />
+          {part.imageUrls && part.imageUrls.length > 0 ? (
+            <Image src={part.imageUrls[0]} alt={part.name} fill className="object-cover rounded-t-lg" data-ai-hint="car part" />
+          ) : (
+            <div className="bg-muted h-full w-full flex items-center justify-center">
+                <span className="text-sm text-muted-foreground">No Image</span>
+            </div>
+          )}
           {!part.isVisibleForSale && (
              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <p className="text-white font-bold text-lg">SALE PAUSED</p>
