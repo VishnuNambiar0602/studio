@@ -3,7 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking } from "./types";
-import { addPart as dbAddPart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getVendorByAddress } from "./data";
+import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getVendorByAddress } from "./data";
 import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword } from "./users";
 
 export async function holdPart(partId: string) {
@@ -21,7 +21,7 @@ export async function holdPart(partId: string) {
 
 export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
     const newPartData = {
-        id: `part-${Date.now()}`,
+        id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         ...part,
         isVisibleForSale: true,
     };
@@ -36,6 +36,19 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
 
     return newPartData;
 }
+
+export async function updatePart(partId: string, partData: Part) {
+    await dbUpdatePart(partId, partData);
+
+    // Revalidate all relevant paths
+    revalidatePath(`/part/${partId}`);
+    revalidatePath("/vendor/inventory");
+    revalidatePath("/");
+    revalidatePath("/new-parts");
+    revalidatePath("/used-parts");
+    revalidatePath("/oem-parts");
+}
+
 
 export async function togglePartVisibility(partId: string) {
     await dbTogglePartVisibility(partId);

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
@@ -6,6 +7,7 @@ import type { Part } from "@/lib/types";
 interface PartContextType {
   parts: Part[];
   addPart: (part: Part) => void;
+  updatePartState: (partId: string, updatedPart: Part) => void;
   togglePartVisibility: (partId: string) => void;
 }
 
@@ -20,6 +22,12 @@ export function PartProvider({ children, initialParts }: { children: ReactNode, 
     setParts((prevParts) => [{...part, isVisibleForSale: true}, ...prevParts]);
   };
   
+  const updatePartState = (partId: string, updatedPart: Part) => {
+    setParts((prevParts) => 
+      prevParts.map((part) => (part.id === partId ? updatedPart : part))
+    );
+  };
+  
   // This is also optimistic.
   const togglePartVisibility = (partId: string) => {
     setParts((prevParts) =>
@@ -32,7 +40,7 @@ export function PartProvider({ children, initialParts }: { children: ReactNode, 
   };
 
   return (
-    <PartContext.Provider value={{ parts, addPart, togglePartVisibility }}>
+    <PartContext.Provider value={{ parts, addPart, updatePartState, togglePartVisibility }}>
       {children}
     </PartContext.Provider>
   );

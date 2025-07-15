@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import type { Part } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Eye, EyeOff, MapPin } from "lucide-react";
+import { Eye, EyeOff, MapPin, Pencil } from "lucide-react";
 import { useParts } from "@/context/part-context";
 import * as actions from "@/lib/actions";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "./ui/dialog";
+import { EditPartForm } from "./edit-part-form";
 
 interface VendorProductCardProps {
   part: Part;
@@ -18,6 +20,7 @@ interface VendorProductCardProps {
 export function VendorProductCard({ part }: VendorProductCardProps) {
   const { togglePartVisibility } = useParts();
   const [isPending, startTransition] = useTransition();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleToggleVisibility = () => {
     startTransition(async () => {
@@ -63,7 +66,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
         </div>
         <div className="text-3xl font-bold text-primary font-headline">${part.price.toFixed(2)}</div>
       </CardContent>
-      <CardFooter className="p-6 pt-0">
+      <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-2">
         <Button 
             variant={part.isVisibleForSale ? "outline" : "secondary"} 
             className="w-full"
@@ -71,8 +74,25 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
             disabled={!isInStock || isPending}
         >
           {part.isVisibleForSale ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-          {isPending ? 'Updating...' : part.isVisibleForSale ? "Hold Sales" : "Resume Sales"}
+          {isPending ? 'Updating...' : part.isVisibleForSale ? "Hold" : "Resume"}
         </Button>
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>Edit Part</DialogTitle>
+                <DialogDescription>
+                    Update the details for this part. Click save when you're done.
+                </DialogDescription>
+            </DialogHeader>
+            <EditPartForm part={part} onUpdate={() => setIsEditDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </CardFooter>
     </Card>
   );

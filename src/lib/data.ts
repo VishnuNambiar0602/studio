@@ -149,6 +149,19 @@ export async function addPart(part: Part): Promise<Part> {
 }
 
 /**
+ * Simulates updating an existing part in the database.
+ */
+export async function updatePart(partId: string, partData: Part): Promise<Part | undefined> {
+    await new Promise(resolve => setTimeout(resolve, 250));
+    const partIndex = db.parts.findIndex((p) => p.id === partId);
+    if (partIndex !== -1) {
+        db.parts[partIndex] = { ...db.parts[partIndex], ...partData };
+        return db.parts[partIndex];
+    }
+    return undefined;
+}
+
+/**
  * Simulates toggling the visibility of a part in the database.
  */
 export async function togglePartVisibility(partId: string): Promise<Part | undefined> {
