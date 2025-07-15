@@ -34,7 +34,7 @@ export default async function RootLayout({
   const initialParts = await getParts();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning dir="ltr">
       <body className={`${fontBody.variable} ${fontHeadline.variable} font-body`}>
         <SettingsProvider>
           <PartProvider initialParts={initialParts}>

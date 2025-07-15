@@ -7,15 +7,18 @@ import { useCart } from "@/context/cart-context";
 import { Badge } from "./ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import Image from "next/image";
-import { useState } from "react";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 export function Header() {
   const { cart } = useCart();
+  const { language, isLoggedIn, setIsLoggedIn } = useSettings();
+  const t = getDictionary(language);
   const itemCount = cart.length;
-  
-  // This is a simulation of a logged-in state.
-  // In a real app, this would come from an auth context.
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -23,14 +26,14 @@ export function Header() {
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <Car className="h-8 w-8 text-primary" />
           <span className="hidden font-bold sm:inline-block font-headline text-2xl">
-            GulfCarX
+            {t.header.brand}
           </span>
         </Link>
         <div className="flex flex-1 items-center justify-end space-x-2">
-           <Button variant="ghost" asChild><Link href="/new-parts">New Parts</Link></Button>
-           <Button variant="ghost" asChild><Link href="/used-parts">Used Parts</Link></Button>
-           <Button variant="ghost" asChild><Link href="/oem-parts">OEM</Link></Button>
-          <Button asChild variant="outline" size="icon" aria-label="Shopping Cart" className="relative">
+           <Button variant="ghost" asChild><Link href="/new-parts">{t.header.newParts}</Link></Button>
+           <Button variant="ghost" asChild><Link href="/used-parts">{t.header.usedParts}</Link></Button>
+           <Button variant="ghost" asChild><Link href="/oem-parts">{t.header.oemParts}</Link></Button>
+          <Button asChild variant="outline" size="icon" aria-label={t.header.cart} className="relative">
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
               {itemCount > 0 && (
@@ -60,15 +63,15 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{t.header.myAccount}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/settings"><Settings className="mr-2 h-4 w-4" />Settings</Link>
+                  <Link href="/settings"><Settings className="mr-2 h-4 w-4" />{t.header.settings}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  {t.header.logout}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -76,7 +79,7 @@ export function Header() {
              <Button asChild>
               <Link href="/auth">
                   <User className="mr-2 h-4 w-4" />
-                  Sign Up / Login
+                  {t.header.login}
               </Link>
             </Button>
           )}

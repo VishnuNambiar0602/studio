@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useSettings } from "@/context/settings-context";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -25,6 +26,7 @@ export function AuthForm({ userType }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const { setIsLoggedIn } = useSettings();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,6 +42,8 @@ export function AuthForm({ userType }: AuthFormProps) {
     console.log(`Simulating ${userType} sign up with:`, values);
     
     await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    setIsLoggedIn(true);
 
     toast({
         title: "Account Created!",

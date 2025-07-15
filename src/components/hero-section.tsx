@@ -1,0 +1,30 @@
+"use client";
+
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
+import Image from "next/image";
+
+export function HeroSection() {
+    const { language } = useSettings();
+    const t = getDictionary(language);
+
+    return (
+        <section className="relative w-full h-[60vh] flex items-center justify-center text-center">
+            <Image 
+              src="https://placehold.co/1920x1080.png" 
+              alt={t.hero.alt} 
+              fill 
+              className="object-cover"
+              priority
+              data-ai-hint="desert illustration"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/70" />
+            <div className="relative z-10 p-4 text-white">
+                <h1 className="text-4xl md:text-6xl font-bold font-headline drop-shadow-lg">{t.hero.title}</h1>
+                <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md">
+                    {t.hero.subtitle}
+                </p>
+            </div>
+        </section>
+    )
+}

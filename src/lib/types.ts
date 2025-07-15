@@ -9,3 +9,6 @@ export type Part = {
   isVisibleForSale?: boolean;
   category: 'new' | 'used' | 'oem';
 };
+
+export type FontSize = 'sm' | 'md' | 'lg';
+export type Language = 'en' | 'ar';

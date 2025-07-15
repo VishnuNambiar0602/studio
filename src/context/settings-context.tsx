@@ -1,18 +1,23 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-
-type FontSize = 'sm' | 'md' | 'lg';
+import type { FontSize, Language } from "@/lib/types";
 
 interface SettingsContextType {
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  isLoggedIn: boolean;
+  setIsLoggedIn: (loggedIn: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSize] = useState<FontSize>('md');
+  const [language, setLanguage] = useState<Language>('en');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -20,9 +25,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     root.classList.add(`font-${fontSize}`);
   }, [fontSize]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.lang = language;
+    root.dir = language === 'ar' ? 'rtl' : 'ltr';
+  }, [language]);
+
 
   return (
-    <SettingsContext.Provider value={{ fontSize, setFontSize }}>
+    <SettingsContext.Provider value={{ 
+      fontSize, setFontSize,
+      language, setLanguage,
+      isLoggedIn, setIsLoggedIn
+    }}>
       {children}
     </SettingsContext.Provider>
   );
