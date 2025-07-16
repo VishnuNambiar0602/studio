@@ -8,14 +8,6 @@ import type { User } from './types';
 
 const usersData: User[] = [
     {
-        id: 'admin-1',
-        name: 'Admin User',
-        email: 'admin@deserdrivedepot.com',
-        username: 'admin',
-        role: 'admin',
-        password: 'password123',
-    },
-    {
         id: 'vendor-1',
         name: 'AutoParts Inc.',
         email: 'contact@autopartsinc.com',

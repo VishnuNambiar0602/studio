@@ -4,14 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuthForm } from "./_components/auth-form";
 import { LoginForm } from "./_components/login-form";
-import { Shield } from "lucide-react";
 
 export default function AuthPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
       <main className="flex-1 flex items-center justify-center py-16 lg:py-24">
-        <Tabs defaultValue="login" className="w-full max-w-2xl mx-auto">
+        <Tabs defaultValue="login" className="w-full max-w-lg mx-auto">
            <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -25,21 +24,14 @@ export default function AuthPage() {
               </CardHeader>
               <CardContent>
                  <Tabs defaultValue="customer-login" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="customer-login">Customer</TabsTrigger>
                         <TabsTrigger value="vendor-login">Vendor</TabsTrigger>
-                        <TabsTrigger value="admin-login">
-                          <Shield className="mr-2 h-4 w-4" />
-                          Admin
-                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="customer-login" className="pt-4">
                         <LoginForm />
                     </TabsContent>
                     <TabsContent value="vendor-login" className="pt-4">
-                        <LoginForm />
-                    </TabsContent>
-                    <TabsContent value="admin-login" className="pt-4">
                         <LoginForm />
                     </TabsContent>
                  </Tabs>
