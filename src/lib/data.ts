@@ -1,5 +1,6 @@
 
-import type { Part, Order, Booking, User } from './types';
+
+import type { Part, Order, Booking, User, OrderStatus } from './types';
 import { users } from './users'; // We need user data for some functions
 
 // This is a mock database. In a real-world scenario, you would use a proper database
@@ -98,8 +99,9 @@ const partsData: Part[] = [
 ];
 
 const ordersData: Order[] = [
-    { id: 'order-1', userId: 'user-123', items: [partsData[0]], total: 899.99, status: 'Delivered', orderDate: new Date('2024-05-20') },
-    { id: 'order-2', userId: 'user-123', items: [partsData[4], partsData[6]], total: 166.74, status: 'Processing', orderDate: new Date('2024-05-28') },
+    { id: 'order-1', userId: 'user-123', items: [partsData[0]], total: 899.99, status: 'Delivered', orderDate: new Date('2024-05-20'), deliveryDate: new Date('2024-05-24'), cancelable: false },
+    { id: 'order-2', userId: 'user-123', items: [partsData[4], partsData[6]], total: 166.74, status: 'Processing', orderDate: new Date('2024-05-28'), cancelable: true },
+    { id: 'order-3', userId: 'user-123', items: [partsData[1]], total: 349.50, status: 'Shipped', orderDate: new Date('2024-05-29'), cancelable: false },
 ];
 
 const bookingsData: Booking[] = [
@@ -178,7 +180,23 @@ export async function togglePartVisibility(partId: string): Promise<Part | undef
  */
 export async function getOrdersByUserId(userId: string): Promise<Order[]> {
     await new Promise(resolve => setTimeout(resolve, 200));
-    return db.orders.filter(order => order.userId === userId);
+    return db.orders.filter(order => order.userId === userId).sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
+}
+
+/**
+ * Simulates updating an order's status.
+ */
+export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order | undefined> {
+    await new Promise(resolve => setTimeout(resolve, 150));
+    const order = db.orders.find(o => o.id === orderId);
+    if (order) {
+        order.status = status;
+        if (status === 'Cancelled') {
+            order.cancelable = false;
+        }
+        return order;
+    }
+    return undefined;
 }
 
 

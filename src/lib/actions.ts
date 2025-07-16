@@ -3,7 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User } from "./types";
-import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus } from "./data";
+import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, updateOrderStatus } from "./data";
 import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword, getAllUsers as dbGetAllUsers } from "./users";
 import { z } from "zod";
 
@@ -188,6 +188,15 @@ export async function resetPasswordWithCode(data: { email: string; code: string;
 
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
     return getOrdersByUserId(userId);
+}
+
+export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
+    const updatedOrder = await updateOrderStatus(orderId, 'Cancelled');
+    if (updatedOrder) {
+        revalidatePath('/my-orders');
+        return { success: true, message: 'Order has been cancelled.' };
+    }
+    return { success: false, message: 'Could not cancel the order.' };
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number) {

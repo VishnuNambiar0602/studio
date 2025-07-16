@@ -53,6 +53,8 @@ export interface Order {
   total: number;
   status: OrderStatus;
   orderDate: Date;
+  deliveryDate?: Date;
+  cancelable: boolean;
 }
 
 export interface Booking {
