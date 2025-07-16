@@ -28,9 +28,10 @@ export default async function RootLayout({
   const initialParts = await getParts();
 
   return (
-    <html lang="en" suppressHydrationWarning dir="ltr" className={fontSans.variable}>
+    <html lang="en" dir="ltr" className={fontSans.variable}>
       <body
         className={cn('min-h-screen bg-background font-sans antialiased')}
+        suppressHydrationWarning={true}
       >
         <SettingsProvider>
           <PartProvider initialParts={initialParts}>
