@@ -1,27 +1,21 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { Noto_Serif as FontHeadline, Plus_Jakarta_Sans as FontBody } from 'next/font/google';
+import { Inter as FontSans } from 'next/font/google';
 import { CartProvider } from '@/context/cart-context';
 import { PartProvider } from '@/context/part-context';
 import { getParts } from '@/lib/actions';
 import { SettingsProvider } from '@/context/settings-context';
+import { cn } from '@/lib/utils';
 
-
-const fontBody = FontBody({
+const fontSans = FontSans({
   subsets: ['latin'],
-  variable: '--font-body',
+  variable: '--font-sans',
 });
-
-const fontHeadline = FontHeadline({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-headline',
-});
-
 
 export const metadata: Metadata = {
-  title: 'GulfCarX',
+  title: 'Desert Drive Depot',
   description: 'AI-powered automotive parts platform for used, OEM, and new parts.',
 };
 
@@ -34,8 +28,10 @@ export default async function RootLayout({
   const initialParts = await getParts();
 
   return (
-    <html lang="en" suppressHydrationWarning dir="ltr">
-      <body className={`${fontBody.variable} ${fontHeadline.variable} font-body`}>
+    <html lang="en" suppressHydrationWarning dir="ltr" className={fontSans.variable}>
+      <body
+        className={cn('min-h-screen bg-background font-sans antialiased')}
+      >
         <SettingsProvider>
           <PartProvider initialParts={initialParts}>
             <CartProvider>

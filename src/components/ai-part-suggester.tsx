@@ -150,7 +150,7 @@ export function AiPartSuggester() {
     <Card className="w-full max-w-2xl mx-auto shadow-none border-none bg-transparent md:bg-card md:border-solid md:shadow-lg md:border">
       <CardHeader className="text-center p-8">
         <Bot className="mx-auto h-12 w-12 text-primary" />
-        <CardTitle className="text-3xl font-bold font-headline mt-4">The Genie</CardTitle>
+        <CardTitle className="text-3xl font-bold mt-4">The Genie</CardTitle>
         <CardDescription className="text-md text-muted-foreground mt-2">
           Describe the part you need, upload an image, or use your voice. Our AI will find the perfect match.
         </CardDescription>
@@ -248,9 +248,9 @@ export function AiPartSuggester() {
         {result && (
           <div className="mt-8">
             <Alert>
-              <AlertTitle className="font-headline">Suggested Parts</AlertTitle>
+              <AlertTitle>Suggested Parts</AlertTitle>
               <AlertDescription>
-                <pre className="whitespace-pre-wrap font-body text-sm">{result}</pre>
+                <pre className="whitespace-pre-wrap font-sans text-sm">{result}</pre>
               </AlertDescription>
             </Alert>
           </div>

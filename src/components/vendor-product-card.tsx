@@ -51,7 +51,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
         </div>
         <div className="p-6 pb-2">
           <div className="flex justify-between items-start">
-            <CardTitle className="pr-2 font-headline text-lg">{part.name}</CardTitle>
+            <CardTitle className="pr-2 text-lg">{part.name}</CardTitle>
              <Badge variant={isInStock ? "secondary" : "destructive"} className="shrink-0 mt-1">
               {isInStock ? `${part.quantity} in Stock` : "Out of Stock"}
             </Badge>
@@ -64,7 +64,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
           <MapPin className="mr-2 h-4 w-4 shrink-0" />
           <span className="truncate">{part.vendorAddress}</span>
         </div>
-        <div className="text-3xl font-bold text-primary font-headline">${part.price.toFixed(2)}</div>
+        <div className="text-3xl font-bold text-primary">${part.price.toFixed(2)}</div>
       </CardContent>
       <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-2">
         <Button 

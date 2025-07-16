@@ -1,28 +1,29 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 25 50% 98%; /* Light Sand */
-    --foreground: 25 20% 15%; /* Dark Brown */
-    --card: 30 50% 96%; /* Lighter Sand */
+    --background: 43 33% 96%; /* Beige */
+    --foreground: 25 20% 15%;
+    --card: 43 33% 96%;
     --card-foreground: 25 20% 15%;
-    --popover: 30 50% 96%;
+    --popover: 43 33% 96%;
     --popover-foreground: 25 20% 15%;
-    --primary: 25 80% 55%; /* Rich Gold/Ochre */
+    --primary: 25 43% 84%; /* Sandstone */
     --primary-foreground: 25 20% 10%;
-    --secondary: 30 30% 90%; /* Light Grayish Sand */
+    --secondary: 30 30% 90%;
     --secondary-foreground: 25 20% 25%;
-    --muted: 30 30% 94%; /* Very Light Grayish Sand */
+    --muted: 30 30% 94%;
     --muted-foreground: 25 20% 45%;
-    --accent: 30 80% 70%; /* Soft Terracotta/Accent */
-    --accent-foreground: 25 20% 15%;
+    --accent: 18 71% 50%; /* Burnt Orange */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 30 30% 88%;
     --input: 30 30% 92%;
-    --ring: 25 80% 55%;
+    --ring: 18 71% 50%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -38,26 +39,27 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
-    --background: 25 10% 10%; /* Deep Night Blue/Brown */
-    --foreground: 30 30% 92%; /* Light Sand Text */
-    --card: 25 10% 15%; /* Darker card background */
+    --background: 25 10% 10%;
+    --foreground: 30 30% 92%;
+    --card: 25 10% 15%;
     --card-foreground: 30 30% 92%;
     --popover: 25 10% 15%;
     --popover-foreground: 30 30% 92%;
-    --primary: 35 85% 65%; /* Bright Gold */
+    --primary: 25 43% 84%; /* Sandstone */
     --primary-foreground: 25 15% 10%;
     --secondary: 25 10% 20%;
     --secondary-foreground: 30 30% 92%;
     --muted: 25 10% 20%;
     --muted-foreground: 30 30% 65%;
-    --accent: 35 85% 65%;
-    --accent-foreground: 25 15% 10%;
+    --accent: 18 71% 50%; /* Burnt Orange */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 25 10% 25%;
     --input: 25 10% 25%;
-    --ring: 35 85% 65%;
+    --ring: 18 71% 50%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -82,15 +84,5 @@
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-  
-  .font-sm {
-    font-size: 0.875rem; /* 14px */
-  }
-  .font-md {
-    font-size: 1rem; /* 16px */
-  }
-  .font-lg {
-    font-size: 1.125rem; /* 18px */
   }
 }

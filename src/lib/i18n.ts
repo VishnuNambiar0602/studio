@@ -1,9 +1,10 @@
+
 import type { Language } from './types';
 
 const dictionaries = {
   en: {
     header: {
-      brand: 'GulfCarX',
+      brand: 'Desert Drive Depot',
       newParts: 'New Parts',
       usedParts: 'Used Parts',
       oemParts: 'OEM',
@@ -16,12 +17,12 @@ const dictionaries = {
     hero: {
       title: 'The Future of Auto Parts, Realized',
       subtitle: 'Your AI-powered platform for high-quality used, OEM, and new car parts across the Sultanate.',
-      alt: 'Desert landscape with ancient ruins and a modern car'
+      alt: 'Desert landscape with a modern car'
     },
   },
   ar: {
     header: {
-      brand: 'جلف كار إكس',
+      brand: 'ديزرت درايف ديبو',
       newParts: 'قطع غيار جديدة',
       usedParts: 'قطع غيار مستعملة',
       oemParts: 'قطع غيار أصلية',
@@ -34,7 +35,7 @@ const dictionaries = {
     hero: {
       title: 'مستقبل قطع غيار السيارات، أصبح حقيقة',
       subtitle: 'منصتك المدعومة بالذكاء الاصطناعي لقطع غيار السيارات المستعملة والجديدة والأصلية عالية الجودة في جميع أنحاء السلطنة.',
-      alt: 'منظر طبيعي صحراوي به أطلال قديمة وسيارة حديثة'
+      alt: 'منظر طبيعي صحراوي به سيارة حديثة'
     },
   },
 };

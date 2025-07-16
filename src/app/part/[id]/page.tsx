@@ -55,7 +55,7 @@ export default async function PartDetailPage({ params }: { params: { id: string 
             <div className="space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-4">
-                  <h1 className="text-3xl md:text-4xl font-bold font-headline">{part.name}</h1>
+                  <h1 className="text-3xl md:text-4xl font-bold">{part.name}</h1>
                   <Badge variant={isInStock ? "secondary" : "destructive"} className="shrink-0">
                     {isInStock ? "In Stock" : "Out of Stock"}
                   </Badge>
@@ -79,7 +79,7 @@ export default async function PartDetailPage({ params }: { params: { id: string 
                 )}
               </div>
 
-               <div className="text-5xl font-bold text-primary font-headline">${part.price.toFixed(2)}</div>
+               <div className="text-5xl font-bold text-primary">${part.price.toFixed(2)}</div>
 
               <Separator />
 

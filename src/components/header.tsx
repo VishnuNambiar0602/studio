@@ -29,7 +29,7 @@ export function Header() {
       <div className="container flex h-20 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <Car className="h-8 w-8 text-primary" />
-          <span className="hidden font-bold sm:inline-block font-headline text-2xl">
+          <span className="hidden font-bold sm:inline-block text-xl">
             {t.header.brand}
           </span>
         </Link>
