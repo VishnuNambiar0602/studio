@@ -2,33 +2,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User } from "./types";
-import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, updateOrderStatus } from "./data";
-import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword, getAllUsers as dbGetAllUsers } from "./users";
+import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, OrderStatus } from "./types";
+import { db } from "./db";
+import { users as usersSchema, parts as partsSchema, orders as ordersSchema, bookings as bookingsSchema } from "./schema";
+import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 
-export async function holdPart(partId: string) {
-  // In a real app, you'd update the database and send an email.
-  // Here, we'll just simulate the action.
-  console.log(`Part ${partId} has been put on hold for 12 hours.`);
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network latency
-  
-  // This is where you would integrate with an email service
-  // like SendGrid, Resend, etc.
-  console.log(`Simulating email notification to vendor for part ${partId}.`);
-  
-  return { success: true, message: "Part has been successfully put on hold for 12 hours." };
-}
+// We no longer need these mock data imports
+// import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId as dbGetOrders, createBooking as dbCreateBooking, getBookings as dbGetBookings, updateBookingStatus as dbUpdateBooking, updateOrderStatus as dbUpdateOrder } from "./data";
+// import { addUser as mockAddUser, findUserByEmail as mockFindUser, findUserByUsername as mockFindUsername, storeVerificationCode as mockStoreCode, verifyAndResetPassword as mockResetPassword, getAllUsers as mockGetAllUsers } from "./users";
+
+
+// --- PART ACTIONS ---
 
 export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
-    const newPartData = {
+    const newPartData: Part = {
         id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         ...part,
         isVisibleForSale: true,
     };
-    await dbAddPart(newPartData);
+    await db.insert(partsSchema).values(newPartData);
     
-    // Revalidate paths to show the new part immediately
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
     revalidatePath("/new-parts");
@@ -39,9 +33,8 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
 }
 
 export async function updatePart(partId: string, partData: Part) {
-    await dbUpdatePart(partId, partData);
+    await db.update(partsSchema).set(partData).where(eq(partsSchema.id, partId));
 
-    // Revalidate all relevant paths
     revalidatePath(`/part/${partId}`);
     revalidatePath("/vendor/inventory");
     revalidatePath("/");
@@ -52,9 +45,15 @@ export async function updatePart(partId: string, partData: Part) {
 
 
 export async function togglePartVisibility(partId: string) {
-    await dbTogglePartVisibility(partId);
+    // First, get the current visibility state
+    const part = await db.query.parts.findFirst({ where: eq(partsSchema.id, partId), columns: { isVisibleForSale: true } });
+    if (!part) return;
+    
+    // Toggle the visibility
+    await db.update(partsSchema)
+        .set({ isVisibleForSale: !part.isVisibleForSale })
+        .where(eq(partsSchema.id, partId));
 
-    // Revalidate paths to update visibility immediately
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
     revalidatePath("/new-parts");
@@ -62,32 +61,31 @@ export async function togglePartVisibility(partId: string) {
     revalidatePath("/oem-parts");
 }
 
-export async function getParts() {
-    return await dbGetParts();
+export async function getParts(): Promise<Part[]> {
+    return await db.query.parts.findMany();
 }
+
+export async function getPart(id: string): Promise<Part | undefined> {
+    return await db.query.parts.findFirst({ where: eq(partsSchema.id, id) });
+}
+
+
+// --- USER ACTIONS ---
 
 export async function getAllUsers(): Promise<PublicUser[]> {
-    const users = await dbGetAllUsers();
-    // Ensure we don't send sensitive info to the client
+    const users = await db.query.users.findMany();
     return users.map(({ password, verificationCode, verificationCodeExpires, ...publicUser }) => publicUser);
-}
-
-
-export async function getPart(id: string) {
-    return await dbGetPartById(id);
 }
 
 export async function registerUser(userData: UserRegistration) {
     const { email, username } = userData;
 
-    // Check if email is already in use
-    const existingEmail = await findUserByEmail(email);
+    const existingEmail = await db.query.users.findFirst({ where: eq(usersSchema.email, email) });
     if (existingEmail) {
         return { success: false, message: "An account with this email already exists." };
     }
 
-    // Check if username is already taken
-    const existingUsername = await findUserByUsername(username);
+    const existingUsername = await db.query.users.findFirst({ where: eq(usersSchema.username, username) });
     if (existingUsername) {
         return { success: false, message: "This usernametag is already taken. Please choose another." };
     }
@@ -97,9 +95,10 @@ export async function registerUser(userData: UserRegistration) {
         id: `user-${Date.now()}`,
     };
 
-    const newUser = await addUser(newUserPayload);
+    // In a real app, hash the password here with bcrypt
+    // For now, we'll keep it as plain text
+    const [newUser] = await db.insert(usersSchema).values(newUserPayload).returning();
     
-    // Don't send the password (or other sensitive data) back to the client
     const { password: _, verificationCode, verificationCodeExpires, ...publicUser } = newUser;
 
     console.log(`
@@ -117,113 +116,122 @@ export async function registerUser(userData: UserRegistration) {
       ---------------------------------
     `);
 
-
     return { success: true, user: publicUser, message: "User registered successfully." };
 }
 
 export async function loginUser(credentials: UserLogin) {
     const { identifier, password } = credentials;
-
     const isEmail = z.string().email().safeParse(identifier).success;
 
-    let user: User | undefined;
-
-    if (isEmail) {
-        user = await findUserByEmail(identifier);
-    } else {
-        user = await findUserByUsername(identifier);
-    }
+    const user = isEmail
+        ? await db.query.users.findFirst({ where: eq(usersSchema.email, identifier) })
+        : await db.query.users.findFirst({ where: eq(usersSchema.username, identifier) });
 
     if (!user) {
         return { success: false, message: "Invalid credentials." };
     }
 
-    // In a real app, you would use a secure password hashing and comparison library like bcrypt.
     const isPasswordCorrect = user.password === password;
 
     if (!isPasswordCorrect) {
         return { success: false, message: "Invalid credentials." };
     }
 
-    // Don't send the password back to the client
     const { password: _, verificationCode, verificationCodeExpires, ...userWithoutPassword } = user;
-
     return { success: true, user: userWithoutPassword };
 }
 
-
 export async function sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
-    const user = await findUserByEmail(email);
+    const user = await db.query.users.findFirst({ where: eq(usersSchema.email, email) });
     if (!user) {
         return { success: false, message: "No account found with that email address." };
     }
 
-    const code = await storeVerificationCode(email);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(new Date().getTime() + 10 * 60 * 1000);
 
-    // In a real app, this is where you'd use an email service (e.g., SendGrid, Resend)
-    // For now, we return the code to be displayed in a popup for simulation.
-    console.log(`
-        --- SIMULATING PASSWORD RESET EMAIL ---
-        To: ${email}
-        Subject: Your Password Reset Code
-        
-        Your verification code is: ${code}
-        It will expire in 10 minutes.
-
-        Your username is: ${user.username}
-        
-        Best,
-        The Desert Drive Depot Team
-        ---------------------------------
-    `);
+    await db.update(usersSchema)
+        .set({ verificationCode: code, verificationCodeExpires: expires })
+        .where(eq(usersSchema.email, email));
+    
+    console.log(`Password reset code for ${email} is ${code}`);
 
     return { success: true, message: "Verification code sent.", code, username: user.username };
 }
 
-
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
-    const result = await verifyAndResetPassword(data.email, data.code, data.newPassword);
-    return result;
+    const user = await db.query.users.findFirst({ where: eq(usersSchema.email, data.email) });
+    if (!user) {
+        return { success: false, message: "Invalid request." };
+    }
+
+    if (user.verificationCode !== data.code) {
+        return { success: false, message: "Invalid verification code." };
+    }
+
+    if (!user.verificationCodeExpires || new Date() > user.verificationCodeExpires) {
+        return { success: false, message: "Verification code has expired. Please request a new one." };
+    }
+
+    await db.update(usersSchema)
+        .set({ 
+            password: data.newPassword, 
+            verificationCode: null, 
+            verificationCodeExpires: null 
+        })
+        .where(eq(usersSchema.email, data.email));
+
+    return { success: true, message: "Password has been reset successfully." };
 }
 
+
+// --- ORDER & BOOKING ACTIONS ---
+
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
-    return getOrdersByUserId(userId);
+    return await db.query.orders.findMany({ where: eq(ordersSchema.userId, userId) });
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
-    const updatedOrder = await updateOrderStatus(orderId, 'Cancelled');
-    if (updatedOrder) {
+    try {
+        await db.update(ordersSchema)
+            .set({ status: 'Cancelled', cancelable: false })
+            .where(eq(ordersSchema.id, orderId));
         revalidatePath('/my-orders');
         return { success: true, message: 'Order has been cancelled.' };
+    } catch (e) {
+        return { success: false, message: 'Could not cancel the order.' };
     }
-    return { success: false, message: 'Could not cancel the order.' };
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number) {
-    // In a real app, you'd get the logged-in user's ID and name
     const MOCK_USER = { id: 'user-123', name: 'John Doe' };
     
-    const newBooking: Omit<Booking, 'id' | 'status'> = {
+    const newBooking = {
+        id: `booking-${Date.now()}`,
         partId,
         partName,
         bookingDate,
         userId: MOCK_USER.id,
         userName: MOCK_USER.name,
         cost,
+        status: 'Pending' as 'Pending' | 'Completed'
     };
-    await createBooking(newBooking);
+
+    await db.insert(bookingsSchema).values(newBooking);
 
     revalidatePath('/vendor/tasks');
     return { success: true, message: "Viewing booked successfully!" };
 }
 
 export async function getVendorBookings(): Promise<Booking[]> {
-    // In a real app, you'd filter bookings by the logged-in vendor's ID
-    return getBookings();
+    return db.query.bookings.findMany();
 }
 
 export async function completeBooking(bookingId: string) {
-    await updateBookingStatus(bookingId, 'Completed');
+    await db.update(bookingsSchema)
+        .set({ status: 'Completed' })
+        .where(eq(bookingsSchema.id, bookingId));
+        
     revalidatePath('/vendor/tasks');
     return { success: true };
 }
