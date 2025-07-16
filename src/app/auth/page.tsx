@@ -22,19 +22,8 @@ export default function AuthPage() {
                 <CardTitle>Welcome Back</CardTitle>
                 <CardDescription>Enter your credentials to access your account.</CardDescription>
               </CardHeader>
-              <CardContent>
-                 <Tabs defaultValue="customer-login" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="customer-login">Customer</TabsTrigger>
-                        <TabsTrigger value="vendor-login">Vendor</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="customer-login" className="pt-4">
-                        <LoginForm />
-                    </TabsContent>
-                    <TabsContent value="vendor-login" className="pt-4">
-                        <LoginForm />
-                    </TabsContent>
-                 </Tabs>
+              <CardContent className="pt-4">
+                 <LoginForm />
               </CardContent>
             </Card>
           </TabsContent>

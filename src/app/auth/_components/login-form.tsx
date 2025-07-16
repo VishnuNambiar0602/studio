@@ -60,6 +60,7 @@ export function LoginForm() {
       
       form.reset();
 
+      // Correctly redirect based on user role
       if (result.user.role === 'admin') {
         router.push('/admin/dashboard');
       } else if (result.user.role === 'vendor') {
@@ -117,7 +118,7 @@ export function LoginForm() {
               </FormItem>
             )}
           />
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-end">
             <ForgotPasswordDialog />
           </div>
           <Button type="submit" disabled={loading} className="w-full">

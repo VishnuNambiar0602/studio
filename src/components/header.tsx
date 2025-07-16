@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Car, LogOut, Settings, ShoppingCart, User, ListOrdered } from "lucide-react";
+import { Car, LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 
 export function Header() {
   const { cart } = useCart();
-  const { language, isLoggedIn, logoutUser } = useSettings();
+  const { language, isLoggedIn, loggedInUser, logoutUser } = useSettings();
   const t = getDictionary(language);
   const itemCount = cart.length;
   const router = useRouter();
@@ -22,6 +22,15 @@ export function Header() {
   const handleLogout = () => {
     logoutUser();
     router.push('/');
+  }
+
+  const getDashboardLink = () => {
+    if (!loggedInUser) return "/";
+    switch (loggedInUser.role) {
+      case 'admin': return "/admin/dashboard";
+      case 'vendor': return "/vendor/dashboard";
+      default: return "/my-orders";
+    }
   }
 
   return (
@@ -48,7 +57,7 @@ export function Header() {
             </Link>
           </Button>
 
-          {isLoggedIn ? (
+          {isLoggedIn && loggedInUser ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -69,6 +78,11 @@ export function Header() {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>{t.header.myAccount}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {(loggedInUser.role === 'admin' || loggedInUser.role === 'vendor') && (
+                  <DropdownMenuItem asChild>
+                    <Link href={getDashboardLink()}><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
                  <DropdownMenuItem asChild>
                   <Link href="/my-orders"><ListOrdered className="mr-2 h-4 w-4" />My Orders</Link>
                 </DropdownMenuItem>
