@@ -38,7 +38,10 @@ export type PublicUser = Omit<User, 'password' | 'verificationCode' | 'verificat
 
 export type UserRegistration = Omit<User, 'id'>;
 
-export type UserLogin = Pick<User, 'username' | 'password'>;
+export type UserLogin = {
+  identifier: string; // Can be email or username
+  password?: string;
+}
 
 
 export type OrderStatus = 'Placed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';

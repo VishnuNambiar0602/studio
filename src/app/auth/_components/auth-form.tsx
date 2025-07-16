@@ -18,7 +18,7 @@ const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
-  username: z.string().optional(),
+  username: z.string().min(3, { message: "Usernametag must be at least 3 characters." }),
   shopAddress: z.string().optional(),
   zipCode: z.string().optional(),
 });
@@ -116,12 +116,12 @@ export function AuthForm({ userType }: AuthFormProps) {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Usernametag (Optional)</FormLabel>
+              <FormLabel>Usernametag</FormLabel>
               <FormControl>
                 <Input placeholder="e.g., CarEnthusiast21" {...field} />
               </FormControl>
                <FormDescription>
-                This is your unique identifier on the platform. If left blank, one will be generated for you.
+                This will be your unique identifier on the platform.
               </FormDescription>
               <FormMessage />
             </FormItem>

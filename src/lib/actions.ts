@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User } from "./types";
 import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus } from "./data";
 import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword, getAllUsers as dbGetAllUsers } from "./users";
+import { z } from "zod";
 
 export async function holdPart(partId: string) {
   // In a real app, you'd update the database and send an email.
@@ -77,7 +78,7 @@ export async function getPart(id: string) {
 }
 
 export async function registerUser(userData: UserRegistration) {
-    const { email, username, name } = userData;
+    const { email, username } = userData;
 
     // Check if email is already in use
     const existingEmail = await findUserByEmail(email);
@@ -85,42 +86,14 @@ export async function registerUser(userData: UserRegistration) {
         return { success: false, message: "An account with this email already exists." };
     }
 
-    let finalUsername = username;
-
-    if (finalUsername) {
-        // If user provided a username, check if it's taken
-        const existingUsername = await findUserByUsername(finalUsername);
-        if (existingUsername) {
-            return { success: false, message: "This usernametag is already taken. Please choose another." };
-        }
-    } else {
-        // If no username provided, generate one
-        let isUnique = false;
-        let attempt = 0;
-        let baseUsername = name.replace(/\s+/g, '').toLowerCase();
-        if (baseUsername.length < 3) baseUsername = `user${baseUsername}`;
-        
-        while(!isUnique) {
-            const potentialUsername = attempt === 0 ? baseUsername : `${baseUsername}${Math.floor(Math.random() * 1000)}`;
-            const existingUsername = await findUserByUsername(potentialUsername);
-            if (!existingUsername) {
-                finalUsername = potentialUsername;
-                isUnique = true;
-            }
-            attempt++;
-            if (attempt > 20) { // Safety break to prevent infinite loops
-                return { success: false, message: "Could not generate a unique username. Please try again or provide a custom one."};
-            }
-        }
+    // Check if username is already taken
+    const existingUsername = await findUserByUsername(username);
+    if (existingUsername) {
+        return { success: false, message: "This usernametag is already taken. Please choose another." };
     }
     
-    if (!finalUsername) {
-        return { success: false, message: "Could not determine a username for the new account."};
-    }
-
     const newUserPayload: User = {
         ...userData,
-        username: finalUsername,
         id: `user-${Date.now()}`,
     };
 
@@ -149,19 +122,27 @@ export async function registerUser(userData: UserRegistration) {
 }
 
 export async function loginUser(credentials: UserLogin) {
-    const { username, password } = credentials;
+    const { identifier, password } = credentials;
 
-    const user = await findUserByUsername(username);
+    const isEmail = z.string().email().safeParse(identifier).success;
+
+    let user: User | undefined;
+
+    if (isEmail) {
+        user = await findUserByEmail(identifier);
+    } else {
+        user = await findUserByUsername(identifier);
+    }
 
     if (!user) {
-        return { success: false, message: "Invalid username or password." };
+        return { success: false, message: "Invalid credentials." };
     }
 
     // In a real app, you would use a secure password hashing and comparison library like bcrypt.
     const isPasswordCorrect = user.password === password;
 
     if (!isPasswordCorrect) {
-        return { success: false, message: "Invalid username or password." };
+        return { success: false, message: "Invalid credentials." };
     }
 
     // Don't send the password back to the client

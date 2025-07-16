@@ -16,7 +16,7 @@ import { loginUser } from "@/lib/actions";
 import { ForgotPasswordDialog } from "./forgot-password-dialog";
 
 const formSchema = z.object({
-  username: z.string().min(1, { message: "Please enter your usernametag." }),
+  identifier: z.string().min(1, { message: "Please enter your email or usernametag." }),
   password: z.string().min(1, { message: "Please enter your password." }),
 });
 
@@ -30,7 +30,7 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      identifier: "",
       password: "",
     },
   });
@@ -39,7 +39,10 @@ export function LoginForm() {
     setLoading(true);
     
     try {
-      const result = await loginUser(values);
+      const result = await loginUser({
+        identifier: values.identifier,
+        password: values.password
+      });
 
       if (!result.success || !result.user) {
         toast({
@@ -85,12 +88,12 @@ export function LoginForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="username"
+            name="identifier"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Usernametag</FormLabel>
+                <FormLabel>Email or Usernametag</FormLabel>
                 <FormControl>
-                  <Input placeholder="Your usernametag" {...field} />
+                  <Input placeholder="you@example.com or YourUsernametag" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
