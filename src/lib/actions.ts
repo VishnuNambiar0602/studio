@@ -118,13 +118,22 @@ export async function registerUser(userData: UserRegistration) {
         return { success: false, message: "Could not determine a username for the new account."};
     }
 
-    const newUser = await addUser({
+    const newUserPayload: User = {
         ...userData,
         username: finalUsername,
-        id: `user-${Date.now()}`
-    });
+        id: `user-${Date.now()}`,
+    };
     
-    const { password: _, ...publicUser } = newUser;
+    // Only add googleMapsUrl if it exists on the payload
+    if (userData.googleMapsUrl) {
+        newUserPayload.googleMapsUrl = userData.googleMapsUrl;
+    }
+
+
+    const newUser = await addUser(newUserPayload);
+    
+    // Don't send the password (or other sensitive data) back to the client
+    const { password: _, verificationCode, verificationCodeExpires, ...publicUser } = newUser;
 
     console.log(`
       --- SIMULATING WELCOME EMAIL ---
@@ -162,7 +171,7 @@ export async function loginUser(credentials: UserLogin) {
     }
 
     // Don't send the password back to the client
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _, verificationCode, verificationCodeExpires, ...userWithoutPassword } = user;
 
     return { success: true, user: userWithoutPassword };
 }
