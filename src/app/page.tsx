@@ -1,7 +1,10 @@
+
 import { Header } from "@/components/header";
 import { HeroSection } from "@/components/hero-section";
 import { ProductSection } from "@/components/product-section";
 import { Chatbot } from "@/components/chatbot";
+import { Suspense } from "react";
+import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
 
 export default function Home() {
   return (
@@ -9,7 +12,9 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <HeroSection />
-        <ProductSection />
+        <Suspense fallback={<ProductGridSkeleton/>}>
+          <ProductSection />
+        </Suspense>
       </main>
       <Chatbot />
     </div>
