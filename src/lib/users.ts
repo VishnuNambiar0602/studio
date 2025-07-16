@@ -22,6 +22,8 @@ const usersData: User[] = [
         username: 'autopartsinc',
         role: 'vendor',
         password: 'password123',
+        shopAddress: '123 Industrial Way, Muscat',
+        zipCode: '111',
     },
     {
         id: 'vendor-2',
@@ -30,6 +32,8 @@ const usersData: User[] = [
         username: 'globalauto',
         role: 'vendor',
         password: 'password123',
+        shopAddress: '456 Al-Khaleej St, Salalah',
+        zipCode: '211',
     },
     {
         id: 'vendor-3',
@@ -38,6 +42,8 @@ const usersData: User[] = [
         username: 'desertoffroad',
         role: 'vendor',
         password: 'password123',
+        shopAddress: '789 Dunes Bypass, Nizwa',
+        zipCode: '611',
     },
 ];
 

@@ -26,10 +26,11 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useParts } from "@/context/part-context";
 import { createPart } from "@/lib/actions";
+import { useSettings } from "@/context/settings-context";
 
 const categories = ["new", "used", "oem"] as const;
 
@@ -72,6 +73,7 @@ export function AddPartForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { addPart } = useParts(); 
+  const { loggedInUser } = useSettings();
 
   const form = useForm<AddPartFormValues>({
     resolver: zodResolver(addPartFormSchema),
@@ -79,12 +81,20 @@ export function AddPartForm() {
       name: "",
       description: "",
       partNumber: "",
-      companyName: "",
+      companyName: loggedInUser?.name || "",
       price: 0,
       quantity: 1,
       category: [],
     }
   });
+
+  useEffect(() => {
+    // If the logged in user changes, update the default company name
+    if(loggedInUser) {
+        form.setValue('companyName', loggedInUser.name);
+    }
+  }, [loggedInUser, form]);
+
 
   const fileRef = form.register("images");
 
@@ -119,6 +129,9 @@ export function AddPartForm() {
         });
 
         form.reset();
+        if(loggedInUser) {
+            form.setValue('companyName', loggedInUser.name);
+        }
 
     } catch (error) {
          toast({
@@ -181,8 +194,11 @@ export function AddPartForm() {
             <FormItem>
               <FormLabel>Company Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., AutoParts Inc." {...field} />
+                <Input placeholder="e.g., AutoParts Inc." {...field} readOnly disabled />
               </FormControl>
+              <FormDescription>
+                This is your registered company name and cannot be changed here.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

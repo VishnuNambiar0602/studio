@@ -124,6 +124,15 @@ export async function registerUser(userData: UserRegistration) {
         id: `user-${Date.now()}`,
     };
 
+    // Add vendor-specific fields if they exist
+    if (userData.shopAddress) {
+        newUserPayload.shopAddress = userData.shopAddress;
+    }
+    if (userData.zipCode) {
+        newUserPayload.zipCode = userData.zipCode;
+    }
+
+
     const newUser = await addUser(newUserPayload);
     
     // Don't send the password (or other sensitive data) back to the client

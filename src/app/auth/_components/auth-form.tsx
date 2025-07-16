@@ -19,6 +19,8 @@ const formSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
   username: z.string().optional(),
+  shopAddress: z.string().optional(),
+  zipCode: z.string().optional(),
 });
 
 interface AuthFormProps {
@@ -39,6 +41,8 @@ export function AuthForm({ userType }: AuthFormProps) {
       password: "",
       name: "",
       username: "",
+      shopAddress: "",
+      zipCode: "",
     },
   });
 
@@ -52,6 +56,8 @@ export function AuthForm({ userType }: AuthFormProps) {
             password: values.password,
             username: values.username,
             role: userType,
+            shopAddress: values.shopAddress,
+            zipCode: values.zipCode,
         });
 
         if (!result.success || !result.user) {
@@ -134,6 +140,36 @@ export function AuthForm({ userType }: AuthFormProps) {
             </FormItem>
           )}
         />
+         {userType === 'vendor' && (
+            <>
+                <FormField
+                    control={form.control}
+                    name="shopAddress"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Shop Address</FormLabel>
+                            <FormControl>
+                                <Input placeholder="123 Main Street, Muscat" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="zipCode"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Zip Code</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., 113" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </>
+        )}
         <FormField
           control={form.control}
           name="password"
