@@ -8,10 +8,6 @@ import { users as usersSchema, parts as partsSchema, orders as ordersSchema, boo
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 
-// We no longer need these mock data imports
-// import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId as dbGetOrders, createBooking as dbCreateBooking, getBookings as dbGetBookings, updateBookingStatus as dbUpdateBooking, updateOrderStatus as dbUpdateOrder } from "./data";
-// import { addUser as mockAddUser, findUserByEmail as mockFindUser, findUserByUsername as mockFindUsername, storeVerificationCode as mockStoreCode, verifyAndResetPassword as mockResetPassword, getAllUsers as mockGetAllUsers } from "./users";
-
 
 // --- PART ACTIONS ---
 
@@ -45,11 +41,9 @@ export async function updatePart(partId: string, partData: Part) {
 
 
 export async function togglePartVisibility(partId: string) {
-    // First, get the current visibility state
     const part = await db.query.parts.findFirst({ where: eq(partsSchema.id, partId), columns: { isVisibleForSale: true } });
     if (!part) return;
     
-    // Toggle the visibility
     await db.update(partsSchema)
         .set({ isVisibleForSale: !part.isVisibleForSale })
         .where(eq(partsSchema.id, partId));
@@ -95,8 +89,6 @@ export async function registerUser(userData: UserRegistration) {
         id: `user-${Date.now()}`,
     };
 
-    // In a real app, hash the password here with bcrypt
-    // For now, we'll keep it as plain text
     const [newUser] = await db.insert(usersSchema).values(newUserPayload).returning();
     
     const { password: _, verificationCode, verificationCodeExpires, ...publicUser } = newUser;
@@ -131,9 +123,7 @@ export async function loginUser(credentials: UserLogin) {
         return { success: false, message: "Invalid credentials." };
     }
 
-    const isPasswordCorrect = user.password === password;
-
-    if (!isPasswordCorrect) {
+    if (user.password !== password) {
         return { success: false, message: "Invalid credentials." };
     }
 

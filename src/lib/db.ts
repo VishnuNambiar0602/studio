@@ -9,6 +9,7 @@ if (!connectionString) {
   throw new Error('POSTGRES_URL is not set in the environment variables.');
 }
 
+// Disable pre-fetching data in production
 const client = postgres(connectionString, { prepare: false });
 
 export const db = drizzle(client, { schema });
