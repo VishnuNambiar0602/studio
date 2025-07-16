@@ -14,13 +14,13 @@ import { useRouter } from "next/navigation";
 
 export function Header() {
   const { cart } = useCart();
-  const { language, isLoggedIn, setIsLoggedIn } = useSettings();
+  const { language, isLoggedIn, logoutUser } = useSettings();
   const t = getDictionary(language);
   const itemCount = cart.length;
   const router = useRouter();
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    logoutUser();
     router.push('/');
   }
 

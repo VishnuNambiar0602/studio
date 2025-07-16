@@ -1,7 +1,9 @@
+
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import type { FontSize, Language } from "@/lib/types";
+import type { FontSize, Language, User } from "@/lib/types";
+import { loginUser as serverLogin } from "@/lib/actions";
 
 interface SettingsContextType {
   fontSize: FontSize;
@@ -10,6 +12,9 @@ interface SettingsContextType {
   setLanguage: (lang: Language) => void;
   isLoggedIn: boolean;
   setIsLoggedIn: (loggedIn: boolean) => void;
+  loggedInUser: User | null;
+  loginUser: (user: User) => void;
+  logoutUser: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -18,6 +23,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSize] = useState<FontSize>('md');
   const [language, setLanguage] = useState<Language>('en');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -31,12 +37,23 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
   }, [language]);
 
+  const loginUser = (user: User) => {
+    setLoggedInUser(user);
+    setIsLoggedIn(true);
+  }
+
+  const logoutUser = () => {
+    setLoggedInUser(null);
+    setIsLoggedIn(false);
+  }
+
 
   return (
     <SettingsContext.Provider value={{ 
       fontSize, setFontSize,
       language, setLanguage,
-      isLoggedIn, setIsLoggedIn
+      isLoggedIn, setIsLoggedIn,
+      loggedInUser, loginUser, logoutUser
     }}>
       {children}
     </SettingsContext.Provider>

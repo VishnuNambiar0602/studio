@@ -31,6 +31,10 @@ export interface User {
   verificationCodeExpires?: Date;
 }
 
+// A version of the User type that is safe to send to the client
+export type PublicUser = Omit<User, 'password' | 'verificationCode' | 'verificationCodeExpires'>;
+
+
 export type UserRegistration = Omit<User, 'id'>;
 
 export type UserLogin = Pick<User, 'username' | 'password'>;

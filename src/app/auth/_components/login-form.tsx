@@ -24,7 +24,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { setIsLoggedIn } = useSettings();
+  const { loginUser: setLoggedInUserContext } = useSettings();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,7 +50,7 @@ export function LoginForm() {
         return;
       }
 
-      setIsLoggedIn(true);
+      setLoggedInUserContext(result.user);
 
       toast({
         title: "Login Successful!",

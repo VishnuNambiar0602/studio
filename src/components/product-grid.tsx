@@ -1,11 +1,15 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Part } from "@/lib/types";
 import { ProductCard } from "./product-card";
 import { ProductFilters, type Filters } from "./product-filters";
 import { useParts } from "@/context/part-context";
+import { Button } from "./ui/button";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Input } from "./ui/input";
 
 interface ProductGridProps {
     title?: string;
@@ -15,12 +19,35 @@ interface ProductGridProps {
 
 export function ProductGrid({ title, description, category }: ProductGridProps) {
   const { parts } = useParts();
-  const [filters, setFilters] = useState<Filters>({
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
+  const [activeSearch, setActiveSearch] = useState('');
+  const [tempFilters, setTempFilters] = useState<Filters>({
     search: '',
     vendors: [],
     priceRange: [0, 2000],
     sort: 'price-asc',
   });
+  const [activeFilters, setActiveFilters] = useState<Filters>(tempFilters);
+  
+  // When the search input changes, update tempFilters but not activeFilters
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTempFilters(prev => ({ ...prev, search: event.target.value }));
+  };
+
+  const handleSearchSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setActiveFilters(tempFilters);
+    setActiveSearch(tempFilters.search);
+  };
+  
+  const handleTempFilterChange = (newFilters: Partial<Filters>) => {
+    setTempFilters(prev => ({...prev, ...newFilters}));
+  };
+
+  const applyFilters = () => {
+    setActiveFilters(tempFilters);
+    setIsFilterDialogOpen(false);
+  };
 
   const allParts = useMemo(() => {
     let baseParts = parts.filter(part => part.isVisibleForSale);
@@ -34,8 +61,8 @@ export function ProductGrid({ title, description, category }: ProductGridProps) 
     let processedParts = [...allParts];
 
     // 1. Filter by search query
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
+    if (activeFilters.search) {
+      const searchTerm = activeFilters.search.toLowerCase();
       processedParts = processedParts.filter(part =>
         part.name.toLowerCase().includes(searchTerm) ||
         part.description.toLowerCase().includes(searchTerm)
@@ -43,19 +70,19 @@ export function ProductGrid({ title, description, category }: ProductGridProps) 
     }
 
     // 2. Filter by vendors
-    if (filters.vendors.length > 0) {
+    if (activeFilters.vendors.length > 0) {
       processedParts = processedParts.filter(part =>
-        filters.vendors.includes(part.vendorAddress)
+        activeFilters.vendors.includes(part.vendorAddress)
       );
     }
 
     // 3. Filter by price range
     processedParts = processedParts.filter(part =>
-      part.price >= filters.priceRange[0] && part.price <= filters.priceRange[1]
+      part.price >= activeFilters.priceRange[0] && part.price <= activeFilters.priceRange[1]
     );
 
     // 4. Sort
-    switch (filters.sort) {
+    switch (activeFilters.sort) {
       case 'price-asc':
         processedParts.sort((a, b) => a.price - b.price);
         break;
@@ -65,7 +92,7 @@ export function ProductGrid({ title, description, category }: ProductGridProps) 
     }
 
     return processedParts;
-  }, [allParts, filters]);
+  }, [allParts, activeFilters]);
 
   const availableVendors = useMemo(() => {
     const vendorSet = new Set(allParts.map(part => part.vendorAddress));
@@ -82,11 +109,37 @@ export function ProductGrid({ title, description, category }: ProductGridProps) 
             </p>
         </div>
         
-        <ProductFilters 
-            availableVendors={availableVendors}
-            filters={filters}
-            onFilterChange={setFilters}
-        />
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <form onSubmit={handleSearchSubmit} className="flex-grow flex gap-2">
+                <Input 
+                    placeholder="Search by part name or keyword..."
+                    value={tempFilters.search}
+                    onChange={handleSearchChange}
+                    className="flex-grow"
+                />
+                 <Button type="submit" variant="secondary">
+                    <Search className="mr-2 h-4 w-4" /> Search
+                </Button>
+            </form>
+             <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                        <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Filter & Sort</DialogTitle>
+                    </DialogHeader>
+                    <ProductFilters 
+                        availableVendors={availableVendors}
+                        filters={tempFilters}
+                        onFilterChange={handleTempFilterChange}
+                        onApply={applyFilters}
+                    />
+                </DialogContent>
+            </Dialog>
+        </div>
         
         {filteredAndSortedParts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-12">

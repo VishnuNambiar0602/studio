@@ -28,12 +28,12 @@ import { cn } from "@/lib/utils";
 
 
 export function AdminHeader() {
-    const { setIsLoggedIn } = useSettings();
+    const { logoutUser } = useSettings();
     const pathname = usePathname();
     const router = useRouter();
 
     const handleLogout = () => {
-        setIsLoggedIn(false);
+        logoutUser();
         router.push('/');
     };
 

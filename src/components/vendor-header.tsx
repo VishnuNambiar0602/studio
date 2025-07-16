@@ -8,6 +8,7 @@ import {
   ListTodo,
   Package,
   Settings,
+  ShoppingBag,
   User as UserIcon,
 } from "lucide-react"
 
@@ -67,8 +68,12 @@ export function VendorHeader() {
             ))}
         </nav>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-          <div className="ml-auto flex-1 sm:flex-initial">
-            {/* Can add search here later */}
+          <div className="ml-auto flex items-center gap-2">
+            <Button asChild variant="outline">
+                <Link href="/">
+                    <ShoppingBag className="mr-2 h-4 w-4" /> Shop
+                </Link>
+            </Button>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

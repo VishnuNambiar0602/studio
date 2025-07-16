@@ -30,7 +30,7 @@ export function AuthForm({ userType }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { setIsLoggedIn } = useSettings();
+  const { loginUser: setLoggedInUserContext } = useSettings();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,7 +63,7 @@ export function AuthForm({ userType }: AuthFormProps) {
             googleMapsUrl: values.googleMapsUrl,
         });
 
-        if (!result.success) {
+        if (!result.success || !result.user) {
             toast({
                 variant: "destructive",
                 title: "Registration Failed",
@@ -73,7 +73,7 @@ export function AuthForm({ userType }: AuthFormProps) {
             return;
         }
 
-        setIsLoggedIn(true);
+        setLoggedInUserContext(result.user);
 
         toast({
             title: "Account Created!",
