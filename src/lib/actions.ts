@@ -3,7 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking } from "./types";
-import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getVendorByAddress } from "./data";
+import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getVendorByAddress, getAllUsers } from "./data";
 import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword } from "./users";
 
 export async function holdPart(partId: string) {
@@ -63,6 +63,10 @@ export async function togglePartVisibility(partId: string) {
 
 export async function getParts() {
     return await dbGetParts();
+}
+
+export async function getUsers() {
+    return await getAllUsers();
 }
 
 export async function getPart(id: string) {

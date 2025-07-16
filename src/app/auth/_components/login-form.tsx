@@ -59,7 +59,9 @@ export function LoginForm() {
       
       form.reset();
 
-      if (result.user.role === 'vendor') {
+      if (result.user.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else if (result.user.role === 'vendor') {
         router.push('/vendor/dashboard');
       } else {
         router.push('/');

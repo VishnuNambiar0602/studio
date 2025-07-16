@@ -1,6 +1,6 @@
 
 
-import type { Part, Order, Booking } from './types';
+import type { Part, Order, Booking, User } from './types';
 import { users } from './users'; // We need user data for some functions
 
 // This is a mock database. In a real-world scenario, you would use a proper database
@@ -129,6 +129,15 @@ const db: { parts: Part[], orders: Order[], bookings: Booking[] } = {
 export async function getParts(): Promise<Part[]> {
   await new Promise(resolve => setTimeout(resolve, 250));
   return db.parts;
+}
+
+/**
+ * Simulates fetching all users from a database.
+ */
+export async function getAllUsers(): Promise<User[]> {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  // In a real app, you would not send the password hash to the client
+  return users.map(({ password, ...user }) => user);
 }
 
 /**

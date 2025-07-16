@@ -15,7 +15,7 @@ export type Part = {
 export type FontSize = 'sm' | 'md' | 'lg';
 export type Language = 'en' | 'ar';
 
-export type UserRole = 'customer' | 'vendor';
+export type UserRole = 'customer' | 'vendor' | 'admin';
 
 export interface User {
   id: string;
