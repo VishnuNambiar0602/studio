@@ -224,9 +224,9 @@ export function ForgotPasswordDialog() {
           <AlertDialogHeader>
             <AlertDialogTitle>Account Recovery (Simulation)</AlertDialogTitle>
             <AlertDialogDescription>
-              In a real application, this would be sent to your email.
-              <p className="mt-4">Your usernametag is: <span className="font-bold">{username}</span></p>
-              <p>Please use the code below to proceed:</p>
+              <div>In a real application, this would be sent to your email.</div>
+              <div className="mt-4">Your usernametag is: <span className="font-bold">{username}</span></div>
+              <div>Please use the code below to proceed:</div>
               <div className="text-center font-mono text-2xl tracking-widest py-4 bg-muted rounded-md my-4">
                 {simulatedCode}
               </div>
