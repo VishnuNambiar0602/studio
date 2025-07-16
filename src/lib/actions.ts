@@ -66,7 +66,9 @@ export async function getParts() {
 }
 
 export async function getAllUsers(): Promise<PublicUser[]> {
-    return await dbGetAllUsers();
+    const users = await dbGetAllUsers();
+    // Ensure we don't send sensitive info to the client
+    return users.map(({ password, verificationCode, verificationCodeExpires, ...publicUser }) => publicUser);
 }
 
 
@@ -88,7 +90,9 @@ export async function registerUser(userData: UserRegistration) {
     if (!finalUsername) {
         let isUnique = false;
         let attempt = 0;
+        // Sanitize name to create a base for the username
         let baseUsername = name.replace(/\s+/g, '').toLowerCase();
+        if (baseUsername.length < 3) baseUsername = `user${baseUsername}`; // Ensure base is not too short
         
         while(!isUnique) {
             const potentialUsername = attempt === 0 ? baseUsername : `${baseUsername}${Math.floor(Math.random() * 1000)}`;
@@ -98,6 +102,9 @@ export async function registerUser(userData: UserRegistration) {
                 isUnique = true;
             }
             attempt++;
+             if (attempt > 10) { // Safety break to prevent infinite loops
+                return { success: false, message: "Could not generate a unique username. Please try again."};
+            }
         }
     } else {
         // Check if custom username is already taken
@@ -106,31 +113,38 @@ export async function registerUser(userData: UserRegistration) {
             return { success: false, message: "This usernametag is already taken. Please choose another." };
         }
     }
+    
+    if (!finalUsername) {
+        return { success: false, message: "Could not determine a username for the new account."};
+    }
 
     const newUser = await addUser({
         ...userData,
-        username: finalUsername!,
+        username: finalUsername,
         id: `user-${Date.now()}`
     });
+    
+    // Don't send the password back to the client
+    const { password: _, ...publicUser } = newUser;
 
     // Simulate sending a welcome email
     console.log(`
       --- SIMULATING WELCOME EMAIL ---
       To: ${newUser.email}
-      Subject: Welcome to GulfCarX!
+      Subject: Welcome to Desert Drive Depot!
       
       Hi ${newUser.name},
       
-      Thanks for registering! Your unique username is: ${newUser.username}
+      Thanks for registering! Your unique usernametag is: ${newUser.username}
       You can use this to log in to your account.
       
       Best,
-      The GulfCarX Team
+      The Desert Drive Depot Team
       ---------------------------------
     `);
 
 
-    return { success: true, user: newUser, message: "User registered successfully." };
+    return { success: true, user: publicUser, message: "User registered successfully." };
 }
 
 export async function loginUser(credentials: UserLogin) {
@@ -177,7 +191,7 @@ export async function sendPasswordResetCode(email: string): Promise<{ success: b
         Your username is: ${user.username}
         
         Best,
-        The GulfCarX Team
+        The Desert Drive Depot Team
         ---------------------------------
     `);
 
