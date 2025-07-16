@@ -2,8 +2,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser } from "./types";
-import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getVendorByAddress, getAllUsers as dbGetAllUsers } from "./data";
+import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User } from "./types";
+import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getAllUsers as dbGetAllUsers } from "./data";
 import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword } from "./users";
 
 export async function holdPart(partId: string) {
@@ -123,12 +123,6 @@ export async function registerUser(userData: UserRegistration) {
         username: finalUsername,
         id: `user-${Date.now()}`,
     };
-    
-    // Only add googleMapsUrl if it exists on the payload
-    if (userData.googleMapsUrl) {
-        newUserPayload.googleMapsUrl = userData.googleMapsUrl;
-    }
-
 
     const newUser = await addUser(newUserPayload);
     
@@ -242,9 +236,4 @@ export async function completeBooking(bookingId: string) {
     await updateBookingStatus(bookingId, 'Completed');
     revalidatePath('/vendor/tasks');
     return { success: true };
-}
-
-export async function getVendorMapUrl(vendorAddress: string): Promise<string | null> {
-    const vendor = await getVendorByAddress(vendorAddress);
-    return vendor?.googleMapsUrl || null;
 }

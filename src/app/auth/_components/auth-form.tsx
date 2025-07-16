@@ -19,7 +19,6 @@ const formSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
   username: z.string().optional(),
-  googleMapsUrl: z.string().url({ message: "Please enter a valid Google Maps URL." }).optional(),
 });
 
 interface AuthFormProps {
@@ -40,7 +39,6 @@ export function AuthForm({ userType }: AuthFormProps) {
       password: "",
       name: "",
       username: "",
-      googleMapsUrl: "",
     },
   });
 
@@ -54,7 +52,6 @@ export function AuthForm({ userType }: AuthFormProps) {
             password: values.password,
             username: values.username,
             role: userType,
-            googleMapsUrl: values.googleMapsUrl,
         });
 
         if (!result.success || !result.user) {
@@ -159,24 +156,6 @@ export function AuthForm({ userType }: AuthFormProps) {
             </FormItem>
           )}
         />
-        {userType === 'vendor' && (
-          <FormField
-            control={form.control}
-            name="googleMapsUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Google Maps URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://maps.app.goo.gl/..." {...field} />
-                </FormControl>
-                 <FormDescription>
-                  Paste the full URL of your location from Google Maps.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
         <Button type="submit" disabled={loading} className="w-full">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Create Account

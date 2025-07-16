@@ -1,16 +1,15 @@
 
-import { getPart, getVendorMapUrl } from "@/lib/actions";
+import { getPart } from "@/lib/actions";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/header";
 import Image from "next/image";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, CalendarPlus, ShoppingCart } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { MapPin, CalendarPlus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { AddToCartButton } from "./_components/add-to-cart-button";
 import { BookViewingDialog } from "@/components/book-viewing-dialog";
+import { Button } from "@/components/ui/button";
 
 export default async function PartDetailPage({ params }: { params: { id: string } }) {
   const part = await getPart(params.id);
@@ -19,7 +18,6 @@ export default async function PartDetailPage({ params }: { params: { id: string 
     notFound();
   }
 
-  const mapUrl = await getVendorMapUrl(part.vendorAddress);
   const isInStock = part.quantity > 0;
 
   return (
@@ -66,17 +64,10 @@ export default async function PartDetailPage({ params }: { params: { id: string 
               <Separator />
 
               <div className="text-muted-foreground">
-                {mapUrl ? (
-                    <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center text-lg hover:text-primary transition-colors">
-                        <MapPin className="mr-3 h-5 w-5 shrink-0" />
-                        <span className="truncate font-semibold hover:underline">{part.vendorAddress}</span>
-                    </a>
-                ) : (
                     <div className="flex items-center text-lg">
                         <MapPin className="mr-3 h-5 w-5 shrink-0" />
                         <span className="truncate font-semibold">{part.vendorAddress}</span>
                     </div>
-                )}
               </div>
 
                <div className="text-5xl font-bold text-primary">${part.price.toFixed(2)}</div>

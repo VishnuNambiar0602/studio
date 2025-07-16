@@ -22,7 +22,6 @@ const usersData: User[] = [
         username: 'autopartsinc',
         role: 'vendor',
         password: 'password123',
-        googleMapsUrl: 'https://maps.app.goo.gl/example1'
     },
     {
         id: 'vendor-2',
@@ -31,7 +30,6 @@ const usersData: User[] = [
         username: 'globalauto',
         role: 'vendor',
         password: 'password123',
-        googleMapsUrl: 'https://maps.app.goo.gl/example2'
     },
     {
         id: 'vendor-3',
@@ -40,7 +38,6 @@ const usersData: User[] = [
         username: 'desertoffroad',
         role: 'vendor',
         password: 'password123',
-        googleMapsUrl: 'https://maps.app.goo.gl/example3'
     },
 ];
 

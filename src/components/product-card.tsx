@@ -8,10 +8,8 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { MapPin, ShoppingCart, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
 import { useCart } from "@/context/cart-context";
 import Link from "next/link";
-import { getVendorMapUrl } from "@/lib/actions";
 import { Skeleton } from "./ui/skeleton";
 
 interface ProductCardProps {
@@ -42,17 +40,6 @@ function ProductCardSkeleton() {
 export function ProductCard({ part }: ProductCardProps) {
   const { toast } = useToast();
   const { addToCart } = useCart();
-  const [mapUrl, setMapUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (part?.vendorAddress) {
-      const fetchMapUrl = async () => {
-        const url = await getVendorMapUrl(part.vendorAddress);
-        setMapUrl(url);
-      };
-      fetchMapUrl();
-    }
-  }, [part?.vendorAddress]);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent link navigation if it's somehow still wrapped
@@ -99,17 +86,10 @@ export function ProductCard({ part }: ProductCardProps) {
       </CardHeader>
       <CardContent className="flex-grow space-y-4 p-6 pt-2">
         <div className="flex items-center text-sm text-muted-foreground">
-            {mapUrl ? (
-                <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center hover:text-primary transition-colors">
-                    <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                    <span className="truncate hover:underline">{part.vendorAddress}</span>
-                </a>
-            ) : (
-                <div className="flex items-center">
-                    <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                    <span className="truncate">{part.vendorAddress}</span>
-                </div>
-            )}
+            <div className="flex items-center">
+                <MapPin className="mr-2 h-4 w-4 shrink-0" />
+                <span className="truncate">{part.vendorAddress}</span>
+            </div>
         </div>
          <div className="text-3xl font-bold text-primary">${part.price.toFixed(2)}</div>
       </CardContent>

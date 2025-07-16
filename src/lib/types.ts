@@ -23,7 +23,6 @@ export interface User {
   email: string;
   username: string; // This is the usernametag
   role: UserRole;
-  googleMapsUrl?: string; // For vendors
   // In a real app, you would never store the password in plain text.
   // It would be hashed and salted.
   password?: string; 
