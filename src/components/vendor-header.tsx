@@ -6,6 +6,7 @@ import {
   Car,
   Home,
   ListTodo,
+  LogOut,
   Package,
   Settings,
   ShoppingBag,
@@ -23,16 +24,18 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Image from "next/image"
 import { useSettings } from "@/context/settings-context";
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
 
 
 export function VendorHeader() {
-    const { setIsLoggedIn } = useSettings();
+    const { logoutUser } = useSettings();
     const pathname = usePathname();
+    const router = useRouter();
 
     const handleLogout = () => {
-        setIsLoggedIn(false);
+        logoutUser();
+        router.push('/');
     };
 
     const navItems = [
@@ -105,7 +108,10 @@ export function VendorHeader() {
                 <Link href="/vendor/support">Support</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+            </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
       </div>
