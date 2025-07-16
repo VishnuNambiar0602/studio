@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuthForm } from "./_components/auth-form";
 import { LoginForm } from "./_components/login-form";
+import { Shield } from "lucide-react";
 
 export default function AuthPage() {
   return (
@@ -24,14 +25,21 @@ export default function AuthPage() {
               </CardHeader>
               <CardContent>
                  <Tabs defaultValue="customer-login" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="customer-login">Customer Login</TabsTrigger>
-                        <TabsTrigger value="vendor-login">Vendor Login</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="customer-login">Customer</TabsTrigger>
+                        <TabsTrigger value="vendor-login">Vendor</TabsTrigger>
+                        <TabsTrigger value="admin-login">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin
+                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="customer-login" className="pt-4">
                         <LoginForm />
                     </TabsContent>
                     <TabsContent value="vendor-login" className="pt-4">
+                        <LoginForm />
+                    </TabsContent>
+                    <TabsContent value="admin-login" className="pt-4">
                         <LoginForm />
                     </TabsContent>
                  </Tabs>
