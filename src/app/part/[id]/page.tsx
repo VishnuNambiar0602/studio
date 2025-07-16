@@ -65,14 +65,14 @@ export default async function PartDetailPage({ params }: { params: { id: string 
               
               <Separator />
 
-              <div className="flex items-center text-lg text-muted-foreground">
+              <div className="text-muted-foreground">
                 {mapUrl ? (
-                    <Link href={mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center hover:text-primary transition-colors">
+                    <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="flex items-center text-lg hover:text-primary transition-colors">
                         <MapPin className="mr-3 h-5 w-5 shrink-0" />
                         <span className="truncate font-semibold hover:underline">{part.vendorAddress}</span>
-                    </Link>
+                    </a>
                 ) : (
-                    <div className="flex items-center">
+                    <div className="flex items-center text-lg">
                         <MapPin className="mr-3 h-5 w-5 shrink-0" />
                         <span className="truncate font-semibold">{part.vendorAddress}</span>
                     </div>
