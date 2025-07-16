@@ -46,19 +46,12 @@ export function AuthForm({ userType }: AuthFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
-    
-    // Validate googleMapsUrl for vendors
-    if (userType === 'vendor' && !values.googleMapsUrl) {
-      form.setError("googleMapsUrl", { type: "manual", message: "Google Maps URL is required for vendors." });
-      setLoading(false);
-      return;
-    }
 
     try {
         const result = await registerUser({
             name: values.name,
             email: values.email,
-            password: values.password, // In a real app, this would be hashed
+            password: values.password,
             username: values.username,
             role: userType,
             googleMapsUrl: values.googleMapsUrl,
@@ -78,7 +71,7 @@ export function AuthForm({ userType }: AuthFormProps) {
 
         toast({
             title: "Account Created!",
-            description: `Your ${userType} account has been successfully created. Welcome, ${result.user?.username}!`,
+            description: `Your ${userType} account has been successfully created. Your usernametag is ${result.user?.username}.`,
         });
         
         form.reset();
@@ -125,7 +118,7 @@ export function AuthForm({ userType }: AuthFormProps) {
                 <Input placeholder="e.g., CarEnthusiast21" {...field} />
               </FormControl>
                <FormDescription>
-                This is your unique identifier on the platform.
+                This is your unique identifier on the platform. If left blank, one will be generated for you.
               </FormDescription>
               <FormMessage />
             </FormItem>

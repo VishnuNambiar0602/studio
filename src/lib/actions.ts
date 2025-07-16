@@ -86,13 +86,19 @@ export async function registerUser(userData: UserRegistration) {
     }
 
     let finalUsername = username;
-    // Generate a username if not provided
-    if (!finalUsername) {
+
+    if (finalUsername) {
+        // If user provided a username, check if it's taken
+        const existingUsername = await findUserByUsername(finalUsername);
+        if (existingUsername) {
+            return { success: false, message: "This usernametag is already taken. Please choose another." };
+        }
+    } else {
+        // If no username provided, generate one
         let isUnique = false;
         let attempt = 0;
-        // Sanitize name to create a base for the username
         let baseUsername = name.replace(/\s+/g, '').toLowerCase();
-        if (baseUsername.length < 3) baseUsername = `user${baseUsername}`; // Ensure base is not too short
+        if (baseUsername.length < 3) baseUsername = `user${baseUsername}`;
         
         while(!isUnique) {
             const potentialUsername = attempt === 0 ? baseUsername : `${baseUsername}${Math.floor(Math.random() * 1000)}`;
@@ -102,15 +108,9 @@ export async function registerUser(userData: UserRegistration) {
                 isUnique = true;
             }
             attempt++;
-             if (attempt > 10) { // Safety break to prevent infinite loops
-                return { success: false, message: "Could not generate a unique username. Please try again."};
+            if (attempt > 20) { // Safety break to prevent infinite loops
+                return { success: false, message: "Could not generate a unique username. Please try again or provide a custom one."};
             }
-        }
-    } else {
-        // Check if custom username is already taken
-        const existingUsername = await findUserByUsername(username);
-        if (existingUsername) {
-            return { success: false, message: "This usernametag is already taken. Please choose another." };
         }
     }
     
@@ -124,10 +124,8 @@ export async function registerUser(userData: UserRegistration) {
         id: `user-${Date.now()}`
     });
     
-    // Don't send the password back to the client
     const { password: _, ...publicUser } = newUser;
 
-    // Simulate sending a welcome email
     console.log(`
       --- SIMULATING WELCOME EMAIL ---
       To: ${newUser.email}
