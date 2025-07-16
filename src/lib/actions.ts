@@ -3,8 +3,8 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User } from "./types";
-import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus, getAllUsers as dbGetAllUsers } from "./data";
-import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword } from "./users";
+import { addPart as dbAddPart, updatePart as dbUpdatePart, togglePartVisibility as dbTogglePartVisibility, getParts as dbGetParts, getPartById as dbGetPartById, getOrdersByUserId, createBooking, getBookings, updateBookingStatus } from "./data";
+import { addUser, findUserByEmail, findUserByUsername, storeVerificationCode, verifyAndResetPassword, getAllUsers as dbGetAllUsers } from "./users";
 
 export async function holdPart(partId: string) {
   // In a real app, you'd update the database and send an email.
@@ -123,15 +123,6 @@ export async function registerUser(userData: UserRegistration) {
         username: finalUsername,
         id: `user-${Date.now()}`,
     };
-
-    // Add vendor-specific fields if they exist
-    if (userData.shopAddress) {
-        newUserPayload.shopAddress = userData.shopAddress;
-    }
-    if (userData.zipCode) {
-        newUserPayload.zipCode = userData.zipCode;
-    }
-
 
     const newUser = await addUser(newUserPayload);
     

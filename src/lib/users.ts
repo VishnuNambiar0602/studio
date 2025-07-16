@@ -123,3 +123,11 @@ export async function verifyAndResetPassword(email: string, code: string, newPas
 
     return { success: true, message: "Password has been reset successfully." };
 }
+
+/**
+ * Simulates getting all users from the database.
+ */
+export async function getAllUsers(): Promise<User[]> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return db.users;
+}

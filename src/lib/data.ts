@@ -1,5 +1,4 @@
 
-
 import type { Part, Order, Booking, User } from './types';
 import { users } from './users'; // We need user data for some functions
 
@@ -132,15 +131,6 @@ export async function getParts(): Promise<Part[]> {
 }
 
 /**
- * Simulates fetching all users from a database.
- */
-export async function getAllUsers(): Promise<User[]> {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  // In a real app, you would not send the password hash to the client
-  return users.map(({ password, ...user }) => user);
-}
-
-/**
  * Simulates fetching a single part by its ID.
  */
 export async function getPartById(id: string): Promise<Part | undefined> {
@@ -225,12 +215,4 @@ export async function updateBookingStatus(bookingId: string, status: 'Pending' |
         return booking;
     }
     return undefined;
-}
-
-/**
- * Finds a vendor by their name (used as vendorAddress in Part)
- */
-export async function getVendorByAddress(vendorName: string) {
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return users.find(u => u.role === 'vendor' && u.name === vendorName);
 }

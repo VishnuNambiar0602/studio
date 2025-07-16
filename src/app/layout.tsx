@@ -8,6 +8,7 @@ import { PartProvider } from '@/context/part-context';
 import { getParts } from '@/lib/actions';
 import { SettingsProvider } from '@/context/settings-context';
 import { cn } from '@/lib/utils';
+import { Suspense } from 'react';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -19,13 +20,11 @@ export const metadata: Metadata = {
   description: 'AI-powered automotive parts platform for used, OEM, and new parts.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch initial parts on the server
-  const initialParts = await getParts();
 
   return (
     <html lang="en" dir="ltr" className={fontSans.variable}>
@@ -34,7 +33,7 @@ export default async function RootLayout({
         suppressHydrationWarning={true}
       >
         <SettingsProvider>
-          <PartProvider initialParts={initialParts}>
+          <PartProvider>
             <CartProvider>
               {children}
             </CartProvider>

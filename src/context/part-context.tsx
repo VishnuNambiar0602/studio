@@ -1,8 +1,9 @@
 
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import type { Part } from "@/lib/types";
+import { getParts } from "@/lib/actions";
 
 interface PartContextType {
   parts: Part[];
@@ -13,11 +14,17 @@ interface PartContextType {
 
 const PartContext = createContext<PartContextType | undefined>(undefined);
 
-// The provider now receives initial parts from the server.
-export function PartProvider({ children, initialParts }: { children: ReactNode, initialParts: Part[] }) {
-  const [parts, setParts] = useState<Part[]>(initialParts);
+export function PartProvider({ children }: { children: ReactNode }) {
+  const [parts, setParts] = useState<Part[]>([]);
 
-  // This will now be optimistic. In a real app, you'd revalidate the server data.
+  useEffect(() => {
+    const fetchParts = async () => {
+        const initialParts = await getParts();
+        setParts(initialParts);
+    }
+    fetchParts();
+  }, [])
+
   const addPart = (part: Part) => {
     setParts((prevParts) => [{...part, isVisibleForSale: true}, ...prevParts]);
   };
@@ -28,7 +35,6 @@ export function PartProvider({ children, initialParts }: { children: ReactNode, 
     );
   };
   
-  // This is also optimistic.
   const togglePartVisibility = (partId: string) => {
     setParts((prevParts) =>
       prevParts.map((part) =>
