@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails } from "./types";
 import { db } from "./db";
 import { bookings, orders, parts, users } from "./schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, gte } from "drizzle-orm";
+import { subMonths, format, getYear, getMonth } from 'date-fns';
 
 
 // --- PART ACTIONS ---
@@ -74,6 +75,7 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         role: users.role,
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
+        createdAt: users.createdAt,
     }).from(users);
     return allUsers;
 }
@@ -193,8 +195,6 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean; 
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string) {
-    // In a real app, you'd get the logged in user's ID.
-    // For now, we'll find a seeded customer user to make the booking.
     const userResult = await db.select().from(users).where(eq(users.role, 'customer')).limit(1);
     const mockUser = userResult[0];
 
@@ -267,9 +267,65 @@ export async function getVendorStats(vendorName: string) {
     ));
 
     return {
-        totalRevenue: revenueResult[0].total || 0,
-        itemsOnHold: holdResult[0].count || 0,
-        activeListings: listingsResult[0].count || 0,
-        totalSales: salesResult[0].count || 0,
+        totalRevenue: revenueResult[0]?.total || 0,
+        itemsOnHold: holdResult[0]?.count || 0,
+        activeListings: listingsResult[0]?.count || 0,
+        totalSales: salesResult[0]?.count || 0,
     };
+}
+
+
+export async function getMonthlyRevenue(vendorName: string): Promise<{name: string, total: number}[]> {
+    if (!vendorName) return [];
+
+    const twelveMonthsAgo = subMonths(new Date(), 11);
+    twelveMonthsAgo.setDate(1);
+    twelveMonthsAgo.setHours(0, 0, 0, 0);
+
+    const sales = await db.select({
+        cost: bookings.cost,
+        date: bookings.bookingDate,
+    }).from(bookings).where(and(
+        eq(bookings.vendorName, vendorName),
+        eq(bookings.status, 'Completed'),
+        gte(bookings.bookingDate, twelveMonthsAgo)
+    ));
+
+    // Initialize an object to hold revenue for each of the last 12 months
+    const monthlyRevenue: {[key: string]: number} = {};
+    const monthLabels: {year: number, month: number, name: string}[] = [];
+
+    for (let i = 11; i >= 0; i--) {
+        const date = subMonths(new Date(), i);
+        const year = getYear(date);
+        const month = getMonth(date);
+        const monthName = format(date, 'MMM');
+        
+        const key = `${year}-${month}`;
+        if (!monthlyRevenue.hasOwnProperty(key)) {
+            monthlyRevenue[key] = 0;
+            monthLabels.push({ year, month, name: monthName });
+        }
+    }
+    
+    // Aggregate sales data
+    for (const sale of sales) {
+        const year = getYear(sale.date);
+        const month = getMonth(sale.date);
+        const key = `${year}-${month}`;
+        if (monthlyRevenue.hasOwnProperty(key)) {
+            monthlyRevenue[key] += sale.cost;
+        }
+    }
+
+    // Format for the chart
+    const chartData = monthLabels.map(label => {
+        const key = `${label.year}-${label.month}`;
+        return {
+            name: label.name,
+            total: monthlyRevenue[key],
+        }
+    });
+
+    return chartData;
 }

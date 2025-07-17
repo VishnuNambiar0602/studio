@@ -1,25 +1,32 @@
+
 "use client"
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { getMonthlyRevenue } from "@/lib/actions";
+import { useEffect, useState } from "react";
+import { useSettings } from "@/context/settings-context";
 
-
-const data = [
-  { name: "Jan", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Feb", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Mar", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Apr", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "May", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Jun", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Jul", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Aug", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Sep", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Oct", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Nov", total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Dec", total: Math.floor(Math.random() * 5000) + 1000 },
-]
+interface MonthlyRevenue {
+    name: string;
+    total: number;
+}
 
 export function VendorRevenueChart() {
+  const [data, setData] = useState<MonthlyRevenue[]>([]);
+  const { loggedInUser } = useSettings();
+
+  useEffect(() => {
+    async function fetchRevenue() {
+        if (loggedInUser?.name) {
+            const revenueData = await getMonthlyRevenue(loggedInUser.name);
+            setData(revenueData);
+        }
+    }
+    fetchRevenue();
+  }, [loggedInUser]);
+
+
   return (
     <Card className="xl:col-span-2">
         <CardHeader>
