@@ -40,7 +40,7 @@ export function BookViewingDialog({ part, children }: BookViewingDialogProps) {
     }
 
     setLoading(true);
-    const result = await submitBooking(part.id, part.name, date, part.price);
+    const result = await submitBooking(part.id, part.name, date, part.price, part.vendorAddress);
 
     if (result.success) {
       toast({

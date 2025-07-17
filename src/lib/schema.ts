@@ -28,6 +28,7 @@ export const users = pgTable('users', {
   zipCode: varchar('zip_code'),
   verificationCode: varchar('verification_code'),
   verificationCodeExpires: timestamp('verification_code_expires', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const parts = pgTable('parts', {
@@ -63,5 +64,5 @@ export const bookings = pgTable('bookings', {
     bookingDate: timestamp('booking_date', { withTimezone: true }).notNull(),
     status: bookingStatusEnum('status').notNull(),
     cost: real('cost').notNull(),
+    vendorName: varchar('vendor_name').notNull(),
 });
-

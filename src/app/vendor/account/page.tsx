@@ -1,16 +1,39 @@
 
-"use client";
-
 import { VendorHeader } from "@/components/vendor-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Package, CalendarDays, BarChart } from "lucide-react";
-import { differenceInDays, formatDistanceToNow } from "date-fns";
-import { useSettings } from "@/context/settings-context";
+import { formatDistanceToNow } from "date-fns";
+import { getVendorStats } from "@/lib/actions";
+import { auth } from "@/lib/auth"; // Assuming you have an auth utility to get session
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { users } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
-export default function VendorAccountPage() {
-    const { loggedInUser } = useSettings();
-    const registrationDate = new Date('2023-01-15'); // This should ideally come from user data
+
+// This is a placeholder for a real authentication system.
+// In a real app, you'd get the loggedInUser from a server-side session.
+async function getLoggedInUser() {
+    // This is a mock implementation. Replace with your actual auth logic.
+    // For now, we'll just grab the first vendor we find.
+    const vendorUser = await db.select().from(users).where(eq(users.role, 'vendor')).limit(1);
+    return vendorUser[0];
+}
+
+export default async function VendorAccountPage() {
+    const loggedInUser = await getLoggedInUser();
+
+    if (!loggedInUser || !loggedInUser.name) {
+       return (
+         <div className="p-8">
+            <p>Could not find vendor information. Please log in again.</p>
+         </div>
+       )
+    }
+
+    const stats = await getVendorStats(loggedInUser.name);
+    const registrationDate = loggedInUser.createdAt || new Date();
     const membershipDuration = formatDistanceToNow(registrationDate);
 
   return (
@@ -26,43 +49,43 @@ export default function VendorAccountPage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center space-x-4">
-                    <div className="text-2xl font-bold">{loggedInUser?.name || 'Your Company'}</div>
+                    <div className="text-2xl font-bold">{loggedInUser.name}</div>
                     <Badge variant="secondary">Verified Vendor</Badge>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border">
                         <CalendarDays className="h-6 w-6 text-primary" />
                         <div>
                             <p className="text-sm text-muted-foreground">Member Since</p>
-                            <p className="font-semibold">January 15, 2023 ({membershipDuration} ago)</p>
+                            <p className="font-semibold">{new Date(registrationDate).toLocaleDateString()} ({membershipDuration} ago)</p>
                         </div>
                     </div>
                     <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border">
                         <DollarSign className="h-6 w-6 text-primary" />
                         <div>
                             <p className="text-sm text-muted-foreground">Total Revenue</p>
-                            <p className="font-semibold">$45,231.89</p>
+                            <p className="font-semibold">${stats.totalRevenue.toFixed(2)}</p>
                         </div>
                     </div>
                      <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border">
                         <Package className="h-6 w-6 text-primary" />
                         <div>
                             <p className="text-sm text-muted-foreground">Active Listings</p>
-                            <p className="font-semibold">132</p>
+                            <p className="font-semibold">{stats.activeListings}</p>
                         </div>
                     </div>
                      <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border">
                         <BarChart className="h-6 w-6 text-primary" />
                         <div>
                             <p className="text-sm text-muted-foreground">Total Sales</p>
-                            <p className="font-semibold">265</p>
+                            <p className="font-semibold">{stats.totalSales}</p>
                         </div>
                     </div>
                 </div>
                  <div>
                     <h3 className="text-md font-semibold mb-2">Company Bio</h3>
                     <p className="text-sm text-muted-foreground">
-                        {loggedInUser?.name} has been a leading supplier of quality automotive components in the region since 2010. We specialize in both new and OEM parts for a wide range of Japanese and German vehicles. Our commitment is to quality and customer satisfaction.
+                        {loggedInUser.name} has been a leading supplier of quality automotive components in the region since 2010. We specialize in both new and OEM parts for a wide range of Japanese and German vehicles. Our commitment is to quality and customer satisfaction.
                     </p>
                 </div>
             </CardContent>

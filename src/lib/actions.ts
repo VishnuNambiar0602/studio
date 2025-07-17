@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails } from "./types";
 import { db } from "./db";
 import { bookings, orders, parts, users } from "./schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 
 // --- PART ACTIONS ---
@@ -25,6 +25,9 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): P
         revalidatePath('/used-parts');
         revalidatePath('/oem-parts');
         revalidatePath('/vendor/inventory');
+        revalidatePath('/vendor/dashboard');
+        revalidatePath('/vendor/account');
+
 
         return newPartData;
     } catch (error) {
@@ -42,6 +45,8 @@ export async function updatePart(partId: string, partData: Part) {
     revalidatePath("/new-parts");
     revalidatePath("/used-parts");
     revalidatePath("/oem-parts");
+    revalidatePath('/vendor/dashboard');
+    revalidatePath('/vendor/account');
 }
 
 export async function getParts(): Promise<Part[]> {
@@ -54,6 +59,9 @@ export async function getPart(id: string): Promise<Part | undefined> {
     return result[0];
 }
 
+export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
+    return db.select().from(parts).where(eq(parts.vendorAddress, vendorName));
+}
 
 // --- USER ACTIONS ---
 
@@ -78,7 +86,8 @@ export async function registerUser(userData: UserRegistration) {
     
     const newUser: User = { 
         id: `user-${Date.now()}`, 
-        ...userData 
+        ...userData,
+        createdAt: new Date(),
     };
 
     await db.insert(users).values(newUser);
@@ -160,7 +169,8 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
             userName: orderData.shippingDetails.name,
             bookingDate: newOrder.orderDate,
             status: 'Order Fulfillment',
-            cost: item.price
+            cost: item.price,
+            vendorName: item.vendorAddress
         };
         await db.insert(bookings).values(newBookingTask);
     }
@@ -182,7 +192,7 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean; 
     return { success: true, message: 'Order has been cancelled.' };
 }
 
-export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number) {
+export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string) {
     // In a real app, you'd get the logged in user's ID.
     // For now, we'll find a seeded customer user to make the booking.
     const userResult = await db.select().from(users).where(eq(users.role, 'customer')).limit(1);
@@ -200,7 +210,8 @@ export async function submitBooking(partId: string, partName: string, bookingDat
         userId: mockUser.id,
         userName: mockUser.name,
         cost,
-        status: 'Pending'
+        status: 'Pending',
+        vendorName: vendorName,
     };
 
     await db.insert(bookings).values(newBooking);
@@ -209,12 +220,56 @@ export async function submitBooking(partId: string, partName: string, bookingDat
     return { success: true, message: "Viewing booked successfully!" };
 }
 
-export async function getVendorBookings(): Promise<Booking[]> {
-    return db.select().from(bookings).orderBy(desc(bookings.bookingDate));
+export async function getVendorBookings(vendorName: string): Promise<Booking[]> {
+    if (!vendorName) return [];
+    return db.select().from(bookings).where(eq(bookings.vendorName, vendorName)).orderBy(desc(bookings.bookingDate));
 }
 
 export async function completeBooking(bookingId: string) {
     await db.update(bookings).set({ status: 'Completed' }).where(eq(bookings.id, bookingId));
     revalidatePath('/vendor/tasks');
     return { success: true };
+}
+
+export async function getVendorStats(vendorName: string) {
+    if (!vendorName) {
+        return {
+            totalRevenue: 0,
+            itemsOnHold: 0,
+            activeListings: 0,
+            totalSales: 0,
+        };
+    }
+
+    const revenueResult = await db.select({
+        total: sql<number>`sum(${bookings.cost})`
+    }).from(bookings).where(and(
+        eq(bookings.vendorName, vendorName),
+        eq(bookings.status, 'Completed')
+    ));
+
+    const holdResult = await db.select({
+        count: sql<number>`count(*)`
+    }).from(bookings).where(and(
+        eq(bookings.vendorName, vendorName),
+        eq(bookings.status, 'Pending')
+    ));
+    
+    const listingsResult = await db.select({
+        count: sql<number>`count(*)`
+    }).from(parts).where(eq(parts.vendorAddress, vendorName));
+
+    const salesResult = await db.select({
+        count: sql<number>`count(*)`
+    }).from(bookings).where(and(
+        eq(bookings.vendorName, vendorName),
+        eq(bookings.status, 'Completed')
+    ));
+
+    return {
+        totalRevenue: revenueResult[0].total || 0,
+        itemsOnHold: holdResult[0].count || 0,
+        activeListings: listingsResult[0].count || 0,
+        totalSales: salesResult[0].count || 0,
+    };
 }

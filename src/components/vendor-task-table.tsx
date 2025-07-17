@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import * as React from "react";
@@ -24,6 +25,7 @@ import { getVendorBookings, completeBooking } from "@/lib/actions";
 import type { Booking } from "@/lib/types";
 import { useTransition } from "react";
 import { cva } from "class-variance-authority";
+import { useSettings } from "@/context/settings-context";
 
 const taskBadgeVariants = cva("capitalize", {
     variants: {
@@ -38,21 +40,26 @@ const taskBadgeVariants = cva("capitalize", {
 export function VendorTaskTable() {
   const [bookings, setBookings] = React.useState<Booking[]>([]);
   const [isPending, startTransition] = useTransition();
+  const { loggedInUser } = useSettings();
 
   React.useEffect(() => {
     const fetchBookings = async () => {
-      const data = await getVendorBookings();
-      setBookings(data);
+      if (loggedInUser?.name) {
+          const data = await getVendorBookings(loggedInUser.name);
+          setBookings(data);
+      }
     };
     fetchBookings();
-  }, []);
+  }, [loggedInUser]);
 
   const handleComplete = (bookingId: string) => {
     startTransition(async () => {
       await completeBooking(bookingId);
       // Refresh the list
-      const data = await getVendorBookings();
-      setBookings(data);
+      if (loggedInUser?.name) {
+          const data = await getVendorBookings(loggedInUser.name);
+          setBookings(data);
+      }
     });
   };
 

@@ -1,84 +1,65 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
+
+"use client";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { getVendorBookings } from "@/lib/actions";
+import { useEffect, useState } from "react";
+import type { Booking } from "@/lib/types";
+import { useSettings } from "@/context/settings-context";
 
 export function VendorRecentSales() {
+  const [recentSales, setRecentSales] = useState<Booking[]>([]);
+  const { loggedInUser } = useSettings();
+
+  useEffect(() => {
+    async function fetchSales() {
+      if (loggedInUser?.name) {
+        const allBookings = await getVendorBookings(loggedInUser.name);
+        const completedSales = allBookings
+          .filter(b => b.status === 'Completed')
+          .slice(0, 5); // Get the 5 most recent
+        setRecentSales(completedSales);
+      }
+    }
+    fetchSales();
+  }, [loggedInUser]);
+
+  const totalSalesThisMonth = recentSales.length; // This is just the count of recent sales, not a monthly total
+
   return (
     <Card>
-        <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
-            <CardDescription>
-                You made 265 sales this month.
-            </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-8">
-            <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                <AvatarFallback>OM</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Olivia Martin</p>
+      <CardHeader>
+        <CardTitle>Recent Sales</CardTitle>
+        <CardDescription>
+          {totalSalesThisMonth > 0
+            ? `You have ${totalSalesThisMonth} recent completed sales.`
+            : "No recent sales."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-8">
+        {recentSales.length > 0 ? (
+          recentSales.map((sale) => (
+            <div key={sale.id} className="flex items-center gap-4">
+              <Avatar className="hidden h-9 w-9 sm:flex">
+                {/* Fallback with initials */}
+                <AvatarFallback>
+                  {sale.userName.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid gap-1">
+                <p className="text-sm font-medium leading-none">{sale.userName}</p>
                 <p className="text-sm text-muted-foreground">
-                    olivia.martin@email.com
+                  {sale.partName}
                 </p>
-                </div>
-                <div className="ml-auto font-medium">+$1,999.00</div>
+              </div>
+              <div className="ml-auto font-medium">+${sale.cost.toFixed(2)}</div>
             </div>
-            <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/02.png" alt="Avatar" />
-                <AvatarFallback>JL</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Jackson Lee</p>
-                <p className="text-sm text-muted-foreground">
-                    jackson.lee@email.com
-                </p>
-                </div>
-                <div className="ml-auto font-medium">+$39.00</div>
-            </div>
-            <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/03.png" alt="Avatar" />
-                <AvatarFallback>IN</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Isabella Nguyen</p>
-                <p className="text-sm text-muted-foreground">
-                    isabella.nguyen@email.com
-                </p>
-                </div>
-                <div className="ml-auto font-medium">+$299.00</div>
-            </div>
-            <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/04.png" alt="Avatar" />
-                <AvatarFallback>WK</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">William Kim</p>
-                <p className="text-sm text-muted-foreground">will@email.com</p>
-                </div>
-                <div className="ml-auto font-medium">+$99.00</div>
-            </div>
-            <div className="flex items-center gap-4">
-                <Avatar className="hidden h-9 w-9 sm:flex">
-                <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                <AvatarFallback>SD</AvatarFallback>
-                </Avatar>
-                <div className="grid gap-1">
-                <p className="text-sm font-medium leading-none">Sofia Davis</p>
-                <p className="text-sm text-muted-foreground">
-                    sofia.davis@email.com
-                </p>
-                </div>
-                <div className="ml-auto font-medium">+$39.00</div>
-            </div>
-        </CardContent>
+          ))
+        ) : (
+          <p className="text-sm text-muted-foreground text-center">Your recent sales will appear here.</p>
+        )}
+      </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,22 +1,43 @@
 
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getParts } from "@/lib/actions";
+import { getParts, getVendorStats } from "@/lib/actions";
 import { DollarSign, Package, Hourglass } from "lucide-react"
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParts } from "@/context/part-context";
 import { useSettings } from "@/context/settings-context";
 
+interface VendorStats {
+    totalRevenue: number;
+    itemsOnHold: number;
+    activeListings: number;
+}
+
 export function VendorDashboardStats() {
     const { parts } = useParts();
     const { loggedInUser } = useSettings();
-
-    const inventoryCount = parts.filter(p => p.vendorAddress === loggedInUser?.name).length;
-
-    // Mocked total revenue for now
-    const totalRevenue = 45231.89;
+    const [stats, setStats] = useState<VendorStats>({
+        totalRevenue: 0,
+        itemsOnHold: 0,
+        activeListings: 0,
+    });
+    
+    useEffect(() => {
+        async function fetchStats() {
+            if (loggedInUser?.name) {
+                const fetchedStats = await getVendorStats(loggedInUser.name);
+                setStats({
+                    totalRevenue: fetchedStats.totalRevenue,
+                    itemsOnHold: fetchedStats.itemsOnHold,
+                    activeListings: fetchedStats.activeListings
+                });
+            }
+        }
+        fetchStats();
+    }, [loggedInUser, parts]); // Re-fetch when parts change (e.g., new part added)
 
     return (
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
@@ -26,8 +47,8 @@ export function VendorDashboardStats() {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-                    <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+                    <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+                    <p className="text-xs text-muted-foreground">From completed sales</p>
                 </CardContent>
             </Card>
             <Card>
@@ -36,7 +57,7 @@ export function VendorDashboardStats() {
                     <Hourglass className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">+12</div>
+                    <div className="text-2xl font-bold">+{stats.itemsOnHold}</div>
                     <p className="text-xs text-muted-foreground">Awaiting customer pickup/payment</p>
                 </CardContent>
             </Card>
@@ -47,7 +68,7 @@ export function VendorDashboardStats() {
                         <Package className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{inventoryCount}</div>
+                        <div className="text-2xl font-bold">{stats.activeListings}</div>
                         <p className="text-xs text-muted-foreground">Total parts available for sale</p>
                     </CardContent>
                 </Card>
