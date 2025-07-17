@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 
 
 export function VendorHeader() {
-    const { logoutUser } = useSettings();
+    const { loggedInUser, logoutUser } = useSettings();
     const pathname = usePathname();
     const router = useRouter();
 
@@ -53,7 +53,7 @@ export function VendorHeader() {
               href="/vendor/dashboard"
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
-              <span className="">GulfCarX Vendor</span>
+              <span className="">{loggedInUser?.name || 'Vendor Panel'}</span>
             </Link>
             {navItems.map((item) => (
                 <Link

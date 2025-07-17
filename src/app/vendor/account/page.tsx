@@ -1,13 +1,16 @@
 
+"use client";
+
 import { VendorHeader } from "@/components/vendor-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, Package, CalendarDays, BarChart } from "lucide-react";
 import { differenceInDays, formatDistanceToNow } from "date-fns";
+import { useSettings } from "@/context/settings-context";
 
 export default function VendorAccountPage() {
-    const registrationDate = new Date('2023-01-15');
-    const daysAsMember = differenceInDays(new Date(), registrationDate);
+    const { loggedInUser } = useSettings();
+    const registrationDate = new Date('2023-01-15'); // This should ideally come from user data
     const membershipDuration = formatDistanceToNow(registrationDate);
 
   return (
@@ -23,7 +26,7 @@ export default function VendorAccountPage() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center space-x-4">
-                    <div className="text-2xl font-bold">AutoParts Inc.</div>
+                    <div className="text-2xl font-bold">{loggedInUser?.name || 'Your Company'}</div>
                     <Badge variant="secondary">Verified Vendor</Badge>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -59,7 +62,7 @@ export default function VendorAccountPage() {
                  <div>
                     <h3 className="text-md font-semibold mb-2">Company Bio</h3>
                     <p className="text-sm text-muted-foreground">
-                        AutoParts Inc. has been a leading supplier of quality automotive components in the region since 2010. We specialize in both new and OEM parts for a wide range of Japanese and German vehicles. Our commitment is to quality and customer satisfaction.
+                        {loggedInUser?.name} has been a leading supplier of quality automotive components in the region since 2010. We specialize in both new and OEM parts for a wide range of Japanese and German vehicles. Our commitment is to quality and customer satisfaction.
                     </p>
                 </div>
             </CardContent>
