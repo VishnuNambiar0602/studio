@@ -32,11 +32,13 @@ export function VendorHeader() {
     const { loggedInUser, logoutUser } = useSettings();
     const pathname = usePathname();
     const router = useRouter();
-    const [isClient, setIsClient] = useState(false);
+    const [companyName, setCompanyName] = useState('Vendor Panel');
 
     useEffect(() => {
-        setIsClient(true);
-    }, []);
+        if (loggedInUser?.name) {
+            setCompanyName(loggedInUser.name);
+        }
+    }, [loggedInUser]);
 
 
     const handleLogout = () => {
@@ -61,7 +63,7 @@ export function VendorHeader() {
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
               <span className="">
-                {isClient ? loggedInUser?.name || 'Vendor Panel' : 'Vendor Panel'}
+                {companyName}
               </span>
             </Link>
             {navItems.map((item) => (
