@@ -38,6 +38,7 @@ export const parts = pgTable('parts', {
   imageUrls: jsonb('image_urls').$type<string[]>().default([]).notNull(),
   quantity: integer('quantity').notNull(),
   vendorAddress: varchar('vendor_address').notNull(),
+  manufacturer: varchar('manufacturer').notNull(),
   isVisibleForSale: boolean('is_visible_for_sale').default(true).notNull(),
   category: jsonb('category').$type<Array<'new' | 'used' | 'oem'>>().default([]).notNull(),
 });

@@ -8,6 +8,7 @@ export type Part = {
   imageUrls: string[]; // Changed from imageUrl to imageUrls
   quantity: number; // Changed from inStock boolean
   vendorAddress: string;
+  manufacturer: string;
   isVisibleForSale?: boolean;
   category: ('new' | 'used' | 'oem')[];
 };

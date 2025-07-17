@@ -38,6 +38,7 @@ const addPartFormSchema = z.object({
   name: z.string().min(3, "Part name must be at least 3 characters."),
   description: z.string().min(10, "Description must be at least 10 characters."),
   partNumber: z.string().min(1, "Part number is required."),
+  manufacturer: z.string().min(2, "Manufacturer name is required."),
   quantity: z.coerce.number().int().positive("Quantity must be a positive number."),
   companyName: z.string().min(2, "Company name is required."),
   dateOfManufacture: z.date({
@@ -81,6 +82,7 @@ export function AddPartForm() {
       name: "",
       description: "",
       partNumber: "",
+      manufacturer: "",
       companyName: loggedInUser?.name || "",
       price: 0,
       quantity: 1,
@@ -112,17 +114,14 @@ export function AddPartForm() {
             imageUrls: imageUrls,
             quantity: data.quantity,
             vendorAddress: data.companyName,
+            manufacturer: data.manufacturer,
             category: data.category as ('new' | 'used' | 'oem')[],
         };
 
-        addPart({
-            id: `temp-${Date.now()}`,
-            ...newPartData,
-            isVisibleForSale: true
-        });
-
-        await createPart(newPartData);
+        const createdPart = await createPart(newPartData);
         
+        addPart(createdPart);
+
         toast({
             title: "Success!",
             description: "Part added successfully! It is now visible to customers.",
@@ -187,14 +186,30 @@ export function AddPartForm() {
             </FormItem>
           )}
         />
+         <FormField
+          control={form.control}
+          name="manufacturer"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Manufacturer</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Bosch, K&N, Denso" {...field} />
+              </FormControl>
+               <FormDescription>
+                The company that manufactured the part.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="companyName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Name</FormLabel>
+              <FormLabel>Vendor (Your Company)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., AutoParts Inc." {...field} readOnly disabled />
+                <Input {...field} readOnly disabled />
               </FormControl>
               <FormDescription>
                 This is your registered company name and cannot be changed here.
