@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Instagram, Facebook, Twitter } from "lucide-react";
 
@@ -8,7 +9,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
             <Link href="/" className="text-xl font-bold text-foreground">
-              Desert Drive Depot
+              GulfCarX
             </Link>
             <p className="mt-2 text-sm">
               Your source for high-quality auto parts in the desert region.
@@ -49,7 +50,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-border/50 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} Desert Drive Depot. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} GulfCarX. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
