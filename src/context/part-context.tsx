@@ -26,7 +26,9 @@ export function PartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addPart = (part: Part) => {
-    setParts((prevParts) => [{...part, isVisibleForSale: true}, ...prevParts]);
+    // This updates the client-side state immediately for the vendor.
+    // The server action's revalidatePath will handle consistency for other users.
+    setParts((prevParts) => [part, ...prevParts]);
   };
   
   const updatePartState = (partId: string, updatedPartData: Part) => {

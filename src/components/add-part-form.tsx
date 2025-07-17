@@ -119,6 +119,7 @@ export function AddPartForm() {
 
         const createdPart = await createPart(newPartData);
         
+        // Update client-side context for immediate UI feedback for the vendor
         addPart(createdPart);
 
         toast({

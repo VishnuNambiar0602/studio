@@ -13,10 +13,11 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
     const newPartData: Part = {
         id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         ...part,
-        isVisibleForSale: true,
+        isVisibleForSale: true, // Ensure parts are visible by default
     };
     MOCK_PARTS.unshift(newPartData); // Add to the beginning of the array
     
+    // Revalidate all paths where parts are displayed
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
     revalidatePath("/new-parts");
