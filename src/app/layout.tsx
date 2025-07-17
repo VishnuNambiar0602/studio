@@ -8,6 +8,7 @@ import { SettingsProvider } from '@/context/settings-context';
 import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
 import { PartProvider } from '@/context/part-context';
+import { Footer } from '@/components/footer';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -15,26 +16,29 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: 'GulfCarX',
+  title: 'Desert Drive Depot',
   description: 'AI-powered automotive parts platform for used, OEM, and new parts.',
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.Node;
 }>) {
 
   return (
     <html lang="en" dir="ltr" className={fontSans.variable}>
       <body
-        className={cn('min-h-screen bg-background font-sans antialiased')}
+        className={cn('min-h-screen bg-background font-sans antialiased flex flex-col')}
         suppressHydrationWarning={true}
       >
         <SettingsProvider>
           <PartProvider>
             <CartProvider>
-              {children}
+              <div className="flex-grow">
+                {children}
+              </div>
+              <Footer />
             </CartProvider>
           </PartProvider>
         </SettingsProvider>

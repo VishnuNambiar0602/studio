@@ -16,8 +16,8 @@ export default async function Home() {
         <Suspense fallback={<ProductGridSkeleton/>}>
           <ProductSection />
         </Suspense>
+        <Chatbot />
       </main>
-      <Chatbot />
     </div>
   );
 }
