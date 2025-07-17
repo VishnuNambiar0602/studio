@@ -195,7 +195,7 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean; 
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string) {
-    const userResult = await db.select().from(users).where(eq(users.role, 'customer')).limit(1);
+    const userResult = await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.role, 'customer')).limit(1);
     const mockUser = userResult[0];
 
     if (!mockUser) {
