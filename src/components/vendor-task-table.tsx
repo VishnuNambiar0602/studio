@@ -19,10 +19,21 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Download } from "lucide-react";
+import { CheckCircle, Download, PackageSearch } from "lucide-react";
 import { getVendorBookings, completeBooking } from "@/lib/actions";
 import type { Booking } from "@/lib/types";
 import { useTransition } from "react";
+import { cva } from "class-variance-authority";
+
+const taskBadgeVariants = cva("capitalize", {
+    variants: {
+      status: {
+        Pending: "bg-yellow-100 text-yellow-800",
+        Completed: "bg-green-100 text-green-800",
+        'Order Fulfillment': "bg-blue-100 text-blue-800",
+      },
+    },
+  });
 
 export function VendorTaskTable() {
   const [bookings, setBookings] = React.useState<Booking[]>([]);
@@ -46,9 +57,10 @@ export function VendorTaskTable() {
   };
 
   const downloadCSV = () => {
-    const headers = ["Booking ID", "Part Name", "Customer", "Booking Date", "Cost", "Status"];
+    const headers = ["Task ID", "Task Type", "Part Name", "Customer", "Date", "Cost", "Status"];
     const rows = bookings.map(b => [
       b.id,
+      b.status === 'Order Fulfillment' ? 'Order' : 'Viewing',
       b.partName,
       b.userName,
       new Date(b.bookingDate).toLocaleDateString(),
@@ -62,7 +74,7 @@ export function VendorTaskTable() {
 
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", "bookings_export.csv");
+    link.setAttribute("download", "tasks_export.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -73,9 +85,9 @@ export function VendorTaskTable() {
       <CardHeader>
         <div className="flex items-center justify-between">
             <div>
-                <CardTitle>Customer Bookings</CardTitle>
+                <CardTitle>Tasks & Bookings</CardTitle>
                 <CardDescription>
-                Manage and track all requested part viewings.
+                Manage customer orders and viewing requests.
                 </CardDescription>
             </div>
             <Button onClick={downloadCSV} variant="outline" size="sm">
@@ -88,10 +100,10 @@ export function VendorTaskTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Part Name</TableHead>
+              <TableHead>Task</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Booking Date</TableHead>
-              <TableHead>Cost</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Value</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
@@ -100,17 +112,22 @@ export function VendorTaskTable() {
             {bookings.length > 0 ? (
               bookings.map((booking) => (
                 <TableRow key={booking.id}>
-                  <TableCell className="font-medium">{booking.partName}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                        {booking.status === 'Order Fulfillment' ? <PackageSearch className="h-5 w-5 text-muted-foreground" /> : <CheckCircle className="h-5 w-5 text-muted-foreground" />}
+                        <span>{booking.partName}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>{booking.userName}</TableCell>
                   <TableCell>{new Date(booking.bookingDate).toLocaleDateString()}</TableCell>
                   <TableCell>${booking.cost.toFixed(2)}</TableCell>
                   <TableCell>
-                    <Badge variant={booking.status === 'Pending' ? 'destructive' : 'secondary'}>
+                    <Badge className={taskBadgeVariants({ status: booking.status })}>
                         {booking.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    {booking.status === 'Pending' && (
+                    {booking.status !== 'Completed' && (
                         <Button 
                             size="sm" 
                             onClick={() => handleComplete(booking.id)}
@@ -126,7 +143,7 @@ export function VendorTaskTable() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="text-center h-24">
-                  No bookings found.
+                  No tasks or bookings found.
                 </TableCell>
               </TableRow>
             )}

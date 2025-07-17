@@ -58,6 +58,8 @@ export interface Order {
   cancelable: boolean;
 }
 
+export type BookingStatus = 'Pending' | 'Completed' | 'Order Fulfillment';
+
 export interface Booking {
   id: string;
   partId: string;
@@ -65,7 +67,7 @@ export interface Booking {
   userId: string;
   userName: string;
   bookingDate: Date;
-  status: 'Pending' | 'Completed';
+  status: BookingStatus;
   cost: number;
 }
 
@@ -80,3 +82,4 @@ export interface CheckoutDetails {
     expiryDate?: string;
     cvc?: string;
 }
+

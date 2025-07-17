@@ -32,6 +32,7 @@ export function OrderHistory() {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true);
       const data = await getCustomerOrders(MOCK_USER_ID);
       setOrders(data);
       setLoading(false);

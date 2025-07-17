@@ -140,16 +140,31 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
         cancelable: true,
     };
 
-    // Simulate reducing stock quantity
+    // Simulate reducing stock quantity and creating vendor tasks
     for (const item of orderData.items) {
         const partInStock = MOCK_PARTS.find(p => p.id === item.id);
         if (partInStock) {
             partInStock.quantity -= 1; // Assuming quantity of 1 for each item in cart
         }
+
+        // Create a task for the vendor
+        const newBookingTask: Booking = {
+            id: `booking-task-${item.id}-${Date.now()}`,
+            partId: item.id,
+            partName: `Order: ${item.name}`,
+            userId: orderData.userId,
+            userName: orderData.shippingDetails.name,
+            bookingDate: newOrder.orderDate,
+            status: 'Order Fulfillment',
+            cost: item.price
+        };
+        MOCK_BOOKINGS.unshift(newBookingTask);
     }
 
     MOCK_ORDERS.unshift(newOrder); // Add to the beginning of the orders array
+    
     revalidatePath('/my-orders');
+    revalidatePath('/vendor/tasks');
     revalidatePath('/');
     
     return { success: true, message: "Order placed successfully!", orderId: newOrder.id };
@@ -187,7 +202,7 @@ export async function submitBooking(partId: string, partName: string, bookingDat
         status: 'Pending'
     };
 
-    MOCK_BOOKINGS.push(newBooking);
+    MOCK_BOOKINGS.unshift(newBooking);
 
     revalidatePath('/vendor/tasks');
     return { success: true, message: "Viewing booked successfully!" };

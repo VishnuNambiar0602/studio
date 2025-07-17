@@ -14,7 +14,7 @@ import type { Part, User, Order, Booking } from './types';
 export const userRoleEnum = pgEnum('user_role', ['customer', 'vendor', 'admin']);
 export const partCategoryEnum = pgEnum('part_category', ['new', 'used', 'oem']);
 export const orderStatusEnum = pgEnum('order_status', ['Placed', 'Processing', 'Ready for Pickup', 'Picked Up', 'Cancelled']);
-export const bookingStatusEnum = pgEnum('booking_status', ['Pending', 'Completed']);
+export const bookingStatusEnum = pgEnum('booking_status', ['Pending', 'Completed', 'Order Fulfillment']);
 
 
 export const users = pgTable('users', {
@@ -64,3 +64,4 @@ export const bookings = pgTable('bookings', {
     status: bookingStatusEnum('status').notNull(),
     cost: real('cost').notNull(),
 });
+
