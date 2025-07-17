@@ -15,8 +15,8 @@ const dictionaries = {
       login: 'Sign Up / Login',
     },
     hero: {
-      title: 'The Future of Auto Parts, Realized',
-      subtitle: 'Your AI-powered platform for high-quality used, OEM, and new car parts across the Sultanate.',
+      title: 'Your Bespoke Car Dealer',
+      subtitle: '',
       alt: 'Desert landscape with a modern car'
     },
   },
@@ -33,8 +33,8 @@ const dictionaries = {
       login: 'تسجيل الدخول / إنشاء حساب',
     },
     hero: {
-      title: 'مستقبل قطع غيار السيارات، أصبح حقيقة',
-      subtitle: 'منصتك المدعومة بالذكاء الاصطناعي لقطع غيار السيارات المستعملة والجديدة والأصلية عالية الجودة في جميع أنحاء السلطنة.',
+      title: 'وكيل سياراتك الخاص',
+      subtitle: '',
       alt: 'منظر طبيعي صحراوي به سيارة حديثة'
     },
   },
