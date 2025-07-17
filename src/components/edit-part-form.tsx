@@ -30,7 +30,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { updatePart } from "@/lib/actions";
 import type { Part } from "@/lib/types";
-import { useRouter } from "next/navigation";
+import { useParts } from "@/context/part-context";
 
 const categories = ["new", "used", "oem"] as const;
 
@@ -39,8 +39,8 @@ const editPartFormSchema = z.object({
   name: z.string().min(3, "Part name must be at least 3 characters."),
   description: z.string().min(10, "Description must be at least 10 characters."),
   partNumber: z.string().min(1, "Part number is required."),
+  manufacturer: z.string().min(2, "Manufacturer is required."),
   quantity: z.coerce.number().int().positive("Quantity must be a positive number."),
-  companyName: z.string().min(2, "Company name is required."),
   dateOfManufacture: z.date({
     required_error: "A date of manufacture is required.",
   }),
@@ -64,7 +64,7 @@ interface EditPartFormProps {
 export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
+  const { updatePartInContext } = useParts();
 
   const form = useForm<EditPartFormValues>({
     resolver: zodResolver(editPartFormSchema),
@@ -72,7 +72,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
       name: part.name,
       description: part.description,
       partNumber: `SKU-${part.id.substring(0, 6)}`, // Mocking part number
-      companyName: part.vendorAddress,
+      manufacturer: part.manufacturer,
       price: part.price,
       quantity: part.quantity,
       category: part.category,
@@ -85,7 +85,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
         name: part.name,
         description: part.description,
         partNumber: `SKU-${part.id.substring(0, 6)}`, // Mocking part number
-        companyName: part.vendorAddress,
+        manufacturer: part.manufacturer,
         price: part.price,
         quantity: part.quantity,
         category: part.category,
@@ -103,19 +103,19 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
             description: data.description,
             price: data.price,
             quantity: data.quantity,
-            vendorAddress: data.companyName,
+            manufacturer: data.manufacturer,
             category: data.category as ('new' | 'used' | 'oem')[],
         };
 
         await updatePart(part.id, updatedData);
+        updatePartInContext(updatedData); // Update client-side state
         
         toast({
             title: "Success!",
             description: "Part updated successfully.",
         });
         
-        onUpdate(); // Close the dialog on successful update
-        router.refresh(); // Refresh to ensure data is fresh
+        onUpdate(); // Close the dialog and trigger refresh
 
     } catch (error) {
          toast({
@@ -173,13 +173,16 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
         />
         <FormField
           control={form.control}
-          name="companyName"
+          name="manufacturer"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Name</FormLabel>
+              <FormLabel>Manufacturer</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., AutoParts Inc." {...field} />
+                <Input placeholder="e.g., Bosch, K&N, Denso" {...field} />
               </FormControl>
+               <FormDescription>
+                The company that manufactured the part.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

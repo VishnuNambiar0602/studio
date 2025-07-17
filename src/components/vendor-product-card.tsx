@@ -12,6 +12,7 @@ import { useTransition, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "./ui/dialog";
 import { EditPartForm } from "./edit-part-form";
 import { useRouter } from "next/navigation";
+import { useParts } from "@/context/part-context";
 
 
 interface VendorProductCardProps {
@@ -22,14 +23,21 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
   const [isPending, startTransition] = useTransition();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
+  const { updatePartInContext } = useParts();
 
 
   const handleToggleVisibility = () => {
     startTransition(async () => {
         await actions.togglePartVisibility(part.id);
+        updatePartInContext({ ...part, isVisibleForSale: !part.isVisibleForSale });
         router.refresh(); // Refresh the page to show the updated state
     });
   };
+
+  const handleUpdate = () => {
+      setIsEditDialogOpen(false);
+      router.refresh();
+  }
 
   const isInStock = part.quantity > 0;
 
@@ -91,7 +99,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
                     Update the details for this part. Click save when you're done.
                 </DialogDescription>
             </DialogHeader>
-            <EditPartForm part={part} onUpdate={() => setIsEditDialogOpen(false)} />
+            <EditPartForm part={part} onUpdate={handleUpdate} />
           </DialogContent>
         </Dialog>
       </CardFooter>

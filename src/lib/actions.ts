@@ -53,7 +53,7 @@ export async function togglePartVisibility(partId: string) {
     if (part) {
         part.isVisibleForSale = !part.isVisibleForSale;
     }
-
+    
     revalidatePath("/");
     revalidatePath("/vendor/inventory");
     revalidatePath("/new-parts");
