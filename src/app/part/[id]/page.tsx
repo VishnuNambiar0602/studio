@@ -11,8 +11,8 @@ import { AddToCartButton } from "./_components/add-to-cart-button";
 import { BookViewingDialog } from "@/components/book-viewing-dialog";
 import { Button } from "@/components/ui/button";
 
-export default async function PartDetailPage({ params }: { params: { id: string } }) {
-  const part = await getPart(params.id);
+export default async function PartDetailPage({ params: { id } }: { params: { id: string } }) {
+  const part = await getPart(id);
 
   if (!part) {
     notFound();
