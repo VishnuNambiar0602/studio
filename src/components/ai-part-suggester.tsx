@@ -9,13 +9,14 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { useState, useEffect, useRef } from "react";
-import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
-import { Loader2, Bot, Upload, Camera, Mic, MicOff } from "lucide-react";
+import { suggestParts, SuggestPartsOutput } from "@/ai/flows/suggest-parts-from-request";
+import { Loader2, Bot, Upload, Camera, Mic, MicOff, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { TakeSnap } from "./take-snap";
 import { useSettings } from "@/context/settings-context";
 import { getParts } from "@/lib/actions";
+import Link from "next/link";
 
 const FormSchema = z.object({
   partDescription: z.string().min(10, {
@@ -30,7 +31,7 @@ const SpeechRecognition =
 
 export function AiPartSuggester() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<SuggestPartsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
   const { language } = useSettings();
@@ -124,7 +125,7 @@ export function AiPartSuggester() {
         photoDataUri: photoDataUri || undefined,
       });
       
-      setResult(response.suggestedParts);
+      setResult(response);
     } catch (e) {
       setError("An error occurred while suggesting parts. Please try again.");
       console.error(e);
@@ -246,13 +247,31 @@ export function AiPartSuggester() {
         </Tabs>
 
         {result && (
-          <div className="mt-8">
-            <Alert>
-              <AlertTitle>Suggested Parts</AlertTitle>
-              <AlertDescription>
-                <pre className="whitespace-pre-wrap font-sans text-sm">{result}</pre>
-              </AlertDescription>
-            </Alert>
+          <div className="mt-8 space-y-4">
+             <h3 className="text-lg font-semibold">The Genie's Response:</h3>
+            {result.isPartQuery ? (
+              result.suggestions && result.suggestions.length > 0 ? (
+                <div className="space-y-3">
+                  {result.suggestions.map((part) => (
+                    <Link href={`/part/${part.id}`} key={part.id} className="block">
+                      <Card className="hover:bg-muted/50 transition-colors">
+                        <CardContent className="p-4 flex items-center justify-between">
+                            <div>
+                                <h4 className="font-semibold text-primary">{part.name}</h4>
+                                <p className="text-sm text-muted-foreground">{part.reason}</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-primary shrink-0"/>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">I couldn't find any specific parts matching your request in our current inventory, but I can help with general questions!</p>
+              )
+            ) : (
+              <p className="text-muted-foreground">{result.answer}</p>
+            )}
           </div>
         )}
           {error && (

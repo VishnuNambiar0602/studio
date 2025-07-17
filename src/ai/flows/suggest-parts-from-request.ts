@@ -1,4 +1,4 @@
-// This file is machine-generated - edit with caution!
+
 'use server';
 /**
  * @fileOverview An AI agent that suggests relevant auto parts based on user description and/or photo, or answers general automotive questions.
@@ -13,7 +13,7 @@ import {z} from 'genkit';
 
 const SuggestPartsInputSchema = z.object({
   partDescription: z.string().describe('The description of the auto part the user needs, or a general automotive question.'),
-  availableParts: z.string().describe('A list of available auto parts and their details.'),
+  availableParts: z.string().describe('A JSON string of available auto parts, including their id, name, and description.'),
   photoDataUri: z
     .string()
     .optional()
@@ -23,8 +23,16 @@ const SuggestPartsInputSchema = z.object({
 });
 export type SuggestPartsInput = z.infer<typeof SuggestPartsInputSchema>;
 
+const SuggestedPartSchema = z.object({
+    id: z.string().describe("The unique identifier of the suggested part."),
+    name: z.string().describe("The name of the suggested part."),
+    reason: z.string().describe("A brief explanation of why this part is a good match for the user's query."),
+});
+
 const SuggestPartsOutputSchema = z.object({
-  suggestedParts: z.string().describe('A list of suggested parts that match the user description/image, or a helpful answer to a general automotive question. The response should be in the same language as the user query.'),
+  isPartQuery: z.boolean().describe("Set to true if the user is asking for a specific part, false if it's a general question."),
+  suggestions: z.array(SuggestedPartSchema).describe("A list of suggested parts that match the user description/image."),
+  answer: z.string().optional().describe("A helpful answer if the user asked a general automotive question."),
 });
 export type SuggestPartsOutput = z.infer<typeof SuggestPartsOutputSchema>;
 
@@ -36,30 +44,33 @@ const prompt = ai.definePrompt({
   name: 'suggestPartsPrompt',
   input: {schema: SuggestPartsInputSchema},
   output: {schema: SuggestPartsOutputSchema},
-  prompt: `You are an expert AI assistant named "The Genie" for an auto parts store. You are specialized in suggesting auto parts and answering automotive questions.
+  prompt: `You are an expert AI assistant named "The Genie" for GulfCarX, an auto parts store. You are specialized in suggesting auto parts and answering automotive questions.
 You will detect the language of the user's query (English or Arabic) and respond in the same language.
 
-Your primary goal is to determine the user's intent.
+Your primary goal is to determine the user's intent based on their query.
 
 1.  **If the user is asking for a specific part or shows an image of a part:**
-    -   Analyze the user's description and/or image to identify the part they need.
-    -   Compare this to the "Available Auto Parts" list.
-    -   Suggest the most relevant parts from the list.
-    -   If no matching parts are found, politely inform the user that the part is not currently in stock but you can answer other questions they might have.
-    -   The output should be a clear list of suggestions.
+    -   Set the 'isPartQuery' flag to true.
+    -   Analyze the user's description and/or image to identify the key characteristics of the part they need.
+    -   Compare this to the "Available Auto Parts" list, which is a JSON array.
+    -   Identify the most relevant parts from the list and populate the 'suggestions' array.
+    -   For each suggestion, you MUST include its 'id' and 'name' from the provided parts list.
+    -   Also, provide a brief 'reason' explaining why it's a good match.
+    -   If no matching parts are found, return an empty 'suggestions' array. Do not populate the 'answer' field.
 
 2.  **If the user is asking a general automotive question (e.g., "What is an OEM part?", "How do I change a tire?"):**
+    -   Set the 'isPartQuery' flag to false.
     -   Do not try to match the query to the "Available Auto Parts" list.
-    -   Provide a clear, helpful, and concise answer to their question.
-    -   The output should be a well-formatted, generalized response.
+    -   Provide a clear, helpful, and concise answer to their question in the 'answer' field.
+    -   Leave the 'suggestions' array empty.
 
 User's Query: {{{partDescription}}}
 {{#if photoDataUri}}
 User's Photo: {{media url=photoDataUri}}
 {{/if}}
-Available Auto Parts: {{{availableParts}}}
+Available Auto Parts (JSON format): {{{availableParts}}}
 
-Your Response:`,
+Your structured JSON response:`,
 });
 
 const suggestPartsFlow = ai.defineFlow(
