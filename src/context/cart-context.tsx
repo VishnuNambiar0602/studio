@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Part } from "@/lib/types";
@@ -7,6 +8,7 @@ interface CartContextType {
   cart: Part[];
   addToCart: (part: Part) => void;
   removeFromCart: (partId: string) => void;
+  clearCart: () => void;
   total: number;
 }
 
@@ -31,12 +33,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart((prevCart) => prevCart.filter((item) => item.id !== partId));
   };
   
+  const clearCart = () => {
+    setCart([]);
+  }
+
   const total = useMemo(() => {
     return cart.reduce((acc, item) => acc + item.price, 0);
   }, [cart]);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, total }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, total, clearCart }}>
       {children}
     </CartContext.Provider>
   );

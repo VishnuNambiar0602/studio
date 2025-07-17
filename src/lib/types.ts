@@ -67,3 +67,14 @@ export interface Booking {
   status: 'Pending' | 'Completed';
   cost: number;
 }
+
+export interface CheckoutDetails {
+    name: string;
+    email: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    cardNumber: string;
+    expiryDate: string;
+    cvc: string;
+}

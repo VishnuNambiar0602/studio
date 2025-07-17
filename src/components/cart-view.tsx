@@ -8,9 +8,11 @@ import { Separator } from "./ui/separator";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function CartView() {
   const { cart, removeFromCart, total } = useCart();
+  const router = useRouter();
 
   if (cart.length === 0) {
     return (
@@ -67,7 +69,7 @@ export function CartView() {
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button className="w-full" size="lg">Proceed to Checkout</Button>
+                    <Button className="w-full" size="lg" onClick={() => router.push('/checkout')}>Proceed to Checkout</Button>
                 </CardFooter>
             </Card>
         </div>

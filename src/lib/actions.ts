@@ -2,7 +2,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, OrderStatus } from "./types";
+import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, OrderStatus, CheckoutDetails } from "./types";
 import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data";
 
 
@@ -119,6 +119,35 @@ export async function resetPasswordWithCode(data: { email: string; code: string;
 
 
 // --- ORDER & BOOKING ACTIONS ---
+
+export async function placeOrder(orderData: { userId: string; items: Part[]; total: number; shippingDetails: CheckoutDetails }): Promise<{ success: boolean; message: string; orderId?: string; }> {
+    console.log("Mock Mode: Placing order for user:", orderData.userId);
+
+    const newOrder: Order = {
+        id: `order-${Date.now()}`,
+        userId: orderData.userId,
+        items: orderData.items,
+        total: orderData.total,
+        status: 'Placed',
+        orderDate: new Date(),
+        cancelable: true,
+    };
+
+    // Simulate reducing stock quantity
+    for (const item of orderData.items) {
+        const partInStock = MOCK_PARTS.find(p => p.id === item.id);
+        if (partInStock) {
+            partInStock.quantity -= 1; // Assuming quantity of 1 for each item in cart
+        }
+    }
+
+    MOCK_ORDERS.unshift(newOrder); // Add to the beginning of the orders array
+    revalidatePath('/my-orders');
+    revalidatePath('/');
+    
+    return { success: true, message: "Order placed successfully!", orderId: newOrder.id };
+}
+
 
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
     return MOCK_ORDERS.filter(o => o.userId === userId);
