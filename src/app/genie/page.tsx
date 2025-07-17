@@ -1,12 +1,29 @@
+
+"use client";
+
 import { AiPartSuggester } from "@/components/ai-part-suggester";
 import { Header } from "@/components/header";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function GeniePage() {
+  const router = useRouter();
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-background/50 hover:bg-background/80"
+          onClick={() => router.back()}
+        >
+          <X className="h-6 w-6" />
+          <span className="sr-only">Close Genie</span>
+        </Button>
         <div className="grid md:grid-cols-2 min-h-[calc(100vh-80px)]">
             <div className="relative hidden md:block">
                 <Image
