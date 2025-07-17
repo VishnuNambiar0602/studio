@@ -128,7 +128,7 @@ export function AddPartForm() {
               description: "Part added successfully! It is now visible to customers.",
           });
           form.reset();
-          router.refresh();
+          // No need to router.refresh() as context update handles UI change
         } else {
            throw new Error("Failed to create part.");
         }

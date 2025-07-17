@@ -4,7 +4,7 @@ import { ProductGrid } from "@/components/product-grid";
 import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
 import { Suspense } from "react";
 
-export default async function NewPartsPage() {
+export default function NewPartsPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
