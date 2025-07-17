@@ -50,7 +50,7 @@ export function HeroSection() {
     return (
         <section className="relative w-full h-[60vh] flex items-center justify-center text-center">
             <Image 
-              src="https://placehold.co/1920x1080.png" 
+              src="https://images.unsplash.com/photo-1642353644295-4dba92c2c86f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxEdWJhaSUyMGRlc3NlcnQlMjBzdW5zZXR8ZW58MHx8fHwxNzUyNzUwNzUyfDA&ixlib=rb-4.1.0&q=80&w=1080" 
               alt={t.hero.alt} 
               fill 
               className="object-cover"
