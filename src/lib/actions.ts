@@ -159,7 +159,7 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
             userId: orderData.userId,
             userName: orderData.shippingDetails.name,
             bookingDate: newOrder.orderDate,
-            status: 'Pending',
+            status: 'Order Fulfillment',
             cost: item.price
         };
         await db.insert(bookings).values(newBookingTask);
@@ -183,15 +183,22 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean; 
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number) {
-    const MOCK_USER = { id: 'user-123', name: 'John Doe' };
+    // In a real app, you'd get the logged in user's ID.
+    // For now, we'll find a seeded customer user to make the booking.
+    const userResult = await db.select().from(users).where(eq(users.role, 'customer')).limit(1);
+    const mockUser = userResult[0];
+
+    if (!mockUser) {
+        return { success: false, message: "No customer user found to create a booking for." };
+    }
     
     const newBooking: Booking = {
         id: `booking-${Date.now()}`,
         partId,
         partName,
         bookingDate,
-        userId: MOCK_USER.id,
-        userName: MOCK_USER.name,
+        userId: mockUser.id,
+        userName: mockUser.name,
         cost,
         status: 'Pending'
     };
