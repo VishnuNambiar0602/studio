@@ -7,48 +7,49 @@ import { getParts } from "@/lib/actions";
 
 interface PartContextType {
   parts: Part[];
+  setParts: (parts: Part[]) => void;
   addPart: (part: Part) => void;
-  updatePartState: (partId: string, updatedPart: Part) => void;
-  togglePartVisibility: (partId: string) => void;
+  updatePartInContext: (updatedPart: Part) => void;
 }
 
 const PartContext = createContext<PartContextType | undefined>(undefined);
 
 export function PartProvider({ children }: { children: ReactNode }) {
   const [parts, setParts] = useState<Part[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchParts = async () => {
+    const fetchInitialParts = async () => {
+      try {
         const initialParts = await getParts();
         setParts(initialParts);
-    }
-    fetchParts();
-  }, [])
+      } catch (error) {
+        console.error("Failed to fetch initial parts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialParts();
+  }, []);
 
   const addPart = (part: Part) => {
-    // This updates the client-side state immediately for the vendor.
-    // The server action's revalidatePath will handle consistency for other users.
     setParts((prevParts) => [part, ...prevParts]);
   };
-  
-  const updatePartState = (partId: string, updatedPartData: Part) => {
-    setParts((prevParts) => 
-      prevParts.map((part) => (part.id === partId ? updatedPartData : part))
-    );
-  };
-  
-  const togglePartVisibility = (partId: string) => {
+
+  const updatePartInContext = (updatedPart: Part) => {
     setParts((prevParts) =>
-      prevParts.map((part) =>
-        part.id === partId
-          ? { ...part, isVisibleForSale: !part.isVisibleForSale }
-          : part
-      )
+      prevParts.map((part) => (part.id === updatedPart.id ? updatedPart : part))
     );
   };
 
+  // While loading, you might want to show a spinner or nothing
+  if (loading) {
+      return null; 
+  }
+
   return (
-    <PartContext.Provider value={{ parts, addPart, updatePartState, togglePartVisibility }}>
+    <PartContext.Provider value={{ parts, setParts, addPart, updatePartInContext }}>
       {children}
     </PartContext.Provider>
   );

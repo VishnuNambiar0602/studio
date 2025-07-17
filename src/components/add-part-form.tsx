@@ -28,9 +28,10 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useParts } from "@/context/part-context";
 import { createPart } from "@/lib/actions";
 import { useSettings } from "@/context/settings-context";
+import { useRouter } from "next/navigation";
+import { useParts } from "@/context/part-context";
 
 const categories = ["new", "used", "oem"] as const;
 
@@ -72,8 +73,9 @@ const fileToDataUrl = (file: File): Promise<string> => {
 export function AddPartForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { addPart } = useParts(); 
   const { loggedInUser } = useSettings();
+  const { addPart } = useParts();
+  const router = useRouter();
 
   const form = useForm<AddPartFormValues>({
     resolver: zodResolver(addPartFormSchema),
@@ -112,22 +114,24 @@ export function AddPartForm() {
             price: data.price,
             imageUrls: imageUrls,
             quantity: data.quantity,
-            vendorAddress: loggedInUser.name, // Assign vendor name automatically
+            vendorAddress: loggedInUser.name,
             manufacturer: data.manufacturer,
             category: data.category as ('new' | 'used' | 'oem')[],
         };
 
         const createdPart = await createPart(newPartData);
         
-        // Update client-side context for immediate UI feedback for the vendor
-        addPart(createdPart);
-
-        toast({
-            title: "Success!",
-            description: "Part added successfully! It is now visible to customers.",
-        });
-
-        form.reset();
+        if (createdPart) {
+          addPart(createdPart); // Update client-side state immediately
+          toast({
+              title: "Success!",
+              description: "Part added successfully! It is now visible to customers.",
+          });
+          form.reset();
+          router.refresh();
+        } else {
+           throw new Error("Failed to create part.");
+        }
 
     } catch (error) {
          toast({

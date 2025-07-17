@@ -4,11 +4,10 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter as FontSans } from 'next/font/google';
 import { CartProvider } from '@/context/cart-context';
-import { PartProvider } from '@/context/part-context';
-import { getParts } from '@/lib/actions';
 import { SettingsProvider } from '@/context/settings-context';
 import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
+import { PartProvider } from '@/context/part-context';
 
 const fontSans = FontSans({
   subsets: ['latin'],

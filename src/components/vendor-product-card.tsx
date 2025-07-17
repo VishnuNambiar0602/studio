@@ -7,26 +7,27 @@ import type { Part } from "@/lib/types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Eye, EyeOff, MapPin, Pencil } from "lucide-react";
-import { useParts } from "@/context/part-context";
 import * as actions from "@/lib/actions";
 import { useTransition, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "./ui/dialog";
 import { EditPartForm } from "./edit-part-form";
+import { useRouter } from "next/navigation";
+
 
 interface VendorProductCardProps {
   part: Part;
 }
 
 export function VendorProductCard({ part }: VendorProductCardProps) {
-  const { togglePartVisibility } = useParts();
   const [isPending, startTransition] = useTransition();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const router = useRouter();
+
 
   const handleToggleVisibility = () => {
     startTransition(async () => {
-        // Optimistic update
-        togglePartVisibility(part.id);
         await actions.togglePartVisibility(part.id);
+        router.refresh(); // Refresh the page to show the updated state
     });
   };
 

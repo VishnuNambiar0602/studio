@@ -1,13 +1,23 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useParts } from "@/context/part-context";
+import { getParts } from "@/lib/actions";
 import { DollarSign, Package, Hourglass } from "lucide-react"
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function VendorDashboardStats() {
-    const { parts } = useParts();
-    const inventoryCount = parts.length;
+    const [inventoryCount, setInventoryCount] = useState(0);
+
+    useEffect(() => {
+        const fetchParts = async () => {
+            const parts = await getParts();
+            setInventoryCount(parts.length);
+        }
+        fetchParts();
+    }, []);
+
     // Mocked total revenue for now
     const totalRevenue = 45231.89;
 

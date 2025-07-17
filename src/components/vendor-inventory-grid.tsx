@@ -2,9 +2,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useParts } from "@/context/part-context";
 import { VendorProductCard } from "./vendor-product-card";
 import { useSettings } from "@/context/settings-context";
+import { useParts } from "@/context/part-context";
 
 export function VendorInventoryGrid() {
   const { parts } = useParts();

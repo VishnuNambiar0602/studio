@@ -12,10 +12,10 @@ import { useState, useEffect, useRef } from "react";
 import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
 import { Loader2, Bot, Upload, Camera, Mic, MicOff } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { useParts } from "@/context/part-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { TakeSnap } from "./take-snap";
 import { useSettings } from "@/context/settings-context";
+import { getParts } from "@/lib/actions";
 
 const FormSchema = z.object({
   partDescription: z.string().min(10, {
@@ -33,7 +33,6 @@ export function AiPartSuggester() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
-  const { parts } = useParts();
   const { language } = useSettings();
   
   const [isListening, setIsListening] = useState(false);
@@ -114,6 +113,7 @@ export function AiPartSuggester() {
     setError(null);
 
     try {
+      const parts = await getParts();
       const availableParts = JSON.stringify(
         parts.map(({ id, name, description, price }) => ({ id, name, description, price }))
       );

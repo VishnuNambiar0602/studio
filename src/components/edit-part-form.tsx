@@ -28,9 +28,9 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useParts } from "@/context/part-context";
 import { updatePart } from "@/lib/actions";
 import type { Part } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 const categories = ["new", "used", "oem"] as const;
 
@@ -64,7 +64,7 @@ interface EditPartFormProps {
 export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { updatePartState } = useParts(); 
+  const router = useRouter();
 
   const form = useForm<EditPartFormValues>({
     resolver: zodResolver(editPartFormSchema),
@@ -107,8 +107,6 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
             category: data.category as ('new' | 'used' | 'oem')[],
         };
 
-        // Optimistic UI update
-        updatePartState(part.id, updatedData);
         await updatePart(part.id, updatedData);
         
         toast({
@@ -117,6 +115,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
         });
         
         onUpdate(); // Close the dialog on successful update
+        router.refresh(); // Refresh to ensure data is fresh
 
     } catch (error) {
          toast({

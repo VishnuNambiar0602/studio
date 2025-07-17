@@ -6,7 +6,8 @@ import { Chatbot } from "@/components/chatbot";
 import { Suspense } from "react";
 import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
 
-export default function Home() {
+export default async function Home() {
+  
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />

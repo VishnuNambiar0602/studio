@@ -8,23 +8,27 @@ import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data"
 
 // --- PART ACTIONS ---
 
-export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>) {
+export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
     console.log("Mock Mode: Creating part:", part.name);
-    const newPartData: Part = {
-        id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        ...part,
-        isVisibleForSale: true, // Ensure parts are visible by default
-    };
-    MOCK_PARTS.unshift(newPartData); // Add to the beginning of the array
-    
-    // Revalidate all paths where parts are displayed
-    revalidatePath("/");
-    revalidatePath("/vendor/inventory");
-    revalidatePath("/new-parts");
-    revalidatePath("/used-parts");
-    revalidatePath("/oem-parts");
+    try {
+        const newPartData: Part = {
+            id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            ...part,
+            isVisibleForSale: true,
+        };
+        MOCK_PARTS.unshift(newPartData);
+        
+        revalidatePath("/");
+        revalidatePath("/vendor/inventory");
+        revalidatePath("/new-parts");
+        revalidatePath("/used-parts");
+        revalidatePath("/oem-parts");
 
-    return newPartData;
+        return newPartData;
+    } catch (error) {
+        console.error("Failed to create part:", error);
+        return null;
+    }
 }
 
 export async function updatePart(partId: string, partData: Part) {
@@ -58,6 +62,8 @@ export async function togglePartVisibility(partId: string) {
 }
 
 export async function getParts(): Promise<Part[]> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     return MOCK_PARTS;
 }
 
