@@ -1,31 +1,24 @@
 
+// This file is intentionally left to represent a database connection.
+// For the purpose of this mock environment, we are not connecting to a real database.
+// The actions in `src/lib/actions.ts` will use data from `src/lib/mock-data.ts`.
+
+// In a real application, this file would be configured with Drizzle ORM and a database client like `postgres`.
+// For example:
+/*
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-let db: NodePgDatabase<typeof schema>;
-
 const connectionString = process.env.POSTGRES_URL;
 
-if (!connectionString || connectionString.includes("YOUR-PASSWORD") || connectionString.includes("your_postgres_url_here")) {
-  console.warn("⚠️ POSTGRES_URL is not set or is a placeholder. Database features will be disabled.");
-
-  // Create a mock db object that will throw an error only when a query is attempted.
-  // This allows the application to start and run without a valid database connection.
-  const errorDb = new Proxy({}, {
-    get(target, prop) {
-      throw new Error(`Database is not configured. Please set a valid POSTGRES_URL in your .env file. Tried to access property: ${String(prop)}`);
-    }
-  });
-
-  // Assign the mock object, cast to the correct type to satisfy TypeScript.
-  db = errorDb as NodePgDatabase<typeof schema>;
-
-} else {
-  // If a connection string is present, attempt to connect.
-  // Disable pre-fetching data in production for serverless environments.
-  const client = postgres(connectionString, { prepare: false });
-  db = drizzle(client, { schema });
+if (!connectionString) {
+  throw new Error("POSTGRES_URL environment variable is not set.");
 }
 
-export { db };
+const client = postgres(connectionString);
+export const db: NodePgDatabase<typeof schema> = drizzle(client, { schema });
+*/
+
+// For now, we export a null object to satisfy type imports where needed.
+export const db = null;
