@@ -101,7 +101,10 @@ export async function registerUser(userData: UserRegistration) {
         if (existingUser) {
             return { success: false, message: "Email or username already exists in mock data." };
         }
-        const newUser: User = { id: `user-${Date.now()}`, ...userData };
+        const newUser: User = { 
+            id: `user-${Date.now()}`, 
+            ...userData 
+        };
         console.log("Mock Mode: Pretending to register user:", newUser.username);
         const { password, ...publicUser } = newUser;
         return { success: true, user: publicUser, message: "Mock user registered successfully." };
