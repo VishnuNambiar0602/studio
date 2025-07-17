@@ -27,7 +27,6 @@ export const users = pgTable('users', {
   shopAddress: varchar('shop_address'),
   zipCode: varchar('zip_code'),
   verificationCode: varchar('verification_code'),
-  verificationCodeExpires: timestamp('verification_code_expires', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
