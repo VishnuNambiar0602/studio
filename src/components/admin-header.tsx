@@ -3,7 +3,6 @@
 
 import Link from "next/link"
 import {
-  Car,
   Home,
   LogOut,
   Package,
@@ -51,7 +50,6 @@ export function AdminHeader() {
               href="/admin/dashboard"
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
-              <Car className="h-6 w-6 text-primary" />
               <span className="">Admin Panel</span>
             </Link>
             {navItems.map((item) => (

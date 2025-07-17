@@ -4,7 +4,7 @@ import type { Language } from './types';
 const dictionaries = {
   en: {
     header: {
-      brand: 'Desert Drive Depot',
+      brand: 'GulfCarX',
       newParts: 'New Parts',
       usedParts: 'Used Parts',
       oemParts: 'OEM',
@@ -22,7 +22,7 @@ const dictionaries = {
   },
   ar: {
     header: {
-      brand: 'ديزرت درايف ديبو',
+      brand: 'جولف كار إكس',
       newParts: 'قطع غيار جديدة',
       usedParts: 'قطع غيار مستعملة',
       oemParts: 'قطع غيار أصلية',

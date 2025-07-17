@@ -16,7 +16,7 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: 'Desert Drive Depot',
+  title: 'GulfCarX',
   description: 'AI-powered automotive parts platform for used, OEM, and new parts.',
 };
 

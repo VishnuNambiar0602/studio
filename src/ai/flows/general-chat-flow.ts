@@ -1,3 +1,4 @@
+
 // This file is machine-generated - edit with caution!
 'use server';
 /**
@@ -29,7 +30,7 @@ const prompt = ai.definePrompt({
   name: 'generalChatPrompt',
   input: {schema: GeneralChatInputSchema},
   output: {schema: GeneralChatOutputSchema},
-  prompt: `You are a helpful assistant for Desert Drive Depot, an online marketplace for auto parts.
+  prompt: `You are a helpful assistant for GulfCarX, an online marketplace for auto parts.
   Your goal is to answer user questions clearly and concisely.
   If you don't know the answer to something, it's better to say you don't know than to make something up.
 

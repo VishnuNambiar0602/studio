@@ -3,7 +3,6 @@
 
 import Link from "next/link"
 import {
-  Car,
   Home,
   ListTodo,
   LogOut,
@@ -54,8 +53,7 @@ export function VendorHeader() {
               href="/vendor/dashboard"
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
-              <Car className="h-6 w-6 text-primary" />
-              <span className="sr-only">Desert Drive Depot Vendor</span>
+              <span className="">GulfCarX Vendor</span>
             </Link>
             {navItems.map((item) => (
                 <Link

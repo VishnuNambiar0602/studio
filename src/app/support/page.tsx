@@ -23,8 +23,8 @@ export default function SupportPage() {
                     <div>
                         <h3 className="font-semibold">Email Support</h3>
                         <p className="text-sm text-muted-foreground">Get in touch via email for non-urgent matters. We typically reply within 24 hours.</p>
-                        <a href="mailto:support@desertdrivedepot.com" className="text-sm text-primary font-medium hover:underline">
-                            support@desertdrivedepot.com
+                        <a href="mailto:support@gulfcarx.com" className="text-sm text-primary font-medium hover:underline">
+                            support@gulfcarx.com
                         </a>
                     </div>
                 </div>

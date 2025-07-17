@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Car, LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle } from "lucide-react";
+import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
@@ -37,7 +37,6 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-20 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          <Car className="h-8 w-8 text-primary" />
           <span className="hidden font-bold sm:inline-block text-xl">
             {t.header.brand}
           </span>
