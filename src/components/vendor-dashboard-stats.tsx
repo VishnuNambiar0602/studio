@@ -6,17 +6,14 @@ import { getParts } from "@/lib/actions";
 import { DollarSign, Package, Hourglass } from "lucide-react"
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useParts } from "@/context/part-context";
+import { useSettings } from "@/context/settings-context";
 
 export function VendorDashboardStats() {
-    const [inventoryCount, setInventoryCount] = useState(0);
+    const { parts } = useParts();
+    const { loggedInUser } = useSettings();
 
-    useEffect(() => {
-        const fetchParts = async () => {
-            const parts = await getParts();
-            setInventoryCount(parts.length);
-        }
-        fetchParts();
-    }, []);
+    const inventoryCount = parts.filter(p => p.vendorAddress === loggedInUser?.name).length;
 
     // Mocked total revenue for now
     const totalRevenue = 45231.89;

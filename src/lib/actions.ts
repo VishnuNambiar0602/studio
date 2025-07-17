@@ -2,52 +2,40 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, OrderStatus, CheckoutDetails } from "./types";
-import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data";
+import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails } from "./types";
+import { db } from "./db";
+import { bookings, orders, parts, users } from "./schema";
+import { eq, and, desc } from "drizzle-orm";
 
 
 // --- PART ACTIONS ---
 
 export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
-    console.log("Mock Mode: Creating part object for client state:", part.name);
     try {
         const newPartData: Part = {
             id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             ...part,
             isVisibleForSale: true,
         };
-        // The server action's only job is to create the data object and return it.
-        // It no longer modifies the mock array directly. The client context is the source of truth.
+        
+        await db.insert(parts).values(newPartData);
+        
+        revalidatePath('/');
+        revalidatePath('/new-parts');
+        revalidatePath('/used-parts');
+        revalidatePath('/oem-parts');
+        revalidatePath('/vendor/inventory');
+
         return newPartData;
     } catch (error) {
-        console.error("Failed to create part object:", error);
+        console.error("Failed to create part in DB:", error);
         return null;
     }
 }
 
 export async function updatePart(partId: string, partData: Part) {
-    console.log("Mock Mode: Updating part:", partId);
-    const partIndex = MOCK_PARTS.findIndex(p => p.id === partId);
-    if (partIndex !== -1) {
-        MOCK_PARTS[partIndex] = partData;
-    }
+    await db.update(parts).set(partData).where(eq(parts.id, partId));
 
-    revalidatePath(`/part/${partId}`);
-    revalidatePath("/vendor/inventory");
-    revalidatePath("/");
-    revalidatePath("/new-parts");
-    revalidatePath("/used-parts");
-    revalidatePath("/oem-parts");
-}
-
-
-export async function togglePartVisibility(partId: string) {
-    console.log("Mock Mode: Toggling visibility for part:", partId);
-    const part = MOCK_PARTS.find(p => p.id === partId);
-    if (part) {
-        part.isVisibleForSale = !part.isVisibleForSale;
-    }
-    // Revalidation is still useful here for direct page loads or refreshes.
     revalidatePath(`/part/${partId}`);
     revalidatePath("/vendor/inventory");
     revalidatePath("/");
@@ -57,65 +45,87 @@ export async function togglePartVisibility(partId: string) {
 }
 
 export async function getParts(): Promise<Part[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return MOCK_PARTS;
+    const allParts = await db.select().from(parts);
+    return allParts;
 }
 
 export async function getPart(id: string): Promise<Part | undefined> {
-    return MOCK_PARTS.find(p => p.id === id);
+    const result = await db.select().from(parts).where(eq(parts.id, id)).limit(1);
+    return result[0];
 }
 
 
 // --- USER ACTIONS ---
 
 export async function getAllUsers(): Promise<PublicUser[]> {
-    return MOCK_USERS.map(({ password, ...publicUser }) => publicUser);
+    const allUsers = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        username: users.username,
+        role: users.role,
+        shopAddress: users.shopAddress,
+        zipCode: users.zipCode,
+    }).from(users);
+    return allUsers;
 }
 
 export async function registerUser(userData: UserRegistration) {
-    const existingUser = MOCK_USERS.find(u => u.email === userData.email || u.username === userData.username);
-    if (existingUser) {
-        return { success: false, message: "Email or username already exists in mock data." };
+    const existingUser = await db.select().from(users).where(eq(users.email, userData.email));
+    if (existingUser.length > 0) {
+        return { success: false, message: "A user with this email already exists." };
     }
+    
     const newUser: User = { 
         id: `user-${Date.now()}`, 
         ...userData 
     };
 
-    // Add the new user to the mock array
-    MOCK_USERS.push(newUser);
+    await db.insert(users).values(newUser);
 
-    console.log("Mock Mode: Registered user and added to mock array:", newUser.username);
     const { password, ...publicUser } = newUser;
-    return { success: true, user: publicUser, message: "Mock user registered successfully." };
+    return { success: true, user: publicUser, message: "User registered successfully." };
 }
 
 export async function loginUser(credentials: UserLogin) {
-    const user = MOCK_USERS.find(u => (u.email === credentials.identifier || u.username === credentials.identifier) && u.password === credentials.password);
+    const result = await db.select().from(users).where(
+        and(
+            eq(users.email, credentials.identifier),
+            eq(users.password, credentials.password!)
+        )
+    ).limit(1);
+
+    const user = result[0];
+
     if (!user) {
-        return { success: false, message: "Invalid credentials in mock data. Check `mock-data.ts` or register a new account." };
+        return { success: false, message: "Invalid credentials." };
     }
     const { password, ...publicUser } = user;
     return { success: true, user: publicUser };
 }
 
 export async function sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
-    const user = MOCK_USERS.find(u => u.email === email);
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const user = result[0];
     if (!user) {
         return { success: false, message: "No account found with that email address." };
     }
-    console.log(`Mock Mode: Password reset for ${email}. Code: 123456`);
-    return { success: true, message: "Verification code sent.", code: "123456", username: user.username };
+
+    const code = "123456"; // In a real app, generate a secure random code
+    await db.update(users).set({ verificationCode: code }).where(eq(users.id, user.id));
+    
+    return { success: true, message: "Verification code sent.", code: code, username: user.username };
 }
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
-   const user = MOCK_USERS.find(u => u.email === data.email);
-   if (!user || data.code !== '123456') {
+   const result = await db.select().from(users).where(eq(users.email, data.email)).limit(1);
+   const user = result[0];
+   if (!user || user.verificationCode !== data.code) {
         return { success: false, message: "Invalid verification code." };
    }
-   user.password = data.newPassword;
-   console.log(`Mock Mode: Password for ${data.email} has been reset.`);
+   
+   await db.update(users).set({ password: data.newPassword, verificationCode: null }).where(eq(users.id, user.id));
+
    return { success: true, message: "Password has been reset successfully." };
 }
 
@@ -123,8 +133,6 @@ export async function resetPasswordWithCode(data: { email: string; code: string;
 // --- ORDER & BOOKING ACTIONS ---
 
 export async function placeOrder(orderData: { userId: string; items: Part[]; total: number; shippingDetails: CheckoutDetails }): Promise<{ success: boolean; message: string; orderId?: string; }> {
-    console.log("Mock Mode: Placing order for user:", orderData.userId);
-
     const newOrder: Order = {
         id: `order-${Date.now()}`,
         userId: orderData.userId,
@@ -135,14 +143,15 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
         cancelable: true,
     };
 
-    // Simulate reducing stock quantity and creating vendor tasks
+    await db.insert(orders).values(newOrder);
+
     for (const item of orderData.items) {
-        const partInStock = MOCK_PARTS.find(p => p.id === item.id);
+        const partInStock = await getPart(item.id);
         if (partInStock) {
-            partInStock.quantity -= 1; // Assuming quantity of 1 for each item in cart
+            const newQuantity = partInStock.quantity - 1;
+            await db.update(parts).set({ quantity: newQuantity }).where(eq(parts.id, item.id));
         }
 
-        // Create a task for the vendor
         const newBookingTask: Booking = {
             id: `booking-task-${item.id}-${Date.now()}`,
             partId: item.id,
@@ -150,40 +159,30 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
             userId: orderData.userId,
             userName: orderData.shippingDetails.name,
             bookingDate: newOrder.orderDate,
-            status: 'Order Fulfillment',
+            status: 'Pending',
             cost: item.price
         };
-        MOCK_BOOKINGS.unshift(newBookingTask);
+        await db.insert(bookings).values(newBookingTask);
     }
-
-    MOCK_ORDERS.unshift(newOrder); // Add to the beginning of the orders array
     
     revalidatePath('/my-orders');
     revalidatePath('/vendor/tasks');
-    revalidatePath('/');
     
     return { success: true, message: "Order placed successfully!", orderId: newOrder.id };
 }
 
 
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
-    return MOCK_ORDERS.filter(o => o.userId === userId);
+    return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.orderDate));
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
-    console.log(`Mock Mode: Cancelling order ${orderId}`);
-    const order = MOCK_ORDERS.find(o => o.id === orderId);
-    if (order) {
-        order.status = 'Cancelled';
-        order.cancelable = false;
-        revalidatePath('/my-orders');
-        return { success: true, message: 'Order has been cancelled.' };
-    }
-    return { success: false, message: 'Could not find the order to cancel.' };
+    await db.update(orders).set({ status: 'Cancelled', cancelable: false }).where(eq(orders.id, orderId));
+    revalidatePath('/my-orders');
+    return { success: true, message: 'Order has been cancelled.' };
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number) {
-    console.log(`Mock Mode: Booking viewing for ${partName}`);
     const MOCK_USER = { id: 'user-123', name: 'John Doe' };
     
     const newBooking: Booking = {
@@ -197,22 +196,18 @@ export async function submitBooking(partId: string, partName: string, bookingDat
         status: 'Pending'
     };
 
-    MOCK_BOOKINGS.unshift(newBooking);
+    await db.insert(bookings).values(newBooking);
 
     revalidatePath('/vendor/tasks');
     return { success: true, message: "Viewing booked successfully!" };
 }
 
 export async function getVendorBookings(): Promise<Booking[]> {
-    return MOCK_BOOKINGS;
+    return db.select().from(bookings).orderBy(desc(bookings.bookingDate));
 }
 
 export async function completeBooking(bookingId: string) {
-    console.log(`Mock Mode: Completing booking ${bookingId}`);
-    const booking = MOCK_BOOKINGS.find(b => b.id === bookingId);
-    if (booking) {
-        booking.status = 'Completed';
-    }
+    await db.update(bookings).set({ status: 'Completed' }).where(eq(bookings.id, bookingId));
     revalidatePath('/vendor/tasks');
     return { success: true };
 }
