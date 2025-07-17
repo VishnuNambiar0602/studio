@@ -17,6 +17,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { placeOrder } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import { ScrollArea } from "./ui/scroll-area";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required."),
