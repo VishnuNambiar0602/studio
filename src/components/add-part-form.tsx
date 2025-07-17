@@ -40,7 +40,6 @@ const addPartFormSchema = z.object({
   partNumber: z.string().min(1, "Part number is required."),
   manufacturer: z.string().min(2, "Manufacturer name is required."),
   quantity: z.coerce.number().int().positive("Quantity must be a positive number."),
-  companyName: z.string().min(2, "Company name is required."),
   dateOfManufacture: z.date({
     required_error: "A date of manufacture is required.",
   }),
@@ -83,23 +82,24 @@ export function AddPartForm() {
       description: "",
       partNumber: "",
       manufacturer: "",
-      companyName: "",
       price: 0,
       quantity: 1,
       category: [],
     }
   });
 
-  useEffect(() => {
-    if (loggedInUser?.name) {
-        form.setValue('companyName', loggedInUser.name);
-    }
-  }, [loggedInUser, form]);
-
-
   const fileRef = form.register("images");
 
   async function onSubmit(data: AddPartFormValues) {
+    if (!loggedInUser || !loggedInUser.name) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "You must be logged in as a vendor to add a part.",
+        });
+        return;
+    }
+    
     setLoading(true);
 
     try {
@@ -112,7 +112,7 @@ export function AddPartForm() {
             price: data.price,
             imageUrls: imageUrls,
             quantity: data.quantity,
-            vendorAddress: data.companyName,
+            vendorAddress: loggedInUser.name, // Assign vendor name automatically
             manufacturer: data.manufacturer,
             category: data.category as ('new' | 'used' | 'oem')[],
         };
@@ -127,9 +127,6 @@ export function AddPartForm() {
         });
 
         form.reset();
-        if(loggedInUser) {
-            form.setValue('companyName', loggedInUser.name);
-        }
 
     } catch (error) {
          toast({
@@ -196,22 +193,6 @@ export function AddPartForm() {
               </FormControl>
                <FormDescription>
                 The company that manufactured the part.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="companyName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Vendor (Your Company)</FormLabel>
-              <FormControl>
-                <Input {...field} readOnly disabled value={loggedInUser?.name || ''}/>
-              </FormControl>
-              <FormDescription>
-                This is your registered company name and cannot be changed here.
               </FormDescription>
               <FormMessage />
             </FormItem>
