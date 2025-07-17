@@ -50,7 +50,7 @@ export function HeroSection() {
     return (
         <section className="relative w-full h-[60vh] flex items-center justify-center text-center">
             <Image 
-              src="https://images.unsplash.com/photo-1709972738137-aea676b00978?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzaWR8ZW58MHx8fHwxNzUyNzUwOTQ0fDA&ixlib=rb-4.1.0&q=80&w=1080" 
+              src="https://images.unsplash.com/photo-1698041383723-c55441776acc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhdXRvbW9iaWxlJTIwZGVzZXJ0JTIwYW5pbWV8ZW58MHx8fHwxNzUyNzc0NzU4fDA&ixlib=rb-4.1.0&q=80&w=1080" 
               alt={t.hero.alt} 
               fill 
               className="object-cover"
