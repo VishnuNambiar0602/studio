@@ -8,7 +8,7 @@ import { useSettings } from "@/context/settings-context";
 
 export function VendorInventoryGrid() {
   const { parts } = useParts();
-  const { loggedInUser } = useSettings(); // Assuming loggedInUser is in settings
+  const { loggedInUser } = useSettings(); 
 
   const vendorParts = useMemo(() => {
     if (!loggedInUser || loggedInUser.role !== 'vendor') {
