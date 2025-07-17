@@ -83,7 +83,7 @@ export function AddPartForm() {
       description: "",
       partNumber: "",
       manufacturer: "",
-      companyName: loggedInUser?.name || "",
+      companyName: "",
       price: 0,
       quantity: 1,
       category: [],
@@ -91,8 +91,7 @@ export function AddPartForm() {
   });
 
   useEffect(() => {
-    // If the logged in user changes, update the default company name
-    if(loggedInUser) {
+    if (loggedInUser?.name) {
         form.setValue('companyName', loggedInUser.name);
     }
   }, [loggedInUser, form]);
@@ -209,7 +208,7 @@ export function AddPartForm() {
             <FormItem>
               <FormLabel>Vendor (Your Company)</FormLabel>
               <FormControl>
-                <Input {...field} readOnly disabled />
+                <Input {...field} readOnly disabled value={loggedInUser?.name || ''}/>
               </FormControl>
               <FormDescription>
                 This is your registered company name and cannot be changed here.
