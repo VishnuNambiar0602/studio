@@ -25,12 +25,19 @@ import Image from "next/image"
 import { useSettings } from "@/context/settings-context";
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 
 export function VendorHeader() {
     const { loggedInUser, logoutUser } = useSettings();
     const pathname = usePathname();
     const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
 
     const handleLogout = () => {
         logoutUser();
@@ -53,7 +60,9 @@ export function VendorHeader() {
               href="/vendor/dashboard"
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
-              <span className="">{loggedInUser?.name || 'Vendor Panel'}</span>
+              <span className="">
+                {isClient ? loggedInUser?.name || 'Vendor Panel' : 'Vendor Panel'}
+              </span>
             </Link>
             {navItems.map((item) => (
                 <Link
