@@ -9,20 +9,23 @@ import { Camera, Bot } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { TakeSnap } from "./take-snap";
 import { useState } from "react";
-import { suggestParts } from "@/ai/flows/suggest-parts-from-request";
+import { suggestParts, SuggestPartsOutput } from "@/ai/flows/suggest-parts-from-request";
 import { useParts } from "@/context/part-context";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function HeroSection() {
-    const { language } = useSettings();
+    const { language, isLoggedIn, loggedInUser, logoutUser } = useSettings();
+    const { parts } = useParts();
     const t = getDictionary(language);
+    const router = useRouter();
+
     const [snapDialogOpen, setSnapDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<string | null>(null);
+    const [result, setResult] = useState<SuggestPartsOutput | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [photoDataUri, setPhotoDataUri] = useState<string | null>(null);
-    const { parts } = useParts();
 
 
     const onGetSuggestion = async (data: { partDescription: string }) => {
@@ -30,15 +33,20 @@ export function HeroSection() {
         setResult(null);
         setError(null);
         try {
+          const partsList = await parts;
           const availableParts = JSON.stringify(
-            parts.map(({ id, name, description, price }) => ({ id, name, description, price }))
+            partsList.map(({ id, name, description, price }) => ({ id, name, description, price }))
           );
           const response = await suggestParts({
             partDescription: data.partDescription || "The user has provided an image, please identify the part.",
             availableParts,
             photoDataUri: photoDataUri || undefined,
           });
-          setResult(response.suggestedParts);
+          setResult(response);
+          if (response.isPartQuery && response.suggestions.length > 0) {
+            // Optional: directly navigate if only one suggestion?
+            // For now, let's just show the suggestions.
+          }
         } catch (e) {
           setError("An error occurred while suggesting parts. Please try again.");
           console.error(e);
@@ -46,16 +54,21 @@ export function HeroSection() {
           setLoading(false);
         }
       };
+      
+    const handleSuggestionClick = (partId: string) => {
+      setSnapDialogOpen(false);
+      router.push(`/part/${partId}`);
+    };
 
     return (
         <section className="relative w-full h-[60vh] flex items-center justify-center text-center">
             <Image 
-              src="https://images.unsplash.com/photo-1698041383723-c55441776acc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhdXRvbW9iaWxlJTIwZGVzZXJ0JTIwYW5pbWV8ZW58MHx8fHwxNzUyNzc0NzU4fDA&ixlib=rb-4.1.0&q=80&w=1080" 
+              src="https://placehold.co/1200x800.png" 
               alt={t.hero.alt} 
               fill 
               className="object-cover"
               priority
-              data-ai-hint="desert road cars"
+              data-ai-hint="futuristic AI face"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/70" />
             <div className="relative z-10 p-4 text-white">
@@ -88,14 +101,28 @@ export function HeroSection() {
                              />
                              {result && (
                                 <div className="mt-4">
+                                  {result.isPartQuery && result.suggestions.length > 0 ? (
+                                    <div className="space-y-2">
+                                      <h4 className="font-semibold">Here's what I found:</h4>
+                                      {result.suggestions.map(s => (
+                                        <button key={s.id} onClick={() => handleSuggestionClick(s.id)} className="w-full text-left">
+                                          <Card className="hover:bg-muted/50 transition-colors">
+                                            <CardContent className="p-3">
+                                              <p className="font-semibold text-primary">{s.name}</p>
+                                              <p className="text-sm text-muted-foreground">{s.reason}</p>
+                                            </CardContent>
+                                          </Card>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  ) : (
                                     <Alert>
-                                    <AlertTitle>Suggested Parts</AlertTitle>
-                                    <AlertDescription>
-                                        <pre className="whitespace-pre-wrap font-sans text-sm">{result}</pre>
-                                    </AlertDescription>
+                                      <AlertTitle>Genie's Response</AlertTitle>
+                                      <AlertDescription>{result.answer}</AlertDescription>
                                     </Alert>
+                                  )}
                                 </div>
-                                )}
+                              )}
                                 {error && (
                                 <div className="mt-4">
                                     <Alert variant="destructive">
@@ -109,7 +136,7 @@ export function HeroSection() {
                     <Button size="lg" asChild>
                         <Link href="/genie">
                             <Bot className="mr-2 h-5 w-5" />
-                            Genie
+                            Ask the Genie
                         </Link>
                     </Button>
                 </div>
