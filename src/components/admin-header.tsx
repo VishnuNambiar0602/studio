@@ -39,8 +39,8 @@ export function AdminHeader() {
     const navItems = [
         { href: "/admin/dashboard", label: "Dashboard", icon: Home },
         { href: "/admin/users", label: "Users", icon: Users },
-        { href: "/admin/parts", label: "Parts", icon: Package },
-        { href: "/admin/settings", label: "Settings", icon: Settings },
+        // { href: "/admin/parts", label: "Parts", icon: Package },
+        // { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
 
 
@@ -91,7 +91,7 @@ export function AdminHeader() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link href="/admin/settings">Settings</Link>
+                <Link href="/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>

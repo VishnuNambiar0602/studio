@@ -27,6 +27,10 @@ export function AccountManagement() {
   const { loggedInUser, logoutUser } = useSettings();
   const router = useRouter();
 
+  // Only render this component for customers and vendors
+  if (!loggedInUser || loggedInUser.role === 'admin') {
+    return null;
+  }
 
   const handleDeleteAccount = () => {
     if (!loggedInUser) return;
