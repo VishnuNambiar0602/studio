@@ -9,24 +9,18 @@ import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data"
 // --- PART ACTIONS ---
 
 export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
-    console.log("Mock Mode: Creating part:", part.name);
+    console.log("Mock Mode: Creating part object for client state:", part.name);
     try {
         const newPartData: Part = {
             id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             ...part,
             isVisibleForSale: true,
         };
-        MOCK_PARTS.unshift(newPartData);
-        
-        revalidatePath("/");
-        revalidatePath("/vendor/inventory");
-        revalidatePath("/new-parts");
-        revalidatePath("/used-parts");
-        revalidatePath("/oem-parts");
-
+        // The server action's only job is to create the data object and return it.
+        // It no longer modifies the mock array directly. The client context is the source of truth.
         return newPartData;
     } catch (error) {
-        console.error("Failed to create part:", error);
+        console.error("Failed to create part object:", error);
         return null;
     }
 }
@@ -53,9 +47,10 @@ export async function togglePartVisibility(partId: string) {
     if (part) {
         part.isVisibleForSale = !part.isVisibleForSale;
     }
-    
-    revalidatePath("/");
+    // Revalidation is still useful here for direct page loads or refreshes.
+    revalidatePath(`/part/${partId}`);
     revalidatePath("/vendor/inventory");
+    revalidatePath("/");
     revalidatePath("/new-parts");
     revalidatePath("/used-parts");
     revalidatePath("/oem-parts");

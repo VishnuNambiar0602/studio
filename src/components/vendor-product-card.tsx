@@ -28,15 +28,14 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
 
   const handleToggleVisibility = () => {
     startTransition(async () => {
-        await actions.togglePartVisibility(part.id);
-        updatePartInContext({ ...part, isVisibleForSale: !part.isVisibleForSale });
-        router.refresh(); // Refresh the page to show the updated state
+        const updatedPart = { ...part, isVisibleForSale: !part.isVisibleForSale };
+        await actions.updatePart(part.id, updatedPart);
+        updatePartInContext(updatedPart);
     });
   };
 
   const handleUpdate = () => {
       setIsEditDialogOpen(false);
-      router.refresh();
   }
 
   const isInStock = part.quantity > 0;
