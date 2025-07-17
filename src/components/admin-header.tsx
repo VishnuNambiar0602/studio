@@ -38,8 +38,6 @@ export function AdminHeader() {
     const navItems = [
         { href: "/admin/dashboard", label: "Dashboard", icon: Home },
         { href: "/admin/users", label: "Users", icon: Users },
-        // { href: "/admin/parts", label: "Parts", icon: Package },
-        // { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
 
 
