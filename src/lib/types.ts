@@ -74,7 +74,8 @@ export interface CheckoutDetails {
     address: string;
     city: string;
     postalCode: string;
-    cardNumber: string;
-    expiryDate: string;
-    cvc: string;
+    paymentMethod: "card" | "cod" | "upi" | "netbanking";
+    cardNumber?: string;
+    expiryDate?: string;
+    cvc?: string;
 }

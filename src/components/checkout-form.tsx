@@ -13,11 +13,12 @@ import { Separator } from "./ui/separator";
 import Image from "next/image";
 import { useSettings } from "@/context/settings-context";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, CreditCard, Landmark, CircleDollarSign, Smartphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { placeOrder } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "./ui/scroll-area";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required."),
@@ -25,9 +26,24 @@ const formSchema = z.object({
   address: z.string().min(5, "Address is required."),
   city: z.string().min(2, "City is required."),
   postalCode: z.string().min(3, "Postal code is required."),
-  cardNumber: z.string().regex(/^\d{16}$/, "Card number must be 16 digits."),
-  expiryDate: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, "Expiry must be in MM/YY format."),
-  cvc: z.string().regex(/^\d{3,4}$/, "CVC must be 3 or 4 digits."),
+  paymentMethod: z.enum(["card", "cod", "upi", "netbanking"], {
+    required_error: "You need to select a payment method.",
+  }),
+  cardNumber: z.string().optional(),
+  expiryDate: z.string().optional(),
+  cvc: z.string().optional(),
+}).refine((data) => {
+    if (data.paymentMethod === "card") {
+        return (
+            !!data.cardNumber?.match(/^\d{16}$/) &&
+            !!data.expiryDate?.match(/^(0[1-9]|1[0-2])\/\d{2}$/) &&
+            !!data.cvc?.match(/^\d{3,4}$/)
+        );
+    }
+    return true;
+}, {
+    message: "Card details are incomplete or invalid.",
+    path: ["cardNumber"], // You can specify a path to show the error, e.g., on the first card field
 });
 
 
@@ -47,11 +63,14 @@ export function CheckoutForm() {
             address: "",
             city: "",
             postalCode: "",
+            paymentMethod: "card",
             cardNumber: "",
             expiryDate: "",
             cvc: "",
         },
     });
+
+    const paymentMethod = form.watch("paymentMethod");
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         setLoading(true);
@@ -142,31 +161,104 @@ export function CheckoutForm() {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle>Payment Details</CardTitle>
-                                <CardDescription>This is a simulated payment. Do not use real card details.</CardDescription>
+                                <CardTitle>Payment Method</CardTitle>
+                                <CardDescription>Choose how you would like to pay.</CardDescription>
                             </CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                <FormField control={form.control} name="cardNumber" render={({ field }) => (
-                                    <FormItem className="md:col-span-4">
-                                        <FormLabel>Card Number</FormLabel>
-                                        <FormControl><Input placeholder="0000 0000 0000 0000" {...field} /></FormControl>
+                            <CardContent>
+                                <FormField
+                                    control={form.control}
+                                    name="paymentMethod"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                        <FormControl>
+                                            <RadioGroup
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                            >
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <RadioGroupItem value="card" id="card" className="peer sr-only" />
+                                                    </FormControl>
+                                                    <Label htmlFor="card" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                                        <CreditCard className="mb-3 h-6 w-6" />
+                                                        Card Payment
+                                                    </Label>
+                                                </FormItem>
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <RadioGroupItem value="cod" id="cod" className="peer sr-only" />
+                                                    </FormControl>
+                                                    <Label htmlFor="cod" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                                        <CircleDollarSign className="mb-3 h-6 w-6" />
+                                                        Cash on Delivery
+                                                    </Label>
+                                                </FormItem>
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <RadioGroupItem value="upi" id="upi" className="peer sr-only" />
+                                                    </FormControl>
+                                                    <Label htmlFor="upi" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                                        <Smartphone className="mb-3 h-6 w-6" />
+                                                        UPI / Online Payment
+                                                    </Label>
+                                                </FormItem>
+                                                 <FormItem>
+                                                    <FormControl>
+                                                        <RadioGroupItem value="netbanking" id="netbanking" className="peer sr-only" />
+                                                    </FormControl>
+                                                    <Label htmlFor="netbanking" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                                                        <Landmark className="mb-3 h-6 w-6" />
+                                                        Net Banking
+                                                    </Label>
+                                                </FormItem>
+                                            </RadioGroup>
+                                        </FormControl>
                                         <FormMessage />
-                                    </FormItem>
-                                )}/>
-                                 <FormField control={form.control} name="expiryDate" render={({ field }) => (
-                                    <FormItem className="md:col-span-3">
-                                        <FormLabel>Expiry Date</FormLabel>
-                                        <FormControl><Input placeholder="MM/YY" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
-                                 <FormField control={form.control} name="cvc" render={({ field }) => (
-                                    <FormItem className="md:col-span-1">
-                                        <FormLabel>CVC</FormLabel>
-                                        <FormControl><Input placeholder="123" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {paymentMethod === 'card' && (
+                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-6">
+                                        <FormField control={form.control} name="cardNumber" render={({ field }) => (
+                                            <FormItem className="md:col-span-4">
+                                                <FormLabel>Card Number</FormLabel>
+                                                <FormControl><Input placeholder="0000 0000 0000 0000" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}/>
+                                        <FormField control={form.control} name="expiryDate" render={({ field }) => (
+                                            <FormItem className="md:col-span-3">
+                                                <FormLabel>Expiry Date</FormLabel>
+                                                <FormControl><Input placeholder="MM/YY" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}/>
+                                        <FormField control={form.control} name="cvc" render={({ field }) => (
+                                            <FormItem className="md:col-span-1">
+                                                <FormLabel>CVC</FormLabel>
+                                                <FormControl><Input placeholder="123" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}/>
+                                    </div>
+                                )}
+                                {paymentMethod === 'cod' && (
+                                    <div className="pt-6 text-center text-sm text-muted-foreground">
+                                        You will pay in cash upon receiving your items.
+                                    </div>
+                                )}
+                                {paymentMethod === 'upi' && (
+                                    <div className="pt-6 text-center text-sm text-muted-foreground">
+                                        You will be redirected to the UPI payment gateway after placing the order. (Simulation)
+                                    </div>
+                                )}
+                                {paymentMethod === 'netbanking' && (
+                                    <div className="pt-6 text-center text-sm text-muted-foreground">
+                                        You will be redirected to your bank's portal after placing the order. (Simulation)
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                         
