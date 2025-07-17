@@ -40,6 +40,7 @@ export function BookViewingDialog({ part, children }: BookViewingDialogProps) {
     }
 
     setLoading(true);
+    // Pass primitive values instead of the whole object to the server action
     const result = await submitBooking(part.id, part.name, date, part.price, part.vendorAddress);
 
     if (result.success) {
