@@ -44,7 +44,7 @@ export type UserLogin = {
 }
 
 
-export type OrderStatus = 'Placed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+export type OrderStatus = 'Placed' | 'Processing' | 'Ready for Pickup' | 'Picked Up' | 'Cancelled';
 
 export interface Order {
   id: string;
@@ -53,7 +53,7 @@ export interface Order {
   total: number;
   status: OrderStatus;
   orderDate: Date;
-  deliveryDate?: Date;
+  completionDate?: Date;
   cancelable: boolean;
 }
 

@@ -13,7 +13,7 @@ import type { Part, User, Order, Booking } from './types';
 
 export const userRoleEnum = pgEnum('user_role', ['customer', 'vendor', 'admin']);
 export const partCategoryEnum = pgEnum('part_category', ['new', 'used', 'oem']);
-export const orderStatusEnum = pgEnum('order_status', ['Placed', 'Processing', 'Shipped', 'Delivered', 'Cancelled']);
+export const orderStatusEnum = pgEnum('order_status', ['Placed', 'Processing', 'Ready for Pickup', 'Picked Up', 'Cancelled']);
 export const bookingStatusEnum = pgEnum('booking_status', ['Pending', 'Completed']);
 
 
@@ -49,7 +49,7 @@ export const orders = pgTable('orders', {
     total: real('total').notNull(),
     status: orderStatusEnum('status').notNull(),
     orderDate: timestamp('order_date', { withTimezone: true }).notNull(),
-    deliveryDate: timestamp('delivery_date', { withTimezone: true }),
+    completionDate: timestamp('completion_date', { withTimezone: true }),
     cancelable: boolean('cancelable').notNull(),
 });
 

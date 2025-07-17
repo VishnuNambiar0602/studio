@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
-import { Package, HelpCircle, FileText, ShoppingCart } from "lucide-react";
+import { PackageCheck, HelpCircle, FileText, ShoppingCart } from "lucide-react";
 import { cva } from "class-variance-authority";
 import { CancelOrderDialog } from "./cancel-order-dialog";
 
@@ -18,8 +18,8 @@ const statusBadgeVariants = cva("capitalize font-semibold", {
     status: {
       Placed: "bg-blue-100 text-blue-800",
       Processing: "bg-yellow-100 text-yellow-800",
-      Shipped: "bg-purple-100 text-purple-800",
-      Delivered: "bg-green-100 text-green-800",
+      'Ready for Pickup': "bg-purple-100 text-purple-800",
+      'Picked Up': "bg-green-100 text-green-800",
       Cancelled: "bg-red-100 text-red-800",
     },
   },
@@ -95,7 +95,7 @@ export function OrderHistory() {
                     </CardHeader>
                     <CardContent className="p-6">
                         <h3 className="text-lg font-bold mb-4">
-                            {order.status === 'Delivered' ? `Delivered on ${new Date(order.deliveryDate || order.orderDate).toLocaleDateString()}` : `Arriving soon...`}
+                            {order.status === 'Picked Up' ? `Picked up on ${new Date(order.completionDate || order.orderDate).toLocaleDateString()}` : `Item will be ready soon...`}
                         </h3>
                         {order.items.map((item) => (
                             <div key={item.id} className="flex gap-4">
@@ -109,7 +109,7 @@ export function OrderHistory() {
                                 <div className="flex-grow">
                                     <p className="font-semibold text-primary">{item.name}</p>
                                     <p className="text-sm text-muted-foreground">{item.description}</p>
-                                    <p className="text-sm mt-1">Sold by: {item.vendorAddress}</p>
+                                    <p className="text-sm mt-1">Pickup from: {item.vendorAddress}</p>
                                     <Button variant="secondary" size="sm" className="mt-2">Buy it again</Button>
                                 </div>
                             </div>
@@ -117,7 +117,7 @@ export function OrderHistory() {
                     </CardContent>
                     { (order.cancelable || order.status !== 'Cancelled') &&
                     <CardFooter className="bg-muted/50 px-6 py-4 border-t flex-wrap gap-2 justify-end">
-                        {order.status !== 'Cancelled' && <Button variant="outline"><Package className="mr-2 h-4 w-4" />Track Package</Button>}
+                        {order.status !== 'Cancelled' && <Button variant="outline"><PackageCheck className="mr-2 h-4 w-4" />View Pickup Status</Button>}
                         <CancelOrderDialog 
                             orderId={order.id} 
                             onOrderCancelled={handleOrderCancelled}
