@@ -19,6 +19,7 @@ import { placeOrder } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "./ui/scroll-area";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Label } from "./ui/label";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required."),
