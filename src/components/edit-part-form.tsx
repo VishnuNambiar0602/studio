@@ -290,7 +290,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
                             />
                           </FormControl>
                           <FormLabel className="font-normal capitalize">
-                            {item} Part
+                            {item === 'oem' ? 'OEM' : item} Part
                           </FormLabel>
                         </FormItem>
                       );
