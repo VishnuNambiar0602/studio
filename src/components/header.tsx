@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Car, LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard } from "lucide-react";
+import { Car, LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
@@ -88,6 +88,9 @@ export function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings"><Settings className="mr-2 h-4 w-4" />{t.header.settings}</Link>
+                </DropdownMenuItem>
+                 <DropdownMenuItem asChild>
+                  <Link href="/support"><HelpCircle className="mr-2 h-4 w-4" />Support</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
