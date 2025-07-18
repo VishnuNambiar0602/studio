@@ -124,11 +124,15 @@ export async function loginUser(credentials: UserLogin, adminLogin: boolean = fa
 }
 
 
-export async function sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
+export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
     const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
     const user = result[0];
     if (!user) {
         return { success: false, message: "No account found with that email address." };
+    }
+
+    if (isAdminCheck && user.role !== 'admin') {
+        return { success: false, message: "This email does not belong to an administrator." };
     }
 
     const code = "123456"; // In a real app, generate a secure random code

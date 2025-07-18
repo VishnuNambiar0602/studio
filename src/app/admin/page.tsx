@@ -9,13 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { loginUser } from "@/lib/actions";
-import { useSettings } from "@/context/settings-context";
 import { Loader2, Shield } from "lucide-react";
+import { AdminForgotPasswordDialog } from "./_components/forgot-password-dialog";
+
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { loginUser: setLoggedInUserContext } = useSettings();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,11 +28,12 @@ export default function AdminLoginPage() {
       const result = await loginUser({ identifier, password }, true);
 
       if (result.success && result.user) {
-        setLoggedInUserContext(result.user);
         toast({
           title: "Admin Login Successful",
           description: `Welcome back, ${result.user.name}!`,
         });
+        // On successful admin login, we can simply redirect.
+        // The admin layout doesn't need to depend on the global user context.
         router.push("/admin/dashboard");
       } else {
         toast({
@@ -86,6 +87,9 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+             <div className="flex items-center justify-end">
+               <AdminForgotPasswordDialog />
+             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
