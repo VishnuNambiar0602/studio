@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      // Pass `true` to indicate this is an admin login attempt
+      // Pass `true` as the second argument to indicate an admin login
       const result = await loginUser({ identifier, password }, true);
 
       if (result.success && result.user) {
