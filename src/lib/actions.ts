@@ -98,7 +98,7 @@ export async function registerUser(userData: UserRegistration) {
     return { success: true, user: publicUser, message: "User registered successfully." };
 }
 
-export async function loginUser(credentials: UserLogin) {
+export async function loginUser(credentials: UserLogin, adminLogin: boolean = false) {
     const result = await db.select().from(users).where(
         and(
             or(
@@ -114,9 +114,16 @@ export async function loginUser(credentials: UserLogin) {
     if (!user) {
         return { success: false, message: "Invalid credentials." };
     }
+
+    // If this is an admin login, check the role
+    if (adminLogin && user.role !== 'admin') {
+        return { success: false, message: "You do not have permission to access this area." };
+    }
+
     const { password, ...publicUser } = user;
     return { success: true, user: publicUser };
 }
+
 
 export async function sendPasswordResetCode(email: string): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
     const result = await db.select().from(users).where(eq(users.email, email)).limit(1);

@@ -25,9 +25,10 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const result = await loginUser({ identifier, password });
+      // Pass `true` to indicate this is an admin login attempt
+      const result = await loginUser({ identifier, password }, true);
 
-      if (result.success && result.user?.role === 'admin') {
+      if (result.success && result.user) {
         setLoggedInUserContext(result.user);
         toast({
           title: "Admin Login Successful",
@@ -38,7 +39,7 @@ export default function AdminLoginPage() {
         toast({
           variant: "destructive",
           title: "Login Failed",
-          description: "You do not have permission to access this area or the credentials are wrong.",
+          description: result.message || "You do not have permission to access this area or the credentials are wrong.",
         });
       }
     } catch (error) {
