@@ -99,16 +99,26 @@ export async function registerUser(userData: UserRegistration) {
 }
 
 export async function loginUser(credentials: UserLogin, adminLogin: boolean = false) {
-    const result = await db.select().from(users).where(
-        and(
+    
+    let whereClause;
+    if (adminLogin) {
+        // Admin login only uses email
+        whereClause = and(
+            eq(users.email, credentials.identifier),
+            eq(users.password, credentials.password!)
+        );
+    } else {
+        // Regular user login can use email or username
+        whereClause = and(
             or(
                 eq(users.email, credentials.identifier),
                 eq(users.username, credentials.identifier)
             ),
             eq(users.password, credentials.password!)
-        )
-    ).limit(1);
+        );
+    }
 
+    const result = await db.select().from(users).where(whereClause).limit(1);
     const user = result[0];
 
     if (!user) {

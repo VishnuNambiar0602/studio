@@ -16,7 +16,7 @@ import { AdminForgotPasswordDialog } from "./_components/forgot-password-dialog"
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const result = await loginUser({ identifier, password }, true);
+      const result = await loginUser({ identifier: email, password }, true);
 
       if (result.success && result.user) {
         toast({
@@ -69,13 +69,14 @@ export default function AdminLoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="identifier">Username or Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="identifier"
-                placeholder="admin_user"
+                id="email"
+                type="email"
+                placeholder="admin@gulfcarx.com"
                 required
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
