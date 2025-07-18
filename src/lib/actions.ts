@@ -67,8 +67,6 @@ export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
 // --- USER ACTIONS ---
 
 export async function getAllUsers(): Promise<PublicUser[]> {
-    // Temporarily removed profilePictureUrl to fix a database schema mismatch error.
-    // The database needs to be migrated to include this column.
     const allUsersData = await db.select({
         id: users.id,
         name: users.name,
@@ -80,10 +78,9 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         createdAt: users.createdAt,
     }).from(users);
 
-    // Manually add profilePictureUrl as null to match the PublicUser type
     const allUsers: PublicUser[] = allUsersData.map(user => ({
         ...user,
-        profilePictureUrl: null,
+        profilePictureUrl: undefined, 
     }));
     
     return allUsers;
@@ -101,52 +98,65 @@ export async function registerUser(userData: UserRegistration) {
         }
     }
     
-    const newUser: User = { 
+    // Create a new user object that matches the current database schema
+    const newUserForDb = { 
         id: `user-${Date.now()}`, 
-        ...userData,
+        name: userData.name,
+        email: userData.email,
+        username: userData.username,
+        role: userData.role,
+        password: userData.password, // In a real app, this should be hashed
+        shopAddress: userData.shopAddress,
+        zipCode: userData.zipCode,
         createdAt: new Date(),
-        profilePictureUrl: null, // Ensure new users have a null value for profile pic
     };
 
-    await db.insert(users).values(newUser);
+    await db.insert(users).values(newUserForDb);
+    
+    // Create the user object for the client-side, which can have the optional property
+    const createdUser: PublicUser = {
+        ...newUserForDb,
+        profilePictureUrl: undefined, // Add the optional field for the client
+    };
 
-    const { password, ...publicUser } = newUser;
-    return { success: true, user: publicUser, message: "User registered successfully." };
+    revalidatePath('/admin/users');
+    return { success: true, user: createdUser, message: "User registered successfully." };
 }
 
-export async function loginUser(credentials: UserLogin, adminLogin: boolean = false) {
-    
+export async function loginUser(credentials: UserLogin) {
     let whereClause;
     
-    if (adminLogin) {
-        // Admin login only uses email
-        whereClause = and(
+    // Regular user login can use email or username
+    whereClause = and(
+        or(
             eq(users.email, credentials.identifier),
-            eq(users.password, credentials.password!)
-        );
-    } else {
-        // Regular user login can use email or username
-        whereClause = and(
-            or(
-                eq(users.email, credentials.identifier),
-                eq(users.username, credentials.identifier)
-            ),
-            eq(users.password, credentials.password!)
-        );
-    }
+            eq(users.username, credentials.identifier)
+        ),
+        eq(users.password, credentials.password!)
+    );
+    
+    const results = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        username: users.username,
+        role: users.role,
+        createdAt: users.createdAt,
+        shopAddress: users.shopAddress,
+        zipCode: users.zipCode,
+    }).from(users).where(whereClause).limit(1);
 
-    const result = await db.select().from(users).where(whereClause).limit(1);
-    const user = result[0];
+    const user = results[0];
 
     if (!user) {
         return { success: false, message: "Invalid credentials." };
     }
 
-    if (adminLogin && user.role !== 'admin') {
-        return { success: false, message: "You do not have permission to access this area." };
+    const publicUser: PublicUser = {
+        ...user,
+        profilePictureUrl: undefined,
     }
 
-    const { password, ...publicUser } = user;
     return { success: true, user: publicUser };
 }
 
@@ -372,5 +382,3 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
 
     return chartData;
 }
-
-    
