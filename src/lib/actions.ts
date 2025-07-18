@@ -67,7 +67,9 @@ export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
 // --- USER ACTIONS ---
 
 export async function getAllUsers(): Promise<PublicUser[]> {
-    const allUsers = await db.select({
+    // Temporarily removed profilePictureUrl to fix a database schema mismatch error.
+    // The database needs to be migrated to include this column.
+    const allUsersData = await db.select({
         id: users.id,
         name: users.name,
         email: users.email,
@@ -76,8 +78,14 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
         createdAt: users.createdAt,
-        profilePictureUrl: users.profilePictureUrl
     }).from(users);
+
+    // Manually add profilePictureUrl as null to match the PublicUser type
+    const allUsers: PublicUser[] = allUsersData.map(user => ({
+        ...user,
+        profilePictureUrl: null,
+    }));
+    
     return allUsers;
 }
 
