@@ -66,6 +66,25 @@ export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
 
 // --- USER ACTIONS ---
 
+export async function getUserById(userId: string): Promise<PublicUser | null> {
+    const result = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        username: users.username,
+        role: users.role,
+        shopAddress: users.shopAddress,
+        zipCode: users.zipCode,
+        createdAt: users.createdAt,
+    }).from(users).where(eq(users.id, userId)).limit(1);
+
+    if (!result[0]) {
+        return null;
+    }
+    // In the future, the profilePictureUrl might come from a different source
+    return { ...result[0], profilePictureUrl: null };
+}
+
 export async function getAllUsers(): Promise<PublicUser[]> {
     const allUsersData = await db.select({
         id: users.id,
@@ -85,6 +104,7 @@ export async function updateUser(userId: string, data: Partial<PublicUser>): Pro
     try {
         await db.update(users).set(data).where(eq(users.id, userId));
         revalidatePath('/admin/users');
+        revalidatePath(`/admin/vendors/${userId}`);
         return { success: true, message: 'User updated successfully.' };
     } catch (error) {
         console.error("Failed to update user:", error);
@@ -250,6 +270,7 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
 
 
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
+    if (!userId) return [];
     return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.orderDate));
 }
 
@@ -459,4 +480,39 @@ export async function getVendorPerformanceSummary() {
     }
 
     return performanceData;
+}
+
+export async function getVendorDetailsForAdmin(vendorId: string) {
+    const user = await getUserById(vendorId);
+    if (!user || user.role !== 'vendor') {
+        return null;
+    }
+
+    const vendorParts = await getPartsByVendor(user.name);
+    const stats = await getVendorStats(user.name);
+
+    const partsWithSales = await Promise.all(vendorParts.map(async (part) => {
+        const salesData = await db
+            .select({
+                unitsSold: sql<number>`count(${bookings.id})`.mapWith(Number),
+                revenue: sql<number>`sum(${bookings.cost})`.mapWith(Number),
+            })
+            .from(bookings)
+            .where(and(
+                eq(bookings.partId, part.id),
+                eq(bookings.status, 'Completed')
+            ));
+        
+        return {
+            ...part,
+            unitsSold: salesData[0]?.unitsSold || 0,
+            revenue: salesData[0]?.revenue || 0,
+        };
+    }));
+
+    return {
+        user,
+        parts: partsWithSales,
+        stats,
+    };
 }

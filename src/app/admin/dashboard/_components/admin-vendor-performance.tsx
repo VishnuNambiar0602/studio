@@ -101,7 +101,7 @@ export function AdminVendorPerformance() {
                                     <Card className="flex flex-col h-full">
                                         <CardHeader>
                                             <CardTitle>
-                                                <Link href={`/admin/users?vendor=${vendor.id}`} className="hover:underline text-primary">
+                                                <Link href={`/admin/vendors/${vendor.id}`} className="hover:underline text-primary">
                                                     {vendor.name}
                                                 </Link>
                                             </CardTitle>
