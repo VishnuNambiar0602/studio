@@ -6,7 +6,7 @@ import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, Use
 import { db } from "./db";
 import { bookings, orders, parts, users } from "./schema";
 import { eq, and, desc, sql, gte, or } from "drizzle-orm";
-import { subMonths, format, getYear, getMonth } from 'date-fns';
+import { subMonths, format, getYear, getMonth, subDays } from 'date-fns';
 
 
 // --- PART ACTIONS ---
@@ -116,13 +116,13 @@ export async function registerUser(userData: UserRegistration) {
         shopAddress: userData.shopAddress,
         zipCode: userData.zipCode,
         createdAt: new Date(),
-        profilePictureUrl: null,
     };
 
     await db.insert(users).values(newUserForDb);
     
     const createdUser: PublicUser = {
         ...newUserForDb,
+        profilePictureUrl: null,
     };
 
     revalidatePath('/admin/users');
@@ -167,7 +167,7 @@ export async function loginUser(credentials: UserLogin, adminLogin: boolean = fa
         createdAt: user.createdAt,
         shopAddress: user.shopAddress,
         zipCode: user.zipCode,
-        profilePictureUrl: user.profilePictureUrl
+        profilePictureUrl: null,
     }
 
     return { success: true, user: publicUser };
@@ -297,8 +297,20 @@ export async function getVendorBookings(vendorName: string): Promise<Booking[]> 
 }
 
 export async function completeBooking(bookingId: string) {
+    const result = await db.select({ partId: bookings.partId }).from(bookings).where(eq(bookings.id, bookingId));
+    
+    if (result.length > 0) {
+        const { partId } = result[0];
+        // Decrement part quantity
+        await db.update(parts).set({
+            quantity: sql`${parts.quantity} - 1`
+        }).where(eq(parts.id, partId));
+    }
+
     await db.update(bookings).set({ status: 'Completed' }).where(eq(bookings.id, bookingId));
+    
     revalidatePath('/vendor/tasks');
+    revalidatePath('/vendor/dashboard');
     return { success: true };
 }
 
@@ -399,4 +411,52 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
     });
 
     return chartData;
+}
+
+
+// --- ADMIN ACTIONS ---
+export async function getVendorPerformanceSummary() {
+    const vendorUsers = await db.select().from(users).where(eq(users.role, 'vendor'));
+    const thirtyDaysAgo = subDays(new Date(), 30);
+
+    const performanceData = [];
+
+    for (const vendor of vendorUsers) {
+        const monthlySales = await db
+            .select({
+                total: sql<number>`sum(${bookings.cost})`.mapWith(Number),
+            })
+            .from(bookings)
+            .where(
+                and(
+                    eq(bookings.vendorName, vendor.name),
+                    eq(bookings.status, 'Completed'),
+                    gte(bookings.bookingDate, thirtyDaysAgo)
+                )
+            );
+
+        const recentItems = await db
+            .select({
+                partName: bookings.partName,
+                cost: bookings.cost,
+            })
+            .from(bookings)
+            .where(
+                and(
+                    eq(bookings.vendorName, vendor.name),
+                    eq(bookings.status, 'Completed')
+                )
+            )
+            .orderBy(desc(bookings.bookingDate))
+            .limit(3);
+        
+        performanceData.push({
+            id: vendor.id,
+            name: vendor.name,
+            monthlySales: monthlySales[0]?.total || 0,
+            recentItems: recentItems,
+        });
+    }
+
+    return performanceData;
 }

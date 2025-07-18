@@ -5,6 +5,7 @@ import { AdminAdToggle } from "./_components/admin-ad-toggle";
 import { AdminTrafficChart } from "./_components/admin-traffic-chart";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AdminVendorPerformance } from "./_components/admin-vendor-performance";
 
 export default function AdminDashboard() {
   return (
@@ -50,6 +51,11 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+       <div className="grid gap-4">
+        <AdminVendorPerformance />
+      </div>
+
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
