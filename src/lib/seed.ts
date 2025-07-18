@@ -111,7 +111,7 @@ const MOCK_PARTS: Omit<Part, 'id'>[] = [
 const MOCK_USERS: Omit<User, 'id'>[] = [
   { name: 'John Doe', email: 'john@example.com', username: 'johndoe', role: 'customer', password: 'password123' },
   { name: 'Muscat Modern Auto', email: 'mma@example.com', username: 'muscatmodern', role: 'vendor', password: 'password123', shopAddress: 'Muscat Modern Auto', zipCode: '112' },
-  { name: 'Admin User', email: 'admin@example.com', username: 'admin', role: 'admin', password: 'password123' },
+  { name: 'Admin User', email: 'admin@backhodi.com', username: 'Backhodi', role: 'admin', password: 'Backchodi@123' },
   { name: 'Salalah Auto Spares', email: 'sas@example.com', username: 'salalahspares', role: 'vendor', password: 'password123', shopAddress: 'Salalah Auto Spares', zipCode: '211' },
   { name: 'Nizwa Car Parts', email: 'nizwa@example.com', username: 'nizwaparts', role: 'vendor', password: 'password123', shopAddress: 'Nizwa Car Parts', zipCode: '611' },
 ];

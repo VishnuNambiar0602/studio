@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails } from "./types";
 import { db } from "./db";
 import { bookings, orders, parts, users } from "./schema";
-import { eq, and, desc, sql, gte } from "drizzle-orm";
+import { eq, and, desc, sql, gte, or } from "drizzle-orm";
 import { subMonths, format, getYear, getMonth } from 'date-fns';
 
 
@@ -101,7 +101,10 @@ export async function registerUser(userData: UserRegistration) {
 export async function loginUser(credentials: UserLogin) {
     const result = await db.select().from(users).where(
         and(
-            eq(users.email, credentials.identifier),
+            or(
+                eq(users.email, credentials.identifier),
+                eq(users.username, credentials.identifier)
+            ),
             eq(users.password, credentials.password!)
         )
     ).limit(1);

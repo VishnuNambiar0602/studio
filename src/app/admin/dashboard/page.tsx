@@ -1,10 +1,17 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Package, Users } from "lucide-react";
+import { DollarSign, Package, Users, BarChart, ExternalLink, Settings, ShieldCheck } from "lucide-react";
+import { AdminAdToggle } from "./_components/admin-ad-toggle";
+import { AdminTrafficChart } from "./_components/admin-traffic-chart";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function AdminDashboard() {
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+       <div className="flex items-center">
+          <h1 className="text-lg font-semibold md:text-2xl">Master Control Panel</h1>
+        </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -43,16 +50,40 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-      <div>
-        <Card>
-            <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>An overview of recent platform events.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground">Recent activity feed coming soon...</p>
-            </CardContent>
+      <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle>Website Traffic</CardTitle>
+            <CardDescription>An overview of unique visitors for the last 7 days.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AdminTrafficChart />
+          </CardContent>
         </Card>
+        <div className="space-y-4">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Website Controls</CardTitle>
+                    <CardDescription>Manage global settings for the site.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AdminAdToggle />
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> User & Vendor Management</CardTitle>
+                    <CardDescription>View, edit, or manage all users and vendors on the platform.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild className="w-full">
+                        <Link href="/admin/users">
+                            Go to User Management <ExternalLink className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
+        </div>
       </div>
     </main>
   );
