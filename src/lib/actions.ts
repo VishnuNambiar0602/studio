@@ -149,35 +149,18 @@ export async function registerUser(userData: UserRegistration) {
     return { success: true, user: createdUser, message: "User registered successfully." };
 }
 
-export async function loginUser(credentials: UserLogin, adminLogin: boolean = false) {
+export async function loginUser(credentials: UserLogin) {
+    const results = await db.select().from(users).where(and(
+        or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
+        eq(users.password, credentials.password!)
+    )).limit(1);
     
-    let query;
-    
-    if (adminLogin) {
-        query = db.select().from(users).where(and(
-            eq(users.email, credentials.identifier),
-            eq(users.password, credentials.password!)
-        ));
-    } else {
-        query = db.select().from(users).where(and(
-            or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
-            eq(users.password, credentials.password!)
-        ));
-    }
-
-
-    const results = await query.limit(1);
     const user = results[0];
 
     if (!user) {
         return { success: false, message: "Invalid credentials." };
     }
     
-    if (adminLogin && user.role !== 'admin') {
-        return { success: false, message: "Permission denied. Not an admin." };
-    }
-
-
     const publicUser: PublicUser = {
         id: user.id,
         name: user.name,
@@ -436,6 +419,39 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
 
 
 // --- ADMIN ACTIONS ---
+export async function getAdminDashboardStats() {
+    const revenueResult = db.select({
+        total: sql<number>`sum(${orders.total})`.mapWith(Number),
+    }).from(orders).where(eq(orders.status, 'Picked Up'));
+
+    const usersResult = db.select({
+        count: sql<number>`count(*)`.mapWith(Number),
+    }).from(users);
+
+    const vendorsResult = db.select({
+        count: sql<number>`count(*)`.mapWith(Number),
+    }).from(users).where(eq(users.role, 'vendor'));
+
+    const partsResult = db.select({
+        count: sql<number>`count(*)`.mapWith(Number),
+    }).from(parts);
+
+    const [revenue, userCount, vendorCount, partCount] = await Promise.all([
+        revenueResult,
+        usersResult,
+        vendorsResult,
+        partsResult,
+    ]);
+
+    return {
+        totalRevenue: revenue[0]?.total || 0,
+        totalUsers: userCount[0]?.count || 0,
+        totalVendors: vendorCount[0]?.count || 0,
+        totalParts: partCount[0]?.count || 0,
+    };
+}
+
+
 export async function getVendorPerformanceSummary() {
     const vendorUsers = await db.select().from(users).where(eq(users.role, 'vendor'));
     const thirtyDaysAgo = subDays(new Date(), 30);
