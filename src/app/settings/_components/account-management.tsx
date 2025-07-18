@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition } from "react";
@@ -19,7 +18,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Trash2 } from "lucide-react";
 import { useSettings } from "@/context/settings-context";
 import { useRouter } from "next/navigation";
-import { ProfilePictureEditor } from "./profile-picture-editor";
 
 
 export function AccountManagement() {
@@ -55,18 +53,6 @@ export function AccountManagement() {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>
-            Manage your public profile settings.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProfilePictureEditor />
-        </CardContent>
-      </Card>
-
       <Card className="border-destructive">
         <CardHeader>
           <CardTitle>Danger Zone</CardTitle>

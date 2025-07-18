@@ -25,7 +25,6 @@ export interface User {
   username: string; // This is the usernametag
   role: UserRole;
   createdAt: Date;
-  profilePictureUrl?: string; // New field for avatar
   shopAddress?: string; // For vendors
   zipCode?: string; // For vendors
   // In a real app, you would never store the password in plain text.
@@ -85,4 +84,3 @@ export interface CheckoutDetails {
     expiryDate?: string;
     cvc?: string;
 }
-

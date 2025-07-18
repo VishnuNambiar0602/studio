@@ -77,13 +77,8 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         zipCode: users.zipCode,
         createdAt: users.createdAt,
     }).from(users);
-
-    const allUsers: PublicUser[] = allUsersData.map(user => ({
-        ...user,
-        profilePictureUrl: undefined, 
-    }));
     
-    return allUsers;
+    return allUsersData;
 }
 
 export async function registerUser(userData: UserRegistration) {
@@ -98,7 +93,6 @@ export async function registerUser(userData: UserRegistration) {
         }
     }
     
-    // Create a new user object that matches the current database schema
     const newUserForDb = { 
         id: `user-${Date.now()}`, 
         name: userData.name,
@@ -113,10 +107,8 @@ export async function registerUser(userData: UserRegistration) {
 
     await db.insert(users).values(newUserForDb);
     
-    // Create the user object for the client-side, which can have the optional property
     const createdUser: PublicUser = {
         ...newUserForDb,
-        profilePictureUrl: undefined, // Add the optional field for the client
     };
 
     revalidatePath('/admin/users');
@@ -124,17 +116,6 @@ export async function registerUser(userData: UserRegistration) {
 }
 
 export async function loginUser(credentials: UserLogin) {
-    let whereClause;
-    
-    // Regular user login can use email or username
-    whereClause = and(
-        or(
-            eq(users.email, credentials.identifier),
-            eq(users.username, credentials.identifier)
-        ),
-        eq(users.password, credentials.password!)
-    );
-    
     const results = await db.select({
         id: users.id,
         name: users.name,
@@ -144,7 +125,15 @@ export async function loginUser(credentials: UserLogin) {
         createdAt: users.createdAt,
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
-    }).from(users).where(whereClause).limit(1);
+    }).from(users).where(
+        and(
+            or(
+                eq(users.email, credentials.identifier), 
+                eq(users.username, credentials.identifier)
+            ), 
+            eq(users.password, credentials.password!)
+        )
+    ).limit(1);
 
     const user = results[0];
 
@@ -154,7 +143,6 @@ export async function loginUser(credentials: UserLogin) {
 
     const publicUser: PublicUser = {
         ...user,
-        profilePictureUrl: undefined,
     }
 
     return { success: true, user: publicUser };
