@@ -52,6 +52,23 @@ export function OrderHistory() {
         )
     );
   };
+  
+  const getStatusDescription = (order: Order) => {
+      switch (order.status) {
+          case 'Placed':
+              return 'Your order has been placed successfully.';
+          case 'Processing':
+              return 'Your parts are being prepared and sent to the vendor.';
+          case 'Ready for Pickup':
+              return `Ready for pickup at ${order.items[0]?.vendorAddress}.`;
+          case 'Picked Up':
+              return `Picked up on ${new Date(order.completionDate || order.orderDate).toLocaleDateString()}.`;
+          case 'Cancelled':
+              return 'This order has been cancelled.';
+          default:
+              return 'Track your package for more details.';
+      }
+  }
 
   if (loading) {
     return (
@@ -120,7 +137,7 @@ export function OrderHistory() {
                     </CardHeader>
                     <CardContent className="p-6">
                         <h3 className="text-lg font-bold mb-4">
-                            {order.status === 'Picked Up' ? `Delivered on ${new Date(order.completionDate || order.orderDate).toLocaleDateString()}` : order.status === 'Cancelled' ? 'This order has been cancelled.' : `Arriving soon...`}
+                           {getStatusDescription(order)}
                         </h3>
                         {order.items.map((item) => (
                             <div key={item.id} className="flex gap-4">
@@ -144,7 +161,13 @@ export function OrderHistory() {
                     </CardContent>
                     { (order.cancelable || order.status !== 'Cancelled') &&
                     <CardFooter className="bg-muted/50 px-6 py-4 border-t flex-wrap gap-2 justify-end">
-                        {order.status !== 'Cancelled' && <Button variant="outline"><PackageCheck className="mr-2 h-4 w-4" />Track Package</Button>}
+                        {order.status !== 'Cancelled' && (
+                          <Button variant="outline" asChild>
+                            <Link href={`/track/${order.id}`}>
+                              <PackageCheck className="mr-2 h-4 w-4" />Track Package
+                            </Link>
+                          </Button>
+                        )}
                         <CancelOrderDialog 
                             orderId={order.id} 
                             onOrderCancelled={handleOrderCancelled}
@@ -170,5 +193,3 @@ export function OrderHistory() {
     </div>
   );
 }
-
-    

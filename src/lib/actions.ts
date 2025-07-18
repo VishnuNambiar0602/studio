@@ -78,7 +78,7 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         createdAt: users.createdAt,
     }).from(users);
     
-    return allUsersData;
+    return allUsersData.map(u => ({...u, profilePictureUrl: null}));
 }
 
 export async function updateUser(userId: string, data: Partial<PublicUser>): Promise<{ success: boolean; message: string }> {
@@ -116,6 +116,7 @@ export async function registerUser(userData: UserRegistration) {
         shopAddress: userData.shopAddress,
         zipCode: userData.zipCode,
         createdAt: new Date(),
+        profilePictureUrl: null,
     };
 
     await db.insert(users).values(newUserForDb);
@@ -130,22 +131,20 @@ export async function registerUser(userData: UserRegistration) {
 
 export async function loginUser(credentials: UserLogin, adminLogin: boolean = false) {
     
-    let query = db.select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        username: users.username,
-        role: users.role,
-        createdAt: users.createdAt,
-        shopAddress: users.shopAddress,
-        zipCode: users.zipCode,
-    }).from(users)
-    .where(and(
-        adminLogin 
-            ? eq(users.email, credentials.identifier) 
-            : or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
-        eq(users.password, credentials.password!)
-    ));
+    let query;
+    
+    if (adminLogin) {
+        query = db.select().from(users).where(and(
+            eq(users.email, credentials.identifier),
+            eq(users.password, credentials.password!)
+        ));
+    } else {
+        query = db.select().from(users).where(and(
+            or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
+            eq(users.password, credentials.password!)
+        ));
+    }
+
 
     const results = await query.limit(1);
     const user = results[0];
@@ -160,7 +159,15 @@ export async function loginUser(credentials: UserLogin, adminLogin: boolean = fa
 
 
     const publicUser: PublicUser = {
-        ...user,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        createdAt: user.createdAt,
+        shopAddress: user.shopAddress,
+        zipCode: user.zipCode,
+        profilePictureUrl: user.profilePictureUrl
     }
 
     return { success: true, user: publicUser };
@@ -244,6 +251,11 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
 
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
     return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.orderDate));
+}
+
+export async function getOrderById(orderId: string): Promise<Order | null> {
+    const result = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    return result[0] || null;
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
