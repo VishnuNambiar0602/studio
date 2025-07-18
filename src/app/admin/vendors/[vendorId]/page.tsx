@@ -35,11 +35,11 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
               </AvatarFallback>
             </Avatar>
             <CardTitle>{user.name}</CardTitle>
-            <CardDescription>
+            <div className="pt-2">
                 <Badge variant="secondary">Verified Vendor</Badge>
-            </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4 text-sm">
+          <CardContent className="space-y-4 text-sm pt-4">
              <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-3 text-muted-foreground" />
                 <span>{user.email}</span>
