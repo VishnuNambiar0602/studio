@@ -76,20 +76,28 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
         createdAt: users.createdAt,
+        profilePictureUrl: users.profilePictureUrl
     }).from(users);
     return allUsers;
 }
 
 export async function registerUser(userData: UserRegistration) {
-    const existingUser = await db.select().from(users).where(eq(users.email, userData.email));
+    const existingUser = await db.select().from(users).where(or(eq(users.email, userData.email), eq(users.username, userData.username)));
+
     if (existingUser.length > 0) {
-        return { success: false, message: "A user with this email already exists." };
+        if (existingUser[0].email === userData.email) {
+            return { success: false, message: "A user with this email already exists." };
+        }
+        if (existingUser[0].username === userData.username) {
+            return { success: false, message: "This username is already taken." };
+        }
     }
     
     const newUser: User = { 
         id: `user-${Date.now()}`, 
         ...userData,
         createdAt: new Date(),
+        profilePictureUrl: null, // Ensure new users have a null value for profile pic
     };
 
     await db.insert(users).values(newUser);
@@ -101,6 +109,7 @@ export async function registerUser(userData: UserRegistration) {
 export async function loginUser(credentials: UserLogin, adminLogin: boolean = false) {
     
     let whereClause;
+    
     if (adminLogin) {
         // Admin login only uses email
         whereClause = and(
@@ -145,9 +154,11 @@ export async function sendPasswordResetCode(email: string, isAdminCheck: boolean
         return { success: false, message: "This email does not belong to an administrator." };
     }
 
-    const code = "123456"; // In a real app, generate a secure random code
+    const code = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit code
     await db.update(users).set({ verificationCode: code }).where(eq(users.id, user.id));
     
+    // In a real app, you would email this code to the user.
+    // For this simulation, we return it.
     return { success: true, message: "Verification code sent.", code: code, username: user.username };
 }
 
@@ -218,6 +229,7 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean; 
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string) {
+    // This is a mock: in a real app, you'd get the logged-in user's ID
     const userResult = await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.role, 'customer')).limit(1);
     const mockUser = userResult[0];
 
@@ -352,3 +364,5 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
 
     return chartData;
 }
+
+    
