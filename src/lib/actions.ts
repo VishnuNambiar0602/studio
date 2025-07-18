@@ -115,7 +115,6 @@ export async function loginUser(credentials: UserLogin, adminLogin: boolean = fa
         return { success: false, message: "Invalid credentials." };
     }
 
-    // If this is an admin login, check the role
     if (adminLogin && user.role !== 'admin') {
         return { success: false, message: "You do not have permission to access this area." };
     }
