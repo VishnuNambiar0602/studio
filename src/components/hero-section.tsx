@@ -14,9 +14,10 @@ import { useParts } from "@/context/part-context";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Card, CardContent } from "./ui/card";
 
 export function HeroSection() {
-    const { language, isLoggedIn, loggedInUser, logoutUser } = useSettings();
+    const { language } = useSettings();
     const { parts } = useParts();
     const t = getDictionary(language);
     const router = useRouter();
@@ -33,7 +34,7 @@ export function HeroSection() {
         setResult(null);
         setError(null);
         try {
-          const partsList = await parts;
+          const partsList = parts; // Use parts directly from context
           const availableParts = JSON.stringify(
             partsList.map(({ id, name, description, price }) => ({ id, name, description, price }))
           );
@@ -63,12 +64,12 @@ export function HeroSection() {
     return (
         <section className="relative w-full h-[60vh] flex items-center justify-center text-center">
             <Image 
-              src="https://placehold.co/1200x800.png" 
+              src="https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080" 
               alt={t.hero.alt} 
               fill 
               className="object-cover"
               priority
-              data-ai-hint="futuristic AI face"
+              data-ai-hint="desert car"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/70" />
             <div className="relative z-10 p-4 text-white">
@@ -118,7 +119,7 @@ export function HeroSection() {
                                   ) : (
                                     <Alert>
                                       <AlertTitle>Genie's Response</AlertTitle>
-                                      <AlertDescription>{result.answer}</AlertDescription>
+                                      <AlertDescription>{result.answer || "I couldn't identify a specific part, but I'm here to answer any automotive questions you have!"}</AlertDescription>
                                     </Alert>
                                   )}
                                 </div>
