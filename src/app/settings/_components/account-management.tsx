@@ -53,11 +53,11 @@ export function AccountManagement() {
 
   return (
     <>
-      <Card className="border-destructive">
+      <Card>
         <CardHeader>
-          <CardTitle>Danger Zone</CardTitle>
+          <CardTitle>Account Management</CardTitle>
           <CardDescription>
-            These actions are permanent and cannot be undone. Please proceed with caution.
+            Manage account-level actions, such as deleting your account.
           </CardDescription>
         </CardHeader>
         <CardContent>
