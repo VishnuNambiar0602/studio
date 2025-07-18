@@ -28,6 +28,8 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): P
         revalidatePath('/vendor/inventory');
         revalidatePath('/vendor/dashboard');
         revalidatePath('/vendor/account');
+        revalidatePath('/admin/dashboard');
+        revalidatePath('/admin/vendors', 'layout');
 
 
         return newPartData;
@@ -48,6 +50,8 @@ export async function updatePart(partId: string, partData: Part) {
     revalidatePath("/oem-parts");
     revalidatePath('/vendor/dashboard');
     revalidatePath('/vendor/account');
+    revalidatePath('/admin/dashboard');
+    revalidatePath('/admin/vendors', 'layout');
 }
 
 export async function getParts(): Promise<Part[]> {
@@ -136,6 +140,7 @@ export async function registerUser(userData: UserRegistration) {
     };
 
     revalidatePath('/admin/users');
+    revalidatePath('/admin/dashboard');
     return { success: true, user: createdUser, message: "User registered successfully." };
 }
 
