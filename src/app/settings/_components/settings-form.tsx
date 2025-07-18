@@ -26,6 +26,7 @@ export function SettingsForm() {
                     <SettingsControls />
                 </CardContent>
             </Card>
+            
             <AccountManagement />
         </div>
     )

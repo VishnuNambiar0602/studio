@@ -24,6 +24,7 @@ export const users = pgTable('users', {
   username: varchar('username').notNull().unique(),
   role: userRoleEnum('role').notNull(),
   password: text('password').notNull(),
+  profilePictureUrl: varchar('profile_picture_url'),
   shopAddress: varchar('shop_address'),
   zipCode: varchar('zip_code'),
   verificationCode: varchar('verification_code'),

@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Trash2 } from "lucide-react";
 import { useSettings } from "@/context/settings-context";
 import { useRouter } from "next/navigation";
+import { ProfilePictureEditor } from "./profile-picture-editor";
 
 
 export function AccountManagement() {
@@ -53,47 +54,61 @@ export function AccountManagement() {
   };
 
   return (
-    <Card className="border-destructive">
-      <CardHeader>
-        <CardTitle>Account Management</CardTitle>
-        <CardDescription>
-          These actions are permanent and cannot be undone. Please proceed with caution.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-destructive/50">
-          <div>
-            <h3 className="font-semibold text-destructive">Delete Account</h3>
-            <p className="text-sm text-muted-foreground">
-              Permanently delete your account and all of your data.
-            </p>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>
+            Manage your public profile settings.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ProfilePictureEditor />
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle>Danger Zone</CardTitle>
+          <CardDescription>
+            These actions are permanent and cannot be undone. Please proceed with caution.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-destructive/50">
+            <div>
+              <h3 className="font-semibold text-destructive">Delete Account</h3>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete your account and all of your data.
+              </p>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                  <Button variant="destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Account
+                  </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                  <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your
+                      account and remove your data from our servers.
+                      </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAccount} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
+                          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {isPending ? "Deleting..." : "Yes, delete my account"}
+                      </AlertDialogAction>
+                  </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
-           <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Account
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your
-                    account and remove your data from our servers.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAccount} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
-                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isPending ? "Deleting..." : "Yes, delete my account"}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-           </AlertDialog>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 }
