@@ -81,6 +81,19 @@ export async function getAllUsers(): Promise<PublicUser[]> {
     return allUsersData;
 }
 
+export async function updateUser(userId: string, data: Partial<PublicUser>): Promise<{ success: boolean; message: string }> {
+    try {
+        await db.update(users).set(data).where(eq(users.id, userId));
+        revalidatePath('/admin/users');
+        return { success: true, message: 'User updated successfully.' };
+    } catch (error) {
+        console.error("Failed to update user:", error);
+        // This could be a more specific error, e.g., if a unique constraint is violated.
+        return { success: false, message: 'Failed to update user. The email or username might already be in use.' };
+    }
+}
+
+
 export async function registerUser(userData: UserRegistration) {
     const existingUser = await db.select().from(users).where(or(eq(users.email, userData.email), eq(users.username, userData.username)));
 
@@ -115,8 +128,9 @@ export async function registerUser(userData: UserRegistration) {
     return { success: true, user: createdUser, message: "User registered successfully." };
 }
 
-export async function loginUser(credentials: UserLogin) {
-    const results = await db.select({
+export async function loginUser(credentials: UserLogin, adminLogin: boolean = false) {
+    
+    let query = db.select({
         id: users.id,
         name: users.name,
         email: users.email,
@@ -125,21 +139,25 @@ export async function loginUser(credentials: UserLogin) {
         createdAt: users.createdAt,
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
-    }).from(users).where(
-        and(
-            or(
-                eq(users.email, credentials.identifier), 
-                eq(users.username, credentials.identifier)
-            ), 
-            eq(users.password, credentials.password!)
-        )
-    ).limit(1);
+    }).from(users)
+    .where(and(
+        adminLogin 
+            ? eq(users.email, credentials.identifier) 
+            : or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
+        eq(users.password, credentials.password!)
+    ));
 
+    const results = await query.limit(1);
     const user = results[0];
 
     if (!user) {
         return { success: false, message: "Invalid credentials." };
     }
+    
+    if (adminLogin && user.role !== 'admin') {
+        return { success: false, message: "Permission denied. Not an admin." };
+    }
+
 
     const publicUser: PublicUser = {
         ...user,

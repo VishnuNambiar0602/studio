@@ -19,22 +19,36 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Download } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { getAllUsers } from "@/lib/actions";
 import type { PublicUser } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { cva } from "class-variance-authority";
+import { AdminEditUserDialog } from "./admin-edit-user-dialog";
 
 export function AdminUserTable() {
   const [users, setUsers] = React.useState<PublicUser[]>([]);
+  const [selectedUser, setSelectedUser] = React.useState<PublicUser | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+
+  const fetchUsers = React.useCallback(async () => {
+    const data = await getAllUsers();
+    setUsers(data);
+  }, []);
 
   React.useEffect(() => {
-    const fetchUsers = async () => {
-      const data = await getAllUsers();
-      setUsers(data);
-    };
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
+
+  const handleEdit = (user: PublicUser) => {
+    setSelectedUser(user);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleUserUpdated = () => {
+    setIsEditDialogOpen(false);
+    fetchUsers(); // Re-fetch users to show updated data
+  }
 
   const roleBadgeVariants = cva(
     "capitalize",
@@ -50,64 +64,75 @@ export function AdminUserTable() {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Users</CardTitle>
-        <CardDescription>
-          A list of all users in the system.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.length > 0 ? (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Badge className={roleBadgeVariants({ role: user.role })}>
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                        <DropdownMenuItem>Block</DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Users</CardTitle>
+          <CardDescription>
+            A list of all users in the system.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.length > 0 ? (
+                users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Badge className={roleBadgeVariants({ role: user.role })}>
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => handleEdit(user)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem>Block</DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center h-24">
+                    No users found.
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center h-24">
-                  No users found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {selectedUser && (
+        <AdminEditUserDialog
+            user={selectedUser}
+            isOpen={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            onUserUpdated={handleUserUpdated}
+        />
+      )}
+    </>
   );
 }
