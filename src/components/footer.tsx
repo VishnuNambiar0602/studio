@@ -6,8 +6,8 @@ export function Footer() {
   return (
     <footer className="bg-muted text-muted-foreground">
       <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="sm:col-span-2 md:col-span-1">
             <Link href="/" className="text-xl font-bold text-foreground">
               GulfCarX
             </Link>
@@ -15,7 +15,7 @@ export function Footer() {
               Your source for high-quality auto parts in the desert region.
             </p>
           </div>
-          <div className="md:col-span-1">
+          <div>
             <h3 className="font-semibold text-foreground">Company</h3>
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link href="/about" className="hover:text-primary">About Us</Link></li>
@@ -23,7 +23,7 @@ export function Footer() {
               <li><Link href="/support" className="hover:text-primary">Support</Link></li>
             </ul>
           </div>
-          <div className="md:col-span-1">
+          <div>
              <h3 className="font-semibold text-foreground">Part Categories</h3>
             <ul className="mt-4 space-y-2 text-sm">
               <li><Link href="/new-parts" className="hover:text-primary">New Parts</Link></li>
@@ -31,7 +31,7 @@ export function Footer() {
               <li><Link href="/oem-parts" className="hover:text-primary">OEM Parts</Link></li>
             </ul>
           </div>
-          <div className="md:col-span-1">
+          <div>
             <h3 className="font-semibold text-foreground">Connect with Us</h3>
             <div className="flex mt-4 space-x-4">
               <Link href="#" className="text-muted-foreground hover:text-primary">

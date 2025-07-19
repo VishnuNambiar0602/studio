@@ -128,7 +128,7 @@ export function OrderHistory() {
                                 <p className="text-sm font-medium">${order.total.toFixed(2)}</p>
                             </div>
                             <div className="w-full sm:w-auto">
-                               <p className="text-xs text-muted-foreground">ORDER # {order.id.split("-")[1]}</p>
+                               <p className="text-xs text-muted-foreground">ORDER # {order.id.split("-")[0]}</p>
                             </div>
                         </div>
                         <div className="text-right shrink-0">
