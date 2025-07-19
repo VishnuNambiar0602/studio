@@ -52,7 +52,7 @@ export function CartView() {
                                 type="number"
                                 className="h-8 w-16 text-center"
                                 value={item.purchaseQuantity}
-                                onChange={(e) => updateCartItemQuantity(item.id, parseInt(e.target.value, 10) || 1)}
+                                onChange={(e) => updateCartItemQuantity(item.id, parseInt(e.target.value) || 0)}
                                 min={1}
                                 max={item.quantity}
                             />
