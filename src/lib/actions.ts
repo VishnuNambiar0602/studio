@@ -98,7 +98,7 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         createdAt: users.createdAt,
     }).from(users);
     
-    return allUsersData.map(u => ({...u, profilePictureUrl: null}));
+    return allUsersData;
 }
 
 export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
@@ -144,7 +144,6 @@ export async function registerUser(userData: UserRegistration) {
     
     const createdUser: PublicUser = {
         ...newUserForDb,
-        profilePictureUrl: null,
     };
 
     revalidatePath('/admin/users');
@@ -174,7 +173,6 @@ export async function loginUser(credentials: UserLogin) {
         createdAt: user.createdAt,
         shopAddress: user.shopAddress,
         zipCode: user.zipCode,
-        profilePictureUrl: null,
     }
 
     return { success: true, user: publicUser };
@@ -248,7 +246,8 @@ export async function placeOrder(orderData: { userId: string; items: CartItem[];
             bookingDate: newOrder.orderDate,
             status: 'Order Fulfillment',
             cost: item.price * item.purchaseQuantity,
-            vendorName: item.vendorAddress
+            vendorName: item.vendorAddress,
+            orderId: newOrder.id,
         };
         await db.insert(bookings).values(newBookingTask);
     }
@@ -315,20 +314,27 @@ export async function getVendorBookings(vendorName: string): Promise<Booking[]> 
 
 export async function completeBooking(bookingId: string) {
     const db = await getDb();
-    const result = await db.select({ partId: bookings.partId }).from(bookings).where(eq(bookings.id, bookingId));
-    
-    if (result.length > 0) {
-        const { partId } = result[0];
-        // Decrement part quantity
-        await db.update(parts).set({
-            quantity: sql`${parts.quantity} - 1`
-        }).where(eq(parts.id, partId));
+    const bookingResult = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
+    const booking = bookingResult[0];
+
+    if (!booking) {
+        return { success: false };
     }
 
+    if (booking.status === 'Order Fulfillment') {
+        if (booking.orderId) {
+            await db.update(orders).set({ status: 'Picked Up', cancelable: false }).where(eq(orders.id, booking.orderId));
+        }
+    }
+    
     await db.update(bookings).set({ status: 'Completed' }).where(eq(bookings.id, bookingId));
     
     revalidatePath('/vendor/tasks');
     revalidatePath('/vendor/dashboard');
+    revalidatePath('/my-orders');
+    if (booking.orderId) {
+        revalidatePath(`/track/${booking.orderId}`);
+    }
     return { success: true };
 }
 

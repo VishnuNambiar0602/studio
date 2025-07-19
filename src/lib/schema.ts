@@ -64,4 +64,5 @@ export const bookings = pgTable('bookings', {
     status: bookingStatusEnum('status').notNull(),
     cost: real('cost').notNull(),
     vendorName: varchar('vendor_name').notNull(),
+    orderId: varchar('order_id').references(() => orders.id),
 });

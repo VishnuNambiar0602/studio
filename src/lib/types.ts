@@ -75,6 +75,7 @@ export interface Booking {
   status: BookingStatus;
   cost: number;
   vendorName: string;
+  orderId?: string;
 }
 
 export interface CheckoutDetails {
