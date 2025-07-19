@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useSettings } from "@/context/settings-context";
