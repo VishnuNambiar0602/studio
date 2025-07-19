@@ -14,15 +14,23 @@ if (!process.env.POSTGRES_URL) {
 
 // A singleton instance of the database client
 let dbInstance: NodePgDatabase<typeof schema> | null = null;
+let clientInstance: Client | null = null;
 
 export async function getDb() {
   if (dbInstance) {
+    // Basic check to see if client is still connected.
+    // This is not foolproof but helps in some serverless environments.
+    if (clientInstance && !(clientInstance as any)._connected) {
+        await clientInstance.connect();
+    }
     return dbInstance;
   }
-  const client = new Client({
+  
+  clientInstance = new Client({
     connectionString: process.env.POSTGRES_URL,
   });
-  await client.connect();
-  dbInstance = drizzle(client, { schema, logger: true });
+
+  await clientInstance.connect();
+  dbInstance = drizzle(clientInstance, { schema, logger: true });
   return dbInstance;
 }
