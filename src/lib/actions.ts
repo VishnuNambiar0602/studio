@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem } from "./types";
 import { getDb } from "./db";
 import { bookings, orders, parts, users } from "./schema";
-import { eq, and, desc, sql, gte, or, lt } from "drizzle-orm";
+import { eq, and, desc, sql, gte, or, lt, not } from "drizzle-orm";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 
 
@@ -96,6 +96,7 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
         createdAt: users.createdAt,
+        isBlocked: users.isBlocked,
     }).from(users);
     
     return allUsersData;
@@ -138,6 +139,7 @@ export async function registerUser(userData: UserRegistration) {
         shopAddress: userData.shopAddress,
         zipCode: userData.zipCode,
         createdAt: new Date(),
+        isBlocked: false,
     };
 
     await db.insert(users).values(newUserForDb);
@@ -171,6 +173,7 @@ export async function loginUser(credentials: UserLogin) {
         username: user.username,
         role: user.role,
         createdAt: user.createdAt,
+        isBlocked: user.isBlocked,
         shopAddress: user.shopAddress,
         zipCode: user.zipCode,
     }
@@ -587,4 +590,35 @@ export async function getWeeklyTrafficData(): Promise<{ name: string; visitors: 
     return last7DaysData;
 }
 
+export async function deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
+    const db = await getDb();
+    try {
+        await db.delete(users).where(eq(users.id, userId));
+        revalidatePath('/admin/users');
+        return { success: true, message: "User deleted successfully." };
+    } catch (error: any) {
+        console.error("Failed to delete user:", error);
+        if (error.code === '23503') { // Foreign key violation
+            return { success: false, message: "Cannot delete this user. They are associated with existing orders or parts. Please block the user instead." };
+        }
+        return { success: false, message: "An unexpected error occurred while deleting the user." };
+    }
+}
+
+export async function toggleUserBlockStatus(userId: string): Promise<{ success: boolean, message: string }> {
+    const db = await getDb();
+    try {
+        const user = await db.select({ isBlocked: users.isBlocked }).from(users).where(eq(users.id, userId)).limit(1);
+        if (!user.length) {
+            return { success: false, message: "User not found." };
+        }
+        const newStatus = !user[0].isBlocked;
+        await db.update(users).set({ isBlocked: newStatus }).where(eq(users.id, userId));
+        revalidatePath('/admin/users');
+        return { success: true, message: `User has been ${newStatus ? 'blocked' : 'unblocked'}.` };
+    } catch (error) {
+        console.error("Failed to toggle user block status:", error);
+        return { success: false, message: "An unexpected error occurred." };
+    }
+}
     

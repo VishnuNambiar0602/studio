@@ -28,6 +28,7 @@ export const users = pgTable('users', {
   zipCode: varchar('zip_code'),
   verificationCode: varchar('verification_code'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  isBlocked: boolean('is_blocked').default(false).notNull(),
 });
 
 export const parts = pgTable('parts', {

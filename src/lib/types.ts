@@ -29,6 +29,7 @@ export interface User {
   username: string; // This is the usernametag
   role: UserRole;
   createdAt: Date;
+  isBlocked: boolean;
   shopAddress?: string; // For vendors
   zipCode?: string; // For vendors
   // In a real app, you would never store the password in plain text.
@@ -42,7 +43,7 @@ export interface User {
 export type PublicUser = Omit<User, 'password' | 'verificationCode' | 'verificationCodeExpires'>;
 
 
-export type UserRegistration = Omit<User, 'id' | 'createdAt'>;
+export type UserRegistration = Omit<User, 'id' | 'createdAt' | 'isBlocked'>;
 
 export type UserLogin = {
   identifier: string; // Can be email or username

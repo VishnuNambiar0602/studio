@@ -11,6 +11,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
   Card,
   CardContent,
   CardDescription,
@@ -19,17 +30,19 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal } from "lucide-react";
-import { getAllUsers } from "@/lib/actions";
+import { MoreHorizontal, ShieldCheck, ShieldX } from "lucide-react";
+import { getAllUsers, toggleUserBlockStatus, deleteUser } from "@/lib/actions";
 import type { PublicUser } from "@/lib/types";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "./ui/dropdown-menu";
 import { cva } from "class-variance-authority";
 import { AdminEditUserDialog } from "./admin-edit-user-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export function AdminUserTable() {
   const [users, setUsers] = React.useState<PublicUser[]>([]);
   const [selectedUser, setSelectedUser] = React.useState<PublicUser | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const { toast } = useToast();
 
   const fetchUsers = React.useCallback(async () => {
     const data = await getAllUsers();
@@ -50,18 +63,56 @@ export function AdminUserTable() {
     fetchUsers(); // Re-fetch users to show updated data
   }
 
+  const handleToggleBlock = async (userId: string) => {
+      const result = await toggleUserBlockStatus(userId);
+      toast({
+          title: result.success ? "Success" : "Error",
+          description: result.message,
+          variant: result.success ? "default" : "destructive",
+      });
+      if (result.success) {
+          fetchUsers();
+      }
+  };
+
+  const handleDelete = async (userId: string) => {
+      const result = await deleteUser(userId);
+      toast({
+          title: result.success ? "Success" : "Error",
+          description: result.message,
+          variant: result.success ? "default" : "destructive",
+      });
+      if (result.success) {
+          fetchUsers();
+      }
+  };
+
+
   const roleBadgeVariants = cva(
     "capitalize",
     {
       variants: {
         role: {
-          admin: "bg-red-100 text-red-800",
-          vendor: "bg-blue-100 text-blue-800",
-          customer: "bg-green-100 text-green-800",
+          admin: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+          vendor: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+          customer: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
         },
       },
     }
   );
+  
+  const statusBadgeVariants = cva(
+    "capitalize",
+    {
+      variants: {
+        status: {
+          active: "border-green-300 text-green-800 dark:text-green-300",
+          blocked: "border-red-300 text-red-800 dark:text-red-300",
+        },
+      },
+    }
+  );
+
 
   return (
     <>
@@ -80,6 +131,7 @@ export function AdminUserTable() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
                   </TableHead>
@@ -96,6 +148,16 @@ export function AdminUserTable() {
                           {user.role}
                         </Badge>
                       </TableCell>
+                       <TableCell>
+                        <Badge variant="outline" className={statusBadgeVariants({ status: user.isBlocked ? 'blocked' : 'active' })}>
+                           {user.isBlocked ? (
+                                <ShieldX className="mr-2 h-3.5 w-3.5" />
+                            ) : (
+                                <ShieldCheck className="mr-2 h-3.5 w-3.5" />
+                            )}
+                          {user.isBlocked ? 'Blocked' : 'Active'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -107,8 +169,31 @@ export function AdminUserTable() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem onSelect={() => handleEdit(user)}>Edit</DropdownMenuItem>
-                            <DropdownMenuItem>Block</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleToggleBlock(user.id)}>
+                                {user.isBlocked ? 'Unblock' : 'Block'}
+                            </DropdownMenuItem>
+                             <DropdownMenuSeparator />
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                        Delete
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the user's account and all their data.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(user.id)} className="bg-destructive hover:bg-destructive/90">
+                                            Yes, delete user
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -116,7 +201,7 @@ export function AdminUserTable() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24">
+                    <TableCell colSpan={5} className="text-center h-24">
                       No users found.
                     </TableCell>
                   </TableRow>
