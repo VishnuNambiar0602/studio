@@ -5,16 +5,20 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 export function AdminAdToggle() {
     const [adsEnabled, setAdsEnabled] = useState(false);
     const { toast } = useToast();
+    const { language } = useSettings();
+    const t = getDictionary(language);
 
     const handleToggle = (checked: boolean) => {
         setAdsEnabled(checked);
         toast({
-            title: `Advertisements ${checked ? 'Enabled' : 'Disabled'}`,
-            description: `Ads will now ${checked ? 'be displayed' : 'be hidden'} across the site. (Simulated)`,
+            title: `${t.adminAdToggle.ads} ${checked ? t.adminAdToggle.enabled : t.adminAdToggle.disabled}`,
+            description: `${t.adminAdToggle.adsWillNow} ${checked ? t.adminAdToggle.beDisplayed : t.adminAdToggle.beHidden'} ${t.adminAdToggle.acrossSite}`,
         });
     }
 
@@ -22,10 +26,10 @@ export function AdminAdToggle() {
         <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
                 <Label htmlFor="ad-toggle" className="text-base">
-                    Enable Website Ads
+                    {t.adminAdToggle.enableAds}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                   Control the display of advertisements across the entire platform.
+                   {t.adminAdToggle.description}
                 </p>
             </div>
             <Switch

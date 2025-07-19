@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useSettings } from "@/context/settings-context";
 import { registerUser } from "@/lib/actions";
+import { getDictionary } from "@/lib/i18n";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -32,7 +33,8 @@ export function AuthForm({ userType }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { loginUser: setLoggedInUserContext } = useSettings();
+  const { loginUser: setLoggedInUserContext, language } = useSettings();
+  const t = getDictionary(language);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,7 +65,7 @@ export function AuthForm({ userType }: AuthFormProps) {
         if (!result.success || !result.user) {
             toast({
                 variant: "destructive",
-                title: "Registration Failed",
+                title: t.auth.registrationFailed,
                 description: result.message,
             });
             setLoading(false);
@@ -73,8 +75,8 @@ export function AuthForm({ userType }: AuthFormProps) {
         setLoggedInUserContext(result.user);
 
         toast({
-            title: "Account Created!",
-            description: `Your ${userType} account has been successfully created. Your usernametag is ${result.user?.username}.`,
+            title: t.auth.accountCreated,
+            description: `${t.auth.your} ${userType} ${t.auth.accountHasBeenCreated} ${result.user?.username}.`,
         });
         
         form.reset();
@@ -87,8 +89,8 @@ export function AuthForm({ userType }: AuthFormProps) {
     } catch (error) {
         toast({
             variant: "destructive",
-            title: "An Error Occurred",
-            description: "Something went wrong. Please try again.",
+            title: t.auth.anErrorOccurred,
+            description: t.auth.somethingWentWrong,
         });
     } finally {
         setLoading(false);
@@ -103,9 +105,9 @@ export function AuthForm({ userType }: AuthFormProps) {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{userType === 'vendor' ? 'Company Name' : 'Full Name'}</FormLabel>
+              <FormLabel>{userType === 'vendor' ? t.auth.companyName : t.auth.fullName}</FormLabel>
               <FormControl>
-                <Input placeholder={userType === 'vendor' ? 'Your Company LLC' : 'John Doe'} {...field} />
+                <Input placeholder={userType === 'vendor' ? t.auth.companyNamePlaceholder : t.auth.fullNamePlaceholder} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,12 +118,12 @@ export function AuthForm({ userType }: AuthFormProps) {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Usernametag</FormLabel>
+              <FormLabel>{t.auth.usernametag}</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., CarEnthusiast21" {...field} />
+                <Input placeholder={t.auth.usernametagPlaceholder} {...field} />
               </FormControl>
                <FormDescription>
-                This will be your unique identifier on the platform.
+                {t.auth.usernametagDescription}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -132,7 +134,7 @@ export function AuthForm({ userType }: AuthFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t.auth.email}</FormLabel>
               <FormControl>
                 <Input placeholder="you@example.com" {...field} />
               </FormControl>
@@ -147,9 +149,9 @@ export function AuthForm({ userType }: AuthFormProps) {
                     name="shopAddress"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Shop Address</FormLabel>
+                            <FormLabel>{t.auth.shopAddress}</FormLabel>
                             <FormControl>
-                                <Input placeholder="123 Main Street, Muscat" {...field} />
+                                <Input placeholder={t.auth.shopAddressPlaceholder} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -160,7 +162,7 @@ export function AuthForm({ userType }: AuthFormProps) {
                     name="zipCode"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Zip Code</FormLabel>
+                            <FormLabel>{t.auth.zipCode}</FormLabel>
                             <FormControl>
                                 <Input placeholder="e.g., 113" {...field} />
                             </FormControl>
@@ -175,7 +177,7 @@ export function AuthForm({ userType }: AuthFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{t.auth.password}</FormLabel>
               <div className="relative">
                 <FormControl>
                   <Input type={showPassword ? "text" : "password"} placeholder="********" {...field} />
@@ -194,7 +196,7 @@ export function AuthForm({ userType }: AuthFormProps) {
         />
         <Button type="submit" disabled={loading} className="w-full">
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Create Account
+          {t.auth.createAccount}
         </Button>
       </form>
     </Form>

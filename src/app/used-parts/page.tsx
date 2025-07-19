@@ -1,10 +1,17 @@
 
+"use client";
+
 import { Header } from "@/components/header";
 import { ProductGrid } from "@/components/product-grid";
 import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 import { Suspense } from "react";
 
 export default function UsedPartsPage() {
+  const { language } = useSettings();
+  const t = getDictionary(language);
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <Header />
@@ -12,9 +19,9 @@ export default function UsedPartsPage() {
         <section className="py-16 lg:py-24">
           <div className="container">
             <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold font-headline">Used Parts</h1>
+              <h1 className="text-4xl md:text-5xl font-bold font-headline">{t.usedParts.title}</h1>
               <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                High-quality, inspected used parts at great prices.
+                {t.usedParts.description}
               </p>
             </div>
             <Suspense fallback={<ProductGridSkeleton />}>
