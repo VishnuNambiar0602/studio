@@ -138,7 +138,7 @@ export async function registerUser(userData: UserRegistration) {
         }
     }
     
-    const newUserForDb: Omit<User, 'isBlocked'> = { 
+    const newUserForDb: User = { 
         id: `user-${Date.now()}`, 
         name: userData.name,
         email: userData.email,
@@ -148,16 +148,18 @@ export async function registerUser(userData: UserRegistration) {
         shopAddress: userData.shopAddress,
         zipCode: userData.zipCode,
         createdAt: new Date(),
+        isBlocked: false,
     };
 
     await db.insert(users).values(newUserForDb);
     
-    const { password, ...createdUser } = { ...newUserForDb, isBlocked: false};
+    const { password, ...createdUser } = newUserForDb;
 
     revalidatePath('/admin/users');
     revalidatePath('/admin');
     return { success: true, user: createdUser, message: "User registered successfully." };
 }
+
 
 export async function loginUser(credentials: UserLogin) {
     const db = await getDb();
@@ -211,7 +213,7 @@ export async function adminLogin(credentials: { username?: string, password?: st
                 role: 'admin',
                 password: 'admin',
                 createdAt: new Date(),
-                isBlocked: false, // Ensure this is present
+                isBlocked: false,
             };
             await db.insert(users).values(newAdmin);
             adminUser = newAdmin;
@@ -682,6 +684,9 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
     
 
 
+
+
+    
 
 
     
