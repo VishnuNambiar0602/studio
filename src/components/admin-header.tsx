@@ -4,36 +4,16 @@
 import Link from "next/link"
 import {
   Home,
-  LogOut,
   Settings,
-  User,
   Users,
 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useSettings } from "@/context/settings-context";
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "./ui/avatar";
 
 
 export function AdminHeader() {
-    const { logoutUser } = useSettings();
     const pathname = usePathname();
-    const router = useRouter();
-
-    const handleLogout = () => {
-        logoutUser();
-        router.push('/');
-    };
 
     const navItems = [
         { href: "/admin/dashboard", label: "Dashboard", icon: Home },
@@ -66,31 +46,6 @@ export function AdminHeader() {
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           <div className="ml-auto flex items-center gap-2">
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-            <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full h-9 w-9"
-            >
-                 <Avatar className="h-9 w-9">
-                    <AvatarFallback><User /></AvatarFallback>
-                  </Avatar>
-            </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href="/settings">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-            </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </header>
   )
