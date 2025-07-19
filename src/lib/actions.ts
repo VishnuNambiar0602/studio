@@ -106,11 +106,10 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
         createdAt: users.createdAt,
+        isBlocked: users.isBlocked,
     }).from(users);
     
-    // We manually add isBlocked: false to conform to the PublicUser type
-    // This is a temporary measure until the db is migrated.
-    return allUsersData.map(u => ({ ...u, isBlocked: false }));
+    return allUsersData;
 }
 
 export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
@@ -139,7 +138,7 @@ export async function registerUser(userData: UserRegistration) {
         }
     }
     
-    const newUserForDb: Omit<User, 'isBlocked'> = { 
+    const newUserForDb: User = { 
         id: `user-${Date.now()}`, 
         name: userData.name,
         email: userData.email,
@@ -149,14 +148,12 @@ export async function registerUser(userData: UserRegistration) {
         shopAddress: userData.shopAddress,
         zipCode: userData.zipCode,
         createdAt: new Date(),
+        isBlocked: false,
     };
 
     await db.insert(users).values(newUserForDb);
     
-    const createdUser: PublicUser = {
-        ...newUserForDb,
-        isBlocked: false, // Manually add for the return type
-    };
+    const { password, ...createdUser } = newUserForDb;
 
     revalidatePath('/admin/users');
     revalidatePath('/admin');
@@ -174,6 +171,7 @@ export async function loginUser(credentials: UserLogin) {
         createdAt: users.createdAt,
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
+        isBlocked: users.isBlocked,
     }).from(users).where(and(
         or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
         eq(users.password, credentials.password!)
@@ -185,22 +183,43 @@ export async function loginUser(credentials: UserLogin) {
         return { success: false, message: "Invalid credentials." };
     }
     
-    const publicUser: PublicUser = {
-        ...user,
-        isBlocked: false, // Manually add for the return type
+    return { success: true, user };
+}
+
+export async function adminLogin(credentials: { username?: string, password?: string }) {
+    if (credentials.username === 'admin' && credentials.password === 'admin') {
+        const db = await getDb();
+        let adminUser = await db.query.users.findFirst({
+            where: eq(users.role, 'admin')
+        });
+
+        if (!adminUser) {
+            // Create admin user if it doesn't exist
+            const newAdmin: User = {
+                id: `user-admin-${Date.now()}`,
+                name: 'Admin',
+                email: 'admin@gulfcarx.com',
+                username: 'admin',
+                role: 'admin',
+                password: 'admin',
+                createdAt: new Date(),
+                isBlocked: false,
+            };
+            await db.insert(users).values(newAdmin);
+            adminUser = newAdmin;
+        }
+
+        const { password, ...publicAdminUser } = adminUser;
+        return { success: true, user: publicAdminUser };
     }
-    
-    return { success: true, user: publicUser };
+
+    return { success: false, message: 'Invalid admin credentials.' };
 }
 
 
 export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
     const db = await getDb();
-    const result = await db.select({
-        id: users.id,
-        role: users.role,
-        username: users.username
-    }).from(users).where(eq(users.email, email)).limit(1);
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
     const user = result[0];
     if (!user) {
         return { success: false, message: "No account found with that email address." };
@@ -646,4 +665,5 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
     
 
     
+
 
