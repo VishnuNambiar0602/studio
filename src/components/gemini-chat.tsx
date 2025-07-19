@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, CornerDownLeft, Sparkles, AlertCircle, ArrowRight, Lightbulb } from "lucide-react";
+import { Bot, User, CornerDownLeft, Sparkles, AlertCircle, ArrowRight, Lightbulb, Mic, MicOff } from "lucide-react";
 import { useParts } from "@/context/part-context";
 import { suggestParts, SuggestPartsOutput } from "@/ai/flows/suggest-parts-from-request";
+import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -21,6 +22,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   suggestions?: SuggestPartsOutput['suggestions'];
+  audioUrl?: string;
 }
 
 const formSchema = z.object({
@@ -40,6 +42,8 @@ export function GeminiChat() {
   const [error, setError] = useState<string | null>(null);
   const { parts } = useParts();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,6 +77,14 @@ export function GeminiChat() {
         content: response.answer || "Here's what I found based on your request:",
         suggestions: response.suggestions,
       };
+
+      if (response.answer) {
+        const audioResponse = await textToSpeech({ text: response.answer });
+        if (audioResponse.media) {
+            assistantMessage.audioUrl = audioResponse.media;
+        }
+      }
+
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (e) {
       setError("An error occurred while processing your request. Please try again.");
@@ -82,6 +94,50 @@ export function GeminiChat() {
     }
   };
 
+  const handleToggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      startRecording();
+    }
+  };
+
+  const startRecording = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+
+    recognitionRef.current.onstart = () => {
+      setIsRecording(true);
+    };
+
+    recognitionRef.current.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognitionRef.current.onerror = (event: any) => {
+      setError(`Speech recognition error: ${event.error}`);
+      setIsRecording(false);
+    };
+
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      form.setValue("prompt", transcript);
+      handleSubmit({ prompt: transcript });
+    };
+
+    recognitionRef.current.start();
+  };
+
+
   const handleExamplePrompt = (prompt: string) => {
     form.setValue("prompt", prompt);
     handleSubmit({ prompt });
@@ -89,6 +145,9 @@ export function GeminiChat() {
 
   return (
     <div className="flex flex-col h-full max-h-[calc(100vh-120px)]">
+       {messages.map((msg, index) => (
+            msg.audioUrl && <audio key={`audio-${index}`} src={msg.audioUrl} autoPlay />
+        ))}
       <ScrollArea className="flex-grow" ref={scrollAreaRef}>
         <div className="py-6 px-4">
           {messages.length === 0 && !loading && (
@@ -173,6 +232,9 @@ export function GeminiChat() {
               disabled={loading}
               autoComplete="off"
             />
+            <Button type="button" size="icon" disabled={loading} className="rounded-xl h-10 w-10" variant={isRecording ? "destructive" : "ghost"} onClick={handleToggleRecording}>
+                {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </Button>
             <Button type="submit" size="icon" disabled={loading} className="rounded-xl h-10 w-10">
               {loading ? (
                 <div className="h-4 w-4 border-2 border-background/50 border-t-background rounded-full animate-spin"></div>
