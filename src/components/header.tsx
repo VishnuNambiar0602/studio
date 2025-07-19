@@ -7,7 +7,6 @@ import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
 import { Badge } from "./ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import Image from "next/image";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
@@ -32,6 +31,11 @@ export function Header() {
       case 'vendor': return "/vendor/dashboard";
       default: return "/my-orders";
     }
+  }
+
+  const getAvatarIcon = () => {
+    if (!loggedInUser) return <User />;
+    return loggedInUser.role === 'vendor' ? <Car /> : <User />;
   }
 
   return (
@@ -67,7 +71,7 @@ export function Header() {
                 >
                   <Avatar className="h-9 w-9">
                     <AvatarFallback>
-                        {loggedInUser.role === 'vendor' ? <Car /> : <User />}
+                       {getAvatarIcon()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>

@@ -2,9 +2,9 @@
 "use client";
 
 import { useSettings } from "@/context/settings-context";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, Car, Shield } from "lucide-react";
+import { User, Car } from "lucide-react";
 
 export function UserProfile() {
   const { loggedInUser } = useSettings();
@@ -17,8 +17,6 @@ export function UserProfile() {
     switch (loggedInUser.role) {
       case 'vendor':
         return <Car className="h-12 w-12" />;
-      case 'admin':
-        return <Shield className="h-12 w-12" />;
       default:
         return <User className="h-12 w-12" />;
     }

@@ -22,7 +22,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import Image from "next/image"
 import { useSettings } from "@/context/settings-context";
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
