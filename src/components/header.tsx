@@ -1,3 +1,4 @@
+// Edited
 
 "use client";
 
@@ -10,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet";
 import { useState } from "react";
 
@@ -84,6 +85,7 @@ export function Header() {
                   className="overflow-hidden rounded-full h-9 w-9"
                 >
                   <Avatar className="h-9 w-9">
+                    <AvatarImage src={loggedInUser.profilePictureUrl} alt={loggedInUser.name} />
                     <AvatarFallback>
                        {getAvatarIcon()}
                     </AvatarFallback>

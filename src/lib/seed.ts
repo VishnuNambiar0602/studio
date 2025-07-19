@@ -1,3 +1,4 @@
+// Edited
 
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
@@ -13,10 +14,10 @@ if (!process.env.POSTGRES_URL) {
 }
 
 const MOCK_USERS: Omit<User, 'id'>[] = [
-  { name: 'John Doe', email: 'john@example.com', username: 'johndoe', role: 'customer', password: 'password123', createdAt: new Date() },
-  { name: 'Muscat Modern Auto', email: 'mma@example.com', username: 'muscatmodern', role: 'vendor', password: 'password123', shopAddress: 'Muscat Modern Auto', zipCode: '112', createdAt: new Date() },
-  { name: 'Salalah Auto Spares', email: 'sas@example.com', username: 'salalahspares', role: 'vendor', password: 'password123', shopAddress: 'Salalah Auto Spares', zipCode: '211', createdAt: new Date() },
-  { name: 'Nizwa Car Parts', email: 'nizwa@example.com', username: 'nizwaparts', role: 'vendor', password: 'password123', shopAddress: 'Nizwa Car Parts', zipCode: '611', createdAt: new Date() },
+  { name: 'John Doe', email: 'john@example.com', username: 'johndoe', role: 'customer', password: 'password123', createdAt: new Date(), isBlocked: false },
+  { name: 'Muscat Modern Auto', email: 'mma@example.com', username: 'muscatmodern', role: 'vendor', password: 'password123', shopAddress: 'Muscat Modern Auto', zipCode: '112', createdAt: new Date(), isBlocked: false },
+  { name: 'Salalah Auto Spares', email: 'sas@example.com', username: 'salalahspares', role: 'vendor', password: 'password123', shopAddress: 'Salalah Auto Spares', zipCode: '211', createdAt: new Date(), isBlocked: false },
+  { name: 'Nizwa Car Parts', email: 'nizwa@example.com', username: 'nizwaparts', role: 'vendor', password: 'password123', shopAddress: 'Nizwa Car Parts', zipCode: '611', createdAt: new Date(), isBlocked: false },
 ];
 
 async function seed() {

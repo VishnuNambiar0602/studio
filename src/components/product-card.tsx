@@ -1,3 +1,4 @@
+// Edited
 
 "use client";
 
@@ -43,7 +44,7 @@ export function ProductCard({ part }: ProductCardProps) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent link navigation if it's somehow still wrapped
-    addToCart(part);
+    addToCart(part, 1);
     toast({
       title: "Added to Cart",
       description: `${part.name} has been added to your cart.`,

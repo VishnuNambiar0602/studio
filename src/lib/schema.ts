@@ -1,3 +1,4 @@
+// Edited
 import {
   pgTable,
   text,
@@ -29,6 +30,7 @@ export const users = pgTable('users', {
   verificationCode: varchar('verification_code'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   isBlocked: boolean('is_blocked').default(false).notNull(),
+  profilePictureUrl: varchar('profile_picture_url'),
 });
 
 export const parts = pgTable('parts', {

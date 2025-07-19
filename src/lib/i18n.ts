@@ -1,3 +1,4 @@
+// Edited
 
 import type { Language } from './types';
 
@@ -120,6 +121,8 @@ const dictionaries = {
         vendor: "Vendor",
         admin: "Admin"
       },
+      profilePicture: "Profile Picture",
+      profilePictureDescription: "Update your avatar. Changes will be visible across the platform.",
       preferences: "Preferences",
       preferencesDescription: "Manage your application appearance and settings.",
       appearance: "Appearance",
@@ -251,6 +254,8 @@ const dictionaries = {
         vendor: "بائع",
         admin: "مسؤول"
       },
+      profilePicture: "صورة الملف الشخصي",
+      profilePictureDescription: "قم بتحديث الصورة الرمزية الخاصة بك. ستكون التغييرات مرئية عبر المنصة.",
       preferences: "التفضيلات",
       preferencesDescription: "إدارة مظهر التطبيق والإعدادات الخاصة بك.",
       appearance: "المظهر",

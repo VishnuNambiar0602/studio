@@ -1,3 +1,4 @@
+// Edited
 import { CartView } from "@/components/cart-view";
 import { Header } from "@/components/header";
 

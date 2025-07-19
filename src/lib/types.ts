@@ -1,4 +1,4 @@
-
+// Edited
 
 export type Part = {
   id: string;
@@ -9,7 +9,7 @@ export type Part = {
   quantity: number; // Represents available stock
   vendorAddress: string;
   manufacturer: string;
-  isVisibleForSale?: boolean;
+  isVisibleForSale: boolean;
   category: ('new' | 'used' | 'oem')[];
 };
 
@@ -32,6 +32,7 @@ export interface User {
   isBlocked: boolean;
   shopAddress?: string | null; // For vendors
   zipCode?: string | null; // For vendors
+  profilePictureUrl?: string | null;
   // In a real app, you would never store the password in plain text.
   // It would be hashed and salted.
   password?: string; 
@@ -90,5 +91,3 @@ export interface CheckoutDetails {
     expiryDate?: string;
     cvc?: string;
 }
-
-    

@@ -1,3 +1,4 @@
+// Edited
 
 "use client";
 
@@ -28,7 +29,7 @@ import { useSettings } from "@/context/settings-context";
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 
 export function VendorHeader() {
@@ -132,6 +133,7 @@ export function VendorHeader() {
                 className="overflow-hidden rounded-full h-9 w-9"
             >
                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={loggedInUser?.profilePictureUrl} alt={loggedInUser?.name} />
                     <AvatarFallback><Car /></AvatarFallback>
                   </Avatar>
             </Button>

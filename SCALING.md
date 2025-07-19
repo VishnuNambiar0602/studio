@@ -1,3 +1,4 @@
+<!-- Edited -->
 # Scaling Your Application to Millions of Users
 
 This document provides a high-level roadmap for scaling your GulfCarX application from its current setup to one capable of handling millions of concurrent users. Scaling is an iterative process that involves evolving your architecture to remove bottlenecks as your traffic grows.

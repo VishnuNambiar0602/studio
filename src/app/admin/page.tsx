@@ -1,3 +1,4 @@
+// Edited
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building } from "lucide-react";
@@ -30,7 +31,6 @@ export default async function AdminDashboard() {
 
   return (
     <>
-      <AdminHeader />
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="flex items-center">
             <h1 className="text-lg font-semibold md:text-2xl">Master Control Panel</h1>

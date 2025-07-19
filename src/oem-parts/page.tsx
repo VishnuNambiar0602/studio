@@ -1,3 +1,4 @@
+// Edited
 import { Header } from "@/components/header";
 import { ProductGrid } from "@/components/product-grid";
 import { ProductGridSkeleton } from "@/components/product-grid-skeleton";

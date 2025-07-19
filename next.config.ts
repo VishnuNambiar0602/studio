@@ -1,3 +1,4 @@
+// Edited
 
 import { NextConfig } from 'next';
 

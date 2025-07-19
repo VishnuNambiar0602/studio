@@ -1,9 +1,10 @@
+// Edited
 
 "use client";
 
 import { useSettings } from "@/context/settings-context";
 import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Car } from "lucide-react";
 import { getDictionary } from "@/lib/i18n";
 
@@ -37,6 +38,7 @@ export function UserProfile() {
       <CardHeader>
         <div className="flex items-center gap-6">
            <Avatar className="h-24 w-24 border">
+                <AvatarImage src={loggedInUser.profilePictureUrl} alt={loggedInUser.name} />
                 <AvatarFallback className="text-3xl bg-muted">
                     {getRoleIcon()}
                 </AvatarFallback>

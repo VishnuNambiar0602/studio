@@ -1,4 +1,4 @@
-
+// Edited
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,7 +40,7 @@ export function LoginForm() {
     
     // Quick check for admin credentials on the main login form
     if (values.identifier === 'admin' && values.password === 'admin') {
-        router.push('/admin-login');
+        router.push('/admin');
         setLoading(false);
         return;
     }

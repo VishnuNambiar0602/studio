@@ -1,3 +1,4 @@
+<!-- Edited -->
 # How to Read the SCALING.md File: A Simple Guide
 
 Hello! This guide is designed to help you understand the `SCALING.md` file, even if you don't have a technical background. Scaling an application to handle millions of users can seem intimidating, but the core concepts are quite logical.

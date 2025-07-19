@@ -1,3 +1,4 @@
+// Edited
 // This file is now obsolete. Data is managed by a real database via `src/lib/db.ts` and `src/lib/actions.ts`.
 // Keeping the file to prevent breaking imports if any, but it should be considered for deletion.
 import type { Part, User, Order, Booking } from './types';

@@ -1,3 +1,4 @@
+// Edited
 
 import type {Config} from 'tailwindcss';
 
