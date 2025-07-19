@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview An AI agent that suggests relevant auto parts based on user description and/or photo, or answers general automotive questions.
@@ -30,9 +29,8 @@ const SuggestedPartSchema = z.object({
 });
 
 const SuggestPartsOutputSchema = z.object({
-  isPartQuery: z.boolean().describe("Set to true if the user is asking for a specific part, false if it's a general question."),
-  suggestions: z.array(SuggestedPartSchema).describe("A list of suggested parts that match the user description/image."),
-  answer: z.string().optional().describe("A helpful answer if the user asked a general automotive question."),
+  suggestions: z.array(SuggestedPartSchema).optional().describe("A list of suggested parts that match the user description/image. Omit if it's a general question."),
+  answer: z.string().optional().describe("A helpful answer if the user asked a general automotive question. Omit if the user was asking for a part."),
 });
 export type SuggestPartsOutput = z.infer<typeof SuggestPartsOutputSchema>;
 
@@ -50,16 +48,14 @@ You will detect the language of the user's query (English or Arabic) and respond
 Your primary goal is to determine the user's intent based on their query.
 
 1.  **If the user is asking for a specific part or shows an image of a part:**
-    -   Set the 'isPartQuery' flag to true.
     -   Analyze the user's description and/or image to identify the key characteristics of the part they need.
     -   Compare this to the "Available Auto Parts" list, which is a JSON array.
     -   Identify the most relevant parts from the list and populate the 'suggestions' array.
     -   For each suggestion, you MUST include its 'id' and 'name' from the provided parts list.
     -   Also, provide a brief 'reason' explaining why it's a good match. Make this reason sound human and friendly. For example, instead of "The user's query matches the part name", say something like "This looks like a great match for what you're describing!" or "I think this is exactly what you're looking for."
-    -   If no matching parts are found, return an empty 'suggestions' array. Do not populate the 'answer' field.
+    -   If no matching parts are found, return an 'answer' explaining that you couldn't find a match but you can help with other questions. Do not return an empty 'suggestions' array. Do not populate the 'answer' field.
 
 2.  **If the user is asking a general automotive question (e.g., "What is an OEM part?", "How do I change a tire?"):**
-    -   Set the 'isPartQuery' flag to false.
     -   Do not try to match the query to the "Available Auto Parts" list.
     -   Provide a clear, helpful, and concise answer to their question in the 'answer' field, maintaining your friendly tone.
     -   Leave the 'suggestions' array empty.
