@@ -31,6 +31,7 @@ const SuggestedPartSchema = z.object({
 const SuggestPartsOutputSchema = z.object({
   suggestions: z.array(SuggestedPartSchema).optional().describe("A list of suggested parts that match the user description/image."),
   answer: z.string().describe("A helpful, friendly, and conversational answer. This should always be populated, even if suggestions are found. If suggestions are found, this can be a short confirmation like 'Here's what I found for you!'. If the user asks a question, this field contains the answer."),
+  detectedLanguage: z.enum(['en', 'ar']).optional().describe("The detected language of the user's query, either 'en' for English or 'ar' for Arabic. This should be set based on the predominant language in the user's query."),
 });
 export type SuggestPartsOutput = z.infer<typeof SuggestPartsOutputSchema>;
 
@@ -43,7 +44,7 @@ const prompt = ai.definePrompt({
   input: {schema: SuggestPartsInputSchema},
   output: {schema: SuggestPartsOutputSchema},
   prompt: `You are an expert AI assistant named "The Genie" for GulfCarX, an auto parts store. You have a friendly, conversational, and helpful tone, like a knowledgeable friend.
-You will detect the language of the user's query (English or Arabic) and respond in the same language.
+You will detect the language of the user's query (English or Arabic) and respond in the same language. You must also set the 'detectedLanguage' field in your response to either 'en' or 'ar'.
 
 Your primary goal is to determine the user's intent and provide a helpful response.
 

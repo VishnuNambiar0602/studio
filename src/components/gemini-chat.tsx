@@ -17,6 +17,7 @@ import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useSettings } from "@/context/settings-context";
 
 interface Message {
   role: "user" | "assistant";
@@ -41,6 +42,7 @@ export function GeminiChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { parts } = useParts();
+  const { setLanguage } = useSettings();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -71,6 +73,10 @@ export function GeminiChat() {
         parts.map(({ id, name, description, price }) => ({ id, name, description, price }))
       );
       const response = await suggestParts({ partDescription: userInput, availableParts });
+
+      if (response.detectedLanguage) {
+          setLanguage(response.detectedLanguage);
+      }
 
       const assistantMessage: Message = {
         role: "assistant",
