@@ -58,14 +58,14 @@ export function LoginForm() {
 
       toast({
         title: "Login Successful!",
-        description: `Welcome back, ${result.user.username}!`,
+        description: `Welcome back, ${result.user.name}!`,
       });
       
       form.reset();
 
       // Correctly redirect based on user role
       if (result.user.role === 'admin') {
-        router.push('/admin/dashboard');
+        router.push('/admin');
       } else if (result.user.role === 'vendor') {
         router.push('/vendor/dashboard');
       } else {
