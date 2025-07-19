@@ -76,9 +76,8 @@ const textToSpeechFlow = ai.defineFlow(
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
+          languageCode: language === 'ar' ? 'ar-XA' : 'en-US',
           voiceConfig: {
-            // NOTE: The `languageCode` is specified here to ensure the model interprets the text correctly.
-            languageCode: language === 'ar' ? 'ar-XA' : 'en-US',
             prebuiltVoiceConfig: { voiceName: voiceName },
           },
         },
