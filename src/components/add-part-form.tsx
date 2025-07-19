@@ -279,7 +279,7 @@ export function AddPartForm() {
                <FormDescription>
                 Select one or more categories that apply to the part.
               </FormDescription>
-              <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-8 gap-y-2">
                 {categories.map((item) => (
                   <FormField
                     key={item}
