@@ -1,12 +1,15 @@
+
 "use client";
 
 import { useSettings } from "@/context/settings-context";
 import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, Car } from "lucide-react";
+import { getDictionary } from "@/lib/i18n";
 
 export function UserProfile() {
-  const { loggedInUser } = useSettings();
+  const { loggedInUser, language } = useSettings();
+  const t = getDictionary(language);
 
   if (!loggedInUser) {
     return null; // Or a loading skeleton
@@ -21,6 +24,14 @@ export function UserProfile() {
     }
   };
 
+  const getRoleDisplayName = () => {
+      switch (loggedInUser.role) {
+          case 'admin': return t.settings.roles.admin;
+          case 'vendor': return t.settings.roles.vendor;
+          default: return t.settings.roles.customer;
+      }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -32,7 +43,7 @@ export function UserProfile() {
             </Avatar>
             <div className="space-y-1">
                 <CardTitle className="text-3xl">{loggedInUser.name}</CardTitle>
-                <CardDescription>@{loggedInUser.username} | <span className="capitalize">{loggedInUser.role}</span></CardDescription>
+                <CardDescription>@{loggedInUser.username} | <span className="capitalize">{getRoleDisplayName()}</span></CardDescription>
             </div>
         </div>
       </CardHeader>

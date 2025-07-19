@@ -112,6 +112,25 @@ const dictionaries = {
       beDisplayed: "be displayed",
       beHidden: "be hidden",
       acrossSite: "across the site. (Simulated)"
+    },
+    settings: {
+      title: "Settings",
+      roles: {
+        customer: "Customer",
+        vendor: "Vendor",
+        admin: "Admin"
+      },
+      preferences: "Preferences",
+      preferencesDescription: "Manage your application appearance and settings.",
+      appearance: "Appearance",
+      appearanceDescription: "Switch between light and dark mode.",
+      fontSize: "Font Size",
+      fontSizeDescription: "Adjust the text size for better readability.",
+      small: "Small",
+      medium: "Medium",
+      large: "Large",
+      language: "Language",
+      languageDescription: "Choose your preferred language for the dashboard."
     }
   },
   ar: {
@@ -224,6 +243,25 @@ const dictionaries = {
       beDisplayed: "عرض الإعلانات",
       beHidden: "إخفاء الإعلانات",
       acrossSite: "عبر الموقع. (محاكاة)"
+    },
+    settings: {
+      title: "الإعدادات",
+      roles: {
+        customer: "عميل",
+        vendor: "بائع",
+        admin: "مسؤول"
+      },
+      preferences: "التفضيلات",
+      preferencesDescription: "إدارة مظهر التطبيق والإعدادات الخاصة بك.",
+      appearance: "المظهر",
+      appearanceDescription: "التبديل بين الوضع الفاتح والداكن.",
+      fontSize: "حجم الخط",
+      fontSizeDescription: "ضبط حجم النص لقراءة أفضل.",
+      small: "صغير",
+      medium: "متوسط",
+      large: "كبير",
+      language: "اللغة",
+      languageDescription: "اختر لغتك المفضلة للوحة التحكم."
     }
   },
 };
