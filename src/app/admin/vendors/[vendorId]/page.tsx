@@ -2,7 +2,7 @@
 import { getVendorDetailsForAdmin } from "@/lib/actions";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays, Car } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -96,34 +96,36 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
           <CardDescription>A list of all parts managed by {user.name}.</CardDescription>
         </CardHeader>
         <CardContent>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Part Name</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Quantity Left</TableHead>
-                        <TableHead>Total Sold</TableHead>
-                        <TableHead>Revenue</TableHead>
-                        <TableHead>Status</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {parts.map(part => (
-                        <TableRow key={part.id}>
-                            <TableCell className="font-medium">{part.name}</TableCell>
-                            <TableCell>${part.price.toFixed(2)}</TableCell>
-                            <TableCell>{part.quantity}</TableCell>
-                            <TableCell>{part.unitsSold}</TableCell>
-                            <TableCell>${part.revenue.toFixed(2)}</TableCell>
-                            <TableCell>
-                                <Badge variant={part.isVisibleForSale ? 'secondary' : 'outline'}>
-                                    {part.isVisibleForSale ? 'For Sale' : 'On Hold'}
-                                </Badge>
-                            </TableCell>
+            <div className="w-full overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Part Name</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead>Quantity Left</TableHead>
+                            <TableHead>Total Sold</TableHead>
+                            <TableHead>Revenue</TableHead>
+                            <TableHead>Status</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {parts.map(part => (
+                            <TableRow key={part.id}>
+                                <TableCell className="font-medium">{part.name}</TableCell>
+                                <TableCell>${part.price.toFixed(2)}</TableCell>
+                                <TableCell>{part.quantity}</TableCell>
+                                <TableCell>{part.unitsSold}</TableCell>
+                                <TableCell>${part.revenue.toFixed(2)}</TableCell>
+                                <TableCell>
+                                    <Badge variant={part.isVisibleForSale ? 'secondary' : 'outline'}>
+                                        {part.isVisibleForSale ? 'For Sale' : 'On Hold'}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </CardContent>
       </Card>
 

@@ -73,7 +73,7 @@ export function HeroSection() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/70" />
             <div className="relative z-10 p-4 text-white">
-                <h1 className="text-4xl md:text-6xl font-bold drop-shadow-lg">{t.hero.title}</h1>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold drop-shadow-lg">{t.hero.title}</h1>
                 {t.hero.subtitle && (
                   <p className="mt-4 text-lg md:text-xl max-w-2xl mx-auto drop-shadow-md">
                       {t.hero.subtitle}

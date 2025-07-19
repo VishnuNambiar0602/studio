@@ -24,7 +24,7 @@ export default function GeniePage() {
           <X className="h-6 w-6" />
           <span className="sr-only">Close Genie</span>
         </Button>
-        <div className="grid md:grid-cols-2 min-h-[calc(100vh-80px)]">
+        <div className="grid md:grid-cols-2 min-h-[calc(100vh-80px)] md:min-h-screen">
             <div className="relative hidden md:block">
                 <Image
                     src="https://placehold.co/800x1200.png"
@@ -36,7 +36,7 @@ export default function GeniePage() {
                  <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-background/20 to-transparent" />
                  <div className="absolute inset-0 bg-gradient-to-r from-background to-transparent" />
             </div>
-            <div className="flex items-center justify-center p-8 md:p-12">
+            <div className="flex items-center justify-center p-4 sm:p-8 md:p-12">
                  <AiPartSuggester />
             </div>
         </div>
