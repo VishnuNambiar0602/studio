@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem } from "./types";
 import { getDb } from "./db";
 import { bookings, orders, parts, users } from "./schema";
-import { eq, and, desc, sql, gte, or } from "drizzle-orm";
+import { eq, and, desc, sql, gte, or, lt } from "drizzle-orm";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 
 
@@ -586,3 +586,5 @@ export async function getWeeklyTrafficData(): Promise<{ name: string; visitors: 
     
     return last7DaysData;
 }
+
+    
