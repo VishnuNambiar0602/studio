@@ -3,7 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails } from "./types";
-import { db } from "./db";
+import { getDb } from "./db";
 import { bookings, orders, parts, users } from "./schema";
 import { eq, and, desc, sql, gte, or } from "drizzle-orm";
 import { subMonths, format, getYear, getMonth, subDays } from 'date-fns';
@@ -13,6 +13,7 @@ import { subMonths, format, getYear, getMonth, subDays } from 'date-fns';
 
 export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
     try {
+        const db = await getDb();
         const newPartData: Part = {
             id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             ...part,
@@ -40,6 +41,7 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): P
 }
 
 export async function updatePart(partId: string, partData: Part) {
+    const db = await getDb();
     await db.update(parts).set(partData).where(eq(parts.id, partId));
 
     revalidatePath(`/part/${partId}`);
@@ -55,22 +57,26 @@ export async function updatePart(partId: string, partData: Part) {
 }
 
 export async function getParts(): Promise<Part[]> {
+    const db = await getDb();
     const allParts = await db.select().from(parts);
     return allParts;
 }
 
 export async function getPart(id: string): Promise<Part | undefined> {
+    const db = await getDb();
     const result = await db.select().from(parts).where(eq(parts.id, id)).limit(1);
     return result[0];
 }
 
 export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
+    const db = await getDb();
     return db.select().from(parts).where(eq(parts.vendorAddress, vendorName));
 }
 
 // --- USER ACTIONS ---
 
 export async function getUserById(userId: string): Promise<User | null> {
+    const db = await getDb();
     const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
 
     if (!result[0]) {
@@ -80,6 +86,7 @@ export async function getUserById(userId: string): Promise<User | null> {
 }
 
 export async function getAllUsers(): Promise<PublicUser[]> {
+    const db = await getDb();
     const allUsersData = await db.select({
         id: users.id,
         name: users.name,
@@ -96,6 +103,7 @@ export async function getAllUsers(): Promise<PublicUser[]> {
 
 export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
     try {
+        const db = await getDb();
         await db.update(users).set(data).where(eq(users.id, userId));
         revalidatePath('/admin/users');
         revalidatePath(`/admin/vendors/${userId}`);
@@ -108,6 +116,7 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
 }
 
 export async function registerUser(userData: UserRegistration) {
+    const db = await getDb();
     const existingUser = await db.select().from(users).where(or(eq(users.email, userData.email), eq(users.username, userData.username)));
 
     if (existingUser.length > 0) {
@@ -144,6 +153,7 @@ export async function registerUser(userData: UserRegistration) {
 }
 
 export async function loginUser(credentials: UserLogin) {
+    const db = await getDb();
     const results = await db.select().from(users).where(and(
         or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
         eq(users.password, credentials.password!)
@@ -172,6 +182,7 @@ export async function loginUser(credentials: UserLogin) {
 
 
 export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
+    const db = await getDb();
     const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
     const user = result[0];
     if (!user) {
@@ -191,6 +202,7 @@ export async function sendPasswordResetCode(email: string, isAdminCheck: boolean
 }
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+   const db = await getDb();
    const result = await db.select().from(users).where(eq(users.email, data.email)).limit(1);
    const user = result[0];
    if (!user || user.verificationCode !== data.code) {
@@ -206,6 +218,7 @@ export async function resetPasswordWithCode(data: { email: string; code: string;
 // --- ORDER & BOOKING ACTIONS ---
 
 export async function placeOrder(orderData: { userId: string; items: Part[]; total: number; shippingDetails: CheckoutDetails }): Promise<{ success: boolean; message: string; orderId?: string; }> {
+    const db = await getDb();
     const newOrder: Order = {
         id: `order-${Date.now()}`,
         userId: orderData.userId,
@@ -248,22 +261,26 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
 
 
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
+    const db = await getDb();
     if (!userId) return [];
     return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.orderDate));
 }
 
 export async function getOrderById(orderId: string): Promise<Order | null> {
+    const db = await getDb();
     const result = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
     return result[0] || null;
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
+    const db = await getDb();
     await db.update(orders).set({ status: 'Cancelled', cancelable: false }).where(eq(orders.id, orderId));
     revalidatePath('/my-orders');
     return { success: true, message: 'Order has been cancelled.' };
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string) {
+    const db = await getDb();
     // This is a mock: in a real app, you'd get the logged-in user's ID
     const userResult = await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.role, 'customer')).limit(1);
     const mockUser = userResult[0];
@@ -291,11 +308,13 @@ export async function submitBooking(partId: string, partName: string, bookingDat
 }
 
 export async function getVendorBookings(vendorName: string): Promise<Booking[]> {
+    const db = await getDb();
     if (!vendorName) return [];
     return db.select().from(bookings).where(eq(bookings.vendorName, vendorName)).orderBy(desc(bookings.bookingDate));
 }
 
 export async function completeBooking(bookingId: string) {
+    const db = await getDb();
     const result = await db.select({ partId: bookings.partId }).from(bookings).where(eq(bookings.id, bookingId));
     
     if (result.length > 0) {
@@ -314,6 +333,7 @@ export async function completeBooking(bookingId: string) {
 }
 
 export async function getVendorStats(vendorName: string) {
+    const db = await getDb();
     if (!vendorName) {
         return {
             totalRevenue: 0,
@@ -358,6 +378,7 @@ export async function getVendorStats(vendorName: string) {
 
 
 export async function getMonthlyRevenue(vendorName: string): Promise<{name: string, total: number}[]> {
+    const db = await getDb();
     if (!vendorName) return [];
 
     const twelveMonthsAgo = subMonths(new Date(), 11);
@@ -415,6 +436,7 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
 
 // --- ADMIN ACTIONS ---
 export async function getAdminDashboardStats() {
+    const db = await getDb();
     const revenueResult = db.select({
         total: sql<number>`sum(${orders.total})`.mapWith(Number),
     }).from(orders).where(eq(orders.status, 'Picked Up'));
@@ -448,6 +470,7 @@ export async function getAdminDashboardStats() {
 
 
 export async function getVendorPerformanceSummary() {
+    const db = await getDb();
     const vendorUsers = await db.select().from(users).where(eq(users.role, 'vendor'));
     const thirtyDaysAgo = subDays(new Date(), 30);
 
@@ -494,6 +517,7 @@ export async function getVendorPerformanceSummary() {
 }
 
 export async function getVendorDetailsForAdmin(vendorId: string) {
+    const db = await getDb();
     const userResult = await db.select().from(users).where(eq(users.id, vendorId)).limit(1);
     const user = userResult[0];
 

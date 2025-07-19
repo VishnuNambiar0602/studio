@@ -1,38 +1,54 @@
 
+"use client";
+
 import { VendorHeader } from "@/components/vendor-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, Package, CalendarDays, BarChart } from "lucide-react";
+import { DollarSign, Package, CalendarDays, BarChart, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { getVendorStats } from "@/lib/actions";
-import { auth } from "@/lib/auth"; // Assuming you have an auth utility to get session
-import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { users } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { useSettings } from "@/context/settings-context";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 
-// This is a placeholder for a real authentication system.
-// In a real app, you'd get the loggedInUser from a server-side session.
-async function getLoggedInUser() {
-    // This is a mock implementation. Replace with your actual auth logic.
-    // For now, we'll just grab the first vendor we find.
-    const vendorUser = await db.select().from(users).where(eq(users.role, 'vendor')).limit(1);
-    return vendorUser[0];
-}
+export default function VendorAccountPage() {
+    const { loggedInUser } = useSettings();
+    const router = useRouter();
+    const [stats, setStats] = useState({ totalRevenue: 0, activeListings: 0, totalSales: 0 });
+    const [loading, setLoading] = useState(true);
 
-export default async function VendorAccountPage() {
-    const loggedInUser = await getLoggedInUser();
+    useEffect(() => {
+        if (!loggedInUser) {
+           router.push('/auth');
+           return;
+        }
+        
+        async function fetchStats() {
+            if (loggedInUser?.name) {
+                const fetchedStats = await getVendorStats(loggedInUser.name);
+                setStats({
+                    totalRevenue: fetchedStats.totalRevenue,
+                    activeListings: fetchedStats.activeListings,
+                    totalSales: fetchedStats.totalSales,
+                });
+            }
+            setLoading(false);
+        }
+        
+        fetchStats();
 
-    if (!loggedInUser || !loggedInUser.name) {
+    }, [loggedInUser, router]);
+
+
+    if (loading || !loggedInUser) {
        return (
-         <div className="p-8">
-            <p>Could not find vendor information. Please log in again.</p>
+         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
          </div>
        )
     }
 
-    const stats = await getVendorStats(loggedInUser.name);
     const registrationDate = loggedInUser.createdAt || new Date();
     const membershipDuration = formatDistanceToNow(registrationDate);
 

@@ -1,14 +1,28 @@
 
+"use server";
+
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 import * as schema from './schema';
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: './src/.env' });
+dotenv.config({ path: './.env' });
 
-const client = new Client({
-  connectionString: process.env.POSTGRES_URL,
-});
+if (!process.env.POSTGRES_URL) {
+  throw new Error('POSTGRES_URL is not set in the environment variables');
+}
 
-client.connect();
-export const db: NodePgDatabase<typeof schema> = drizzle(client, { schema, logger: true });
+// A singleton instance of the database client
+let dbInstance: NodePgDatabase<typeof schema> | null = null;
+
+export async function getDb() {
+  if (dbInstance) {
+    return dbInstance;
+  }
+  const client = new Client({
+    connectionString: process.env.POSTGRES_URL,
+  });
+  await client.connect();
+  dbInstance = drizzle(client, { schema, logger: true });
+  return dbInstance;
+}

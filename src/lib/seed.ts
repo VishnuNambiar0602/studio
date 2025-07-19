@@ -11,12 +11,6 @@ if (!process.env.POSTGRES_URL) {
   throw new Error('POSTGRES_URL environment variable is not set');
 }
 
-const client = new Client({
-  connectionString: process.env.POSTGRES_URL,
-});
-
-const db = drizzle(client, { schema });
-
 const MOCK_PARTS: Omit<Part, 'id'>[] = [
     // All mock product data has been removed.
     // You can add your own sample products here if needed for testing.
@@ -32,7 +26,12 @@ const MOCK_USERS: Omit<User, 'id'>[] = [
 
 
 async function seed() {
+  const client = new Client({
+    connectionString: process.env.POSTGRES_URL,
+  });
   await client.connect();
+  const db = drizzle(client, { schema });
+
   console.log("Seeding database...");
 
   // Clear existing data in the correct order
