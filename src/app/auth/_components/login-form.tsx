@@ -38,6 +38,13 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     
+    // Quick check for admin credentials on the main login form
+    if (values.identifier === 'admin' && values.password === 'admin') {
+        router.push('/admin-login');
+        setLoading(false);
+        return;
+    }
+
     try {
       const result = await loginUser({
         identifier: values.identifier,
@@ -64,9 +71,7 @@ export function LoginForm() {
       form.reset();
 
       // Correctly redirect based on user role
-      if (result.user.role === 'admin') {
-        router.push('/admin');
-      } else if (result.user.role === 'vendor') {
+      if (result.user.role === 'vendor') {
         router.push('/vendor/dashboard');
       } else {
         router.push('/');
