@@ -1,4 +1,5 @@
 
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -77,17 +78,25 @@ export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
 
 export async function getUserById(userId: string): Promise<User | null> {
     const db = await getDb();
-    const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const result = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        username: users.username,
+        role: users.role,
+        shopAddress: users.shopAddress,
+        zipCode: users.zipCode,
+        createdAt: users.createdAt,
+    }).from(users).where(eq(users.id, userId)).limit(1);
 
     if (!result[0]) {
         return null;
     }
-    return result[0];
+    return result[0] as User;
 }
 
 export async function getAllUsers(): Promise<PublicUser[]> {
     const db = await getDb();
-    // Select specific columns to avoid errors if the schema is out of sync
     const allUsersData = await db.select({
         id: users.id,
         name: users.name,
@@ -97,11 +106,11 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
         createdAt: users.createdAt,
-        isBlocked: users.isBlocked,
     }).from(users);
     
-    // The cast to PublicUser is safe because we selected all required fields.
-    return allUsersData as PublicUser[];
+    // We manually add isBlocked: false to conform to the PublicUser type
+    // This is a temporary measure until the db is migrated.
+    return allUsersData.map(u => ({ ...u, isBlocked: false }));
 }
 
 export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
@@ -113,7 +122,6 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
         return { success: true, message: 'User updated successfully.' };
     } catch (error) {
         console.error("Failed to update user:", error);
-        // This could be a more specific error, e.g., if a unique constraint is violated.
         return { success: false, message: 'Failed to update user. The email or username might already be in use.' };
     }
 }
@@ -131,7 +139,7 @@ export async function registerUser(userData: UserRegistration) {
         }
     }
     
-    const newUserForDb = { 
+    const newUserForDb: Omit<User, 'isBlocked'> = { 
         id: `user-${Date.now()}`, 
         name: userData.name,
         email: userData.email,
@@ -141,13 +149,13 @@ export async function registerUser(userData: UserRegistration) {
         shopAddress: userData.shopAddress,
         zipCode: userData.zipCode,
         createdAt: new Date(),
-        isBlocked: false,
     };
 
     await db.insert(users).values(newUserForDb);
     
     const createdUser: PublicUser = {
         ...newUserForDb,
+        isBlocked: false, // Manually add for the return type
     };
 
     revalidatePath('/admin/users');
@@ -157,7 +165,6 @@ export async function registerUser(userData: UserRegistration) {
 
 export async function loginUser(credentials: UserLogin) {
     const db = await getDb();
-    // Select specific columns to ensure query runs even if schema is out of sync
     const results = await db.select({
         id: users.id,
         name: users.name,
@@ -165,7 +172,6 @@ export async function loginUser(credentials: UserLogin) {
         username: users.username,
         role: users.role,
         createdAt: users.createdAt,
-        isBlocked: users.isBlocked,
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
     }).from(users).where(and(
@@ -179,14 +185,17 @@ export async function loginUser(credentials: UserLogin) {
         return { success: false, message: "Invalid credentials." };
     }
     
-    // The result is already a PublicUser shape
-    return { success: true, user: user as PublicUser };
+    const publicUser: PublicUser = {
+        ...user,
+        isBlocked: false, // Manually add for the return type
+    }
+    
+    return { success: true, user: publicUser };
 }
 
 
 export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
     const db = await getDb();
-    // Select specific columns to prevent crash if schema is out of sync
     const result = await db.select({
         id: users.id,
         role: users.role,
@@ -204,14 +213,11 @@ export async function sendPasswordResetCode(email: string, isAdminCheck: boolean
     const code = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit code
     await db.update(users).set({ verificationCode: code }).where(eq(users.id, user.id));
     
-    // In a real app, you would email this code to the user.
-    // For this simulation, we return it.
     return { success: true, message: "Verification code sent.", code: code, username: user.username };
 }
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
    const db = await getDb();
-   // Select specific columns to prevent crash
    const result = await db.select({ 
        id: users.id, 
        verificationCode: users.verificationCode 
@@ -640,3 +646,4 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
     
 
     
+
