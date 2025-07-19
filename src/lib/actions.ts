@@ -87,6 +87,7 @@ export async function getUserById(userId: string): Promise<User | null> {
 
 export async function getAllUsers(): Promise<PublicUser[]> {
     const db = await getDb();
+    // Select specific columns to avoid errors if the schema is out of sync
     const allUsersData = await db.select({
         id: users.id,
         name: users.name,
@@ -96,12 +97,11 @@ export async function getAllUsers(): Promise<PublicUser[]> {
         shopAddress: users.shopAddress,
         zipCode: users.zipCode,
         createdAt: users.createdAt,
+        isBlocked: users.isBlocked,
     }).from(users);
     
-    // Casting to any to temporarily bypass the isBlocked type check.
-    // This allows the app to run without the column existing in the DB.
-    // The column should be added by running `npm run db:push`.
-    return allUsersData.map(u => ({ ...u, isBlocked: false })) as any;
+    // The cast to PublicUser is safe because we selected all required fields.
+    return allUsersData as PublicUser[];
 }
 
 export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
@@ -120,7 +120,7 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
 
 export async function registerUser(userData: UserRegistration) {
     const db = await getDb();
-    const existingUser = await db.select().from(users).where(or(eq(users.email, userData.email), eq(users.username, userData.username)));
+    const existingUser = await db.select({ email: users.email, username: users.username }).from(users).where(or(eq(users.email, userData.email), eq(users.username, userData.username)));
 
     if (existingUser.length > 0) {
         if (existingUser[0].email === userData.email) {
@@ -157,7 +157,18 @@ export async function registerUser(userData: UserRegistration) {
 
 export async function loginUser(credentials: UserLogin) {
     const db = await getDb();
-    const results = await db.select().from(users).where(and(
+    // Select specific columns to ensure query runs even if schema is out of sync
+    const results = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        username: users.username,
+        role: users.role,
+        createdAt: users.createdAt,
+        isBlocked: users.isBlocked,
+        shopAddress: users.shopAddress,
+        zipCode: users.zipCode,
+    }).from(users).where(and(
         or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
         eq(users.password, credentials.password!)
     )).limit(1);
@@ -168,25 +179,19 @@ export async function loginUser(credentials: UserLogin) {
         return { success: false, message: "Invalid credentials." };
     }
     
-    const publicUser: PublicUser = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        createdAt: user.createdAt,
-        isBlocked: user.isBlocked,
-        shopAddress: user.shopAddress,
-        zipCode: user.zipCode,
-    }
-
-    return { success: true, user: publicUser };
+    // The result is already a PublicUser shape
+    return { success: true, user: user as PublicUser };
 }
 
 
 export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
     const db = await getDb();
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    // Select specific columns to prevent crash if schema is out of sync
+    const result = await db.select({
+        id: users.id,
+        role: users.role,
+        username: users.username
+    }).from(users).where(eq(users.email, email)).limit(1);
     const user = result[0];
     if (!user) {
         return { success: false, message: "No account found with that email address." };
@@ -206,7 +211,11 @@ export async function sendPasswordResetCode(email: string, isAdminCheck: boolean
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
    const db = await getDb();
-   const result = await db.select().from(users).where(eq(users.email, data.email)).limit(1);
+   // Select specific columns to prevent crash
+   const result = await db.select({ 
+       id: users.id, 
+       verificationCode: users.verificationCode 
+    }).from(users).where(eq(users.email, data.email)).limit(1);
    const user = result[0];
    if (!user || user.verificationCode !== data.code) {
         return { success: false, message: "Invalid verification code." };
@@ -610,12 +619,17 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; me
 export async function toggleUserBlockStatus(userId: string): Promise<{ success: boolean, message: string }> {
     const db = await getDb();
     try {
-        const user = await db.select({ isBlocked: users.isBlocked }).from(users).where(eq(users.id, userId)).limit(1);
-        if (!user.length) {
+        const userResult = await db.select({ isBlocked: users.isBlocked }).from(users).where(eq(users.id, userId)).limit(1);
+        
+        if (!userResult.length) {
             return { success: false, message: "User not found." };
         }
-        const newStatus = !user[0].isBlocked;
+        
+        const currentStatus = userResult[0].isBlocked;
+        const newStatus = !currentStatus;
+        
         await db.update(users).set({ isBlocked: newStatus }).where(eq(users.id, userId));
+        
         revalidatePath('/admin/users');
         return { success: true, message: `User has been ${newStatus ? 'blocked' : 'unblocked'}.` };
     } catch (error) {
