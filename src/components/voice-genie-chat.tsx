@@ -35,7 +35,7 @@ export function VoiceGenieChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { parts } = useParts();
-  const { setLanguage } = useSettings();
+  const { language, setLanguage } = useSettings();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -81,6 +81,8 @@ export function VoiceGenieChat() {
         parts.map(({ id, name, description, price }) => ({ id, name, description, price }))
       );
       const response = await suggestParts({ partDescription: userInput, availableParts });
+      
+      const detectedLang = response.detectedLanguage || language;
 
       if (response.detectedLanguage) {
           setLanguage(response.detectedLanguage);
@@ -93,7 +95,7 @@ export function VoiceGenieChat() {
       };
       
       if (response.answer) {
-        const audioResponse = await textToSpeech({ text: response.answer });
+        const audioResponse = await textToSpeech({ text: response.answer, language: detectedLang });
         if (audioResponse.media) {
             assistantMessage.audioUrl = audioResponse.media;
             setAudioUrl(audioResponse.media);
@@ -128,7 +130,8 @@ export function VoiceGenieChat() {
     recognitionRef.current = new SpeechRecognition();
     recognitionRef.current.continuous = false;
     recognitionRef.current.interimResults = false;
-    recognitionRef.current.lang = 'en-US';
+    // Set language for recognition based on current site language
+    recognitionRef.current.lang = language === 'ar' ? 'ar-SA' : 'en-US';
 
     recognitionRef.current.onstart = () => setIsRecording(true);
     recognitionRef.current.onend = () => setIsRecording(false);
