@@ -18,7 +18,7 @@ export function AdminAdToggle() {
         setAdsEnabled(checked);
         toast({
             title: `${t.adminAdToggle.ads} ${checked ? t.adminAdToggle.enabled : t.adminAdToggle.disabled}`,
-            description: `${t.adminAdToggle.adsWillNow} ${checked ? t.adminAdToggle.beDisplayed : t.adminAdToggle.beHidden'} ${t.adminAdToggle.acrossSite}`,
+            description: `${t.adminAdToggle.adsWillNow} ${checked ? t.adminAdToggle.beDisplayed : t.adminAdToggle.beHidden} ${t.adminAdToggle.acrossSite}`,
         });
     }
 
