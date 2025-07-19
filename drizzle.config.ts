@@ -13,7 +13,7 @@ const dbCredentials = {
 };
 
 if (isDrizzleKitCommand && !process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL is not set in the environment variables');
+  throw new Error('POSTGRES_URL is not set in the environment variables for Drizzle Kit commands.');
 }
 
 export default defineConfig({
