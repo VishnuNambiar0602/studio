@@ -3,18 +3,14 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 import * as schema from './schema';
 import * as dotenv from 'dotenv';
-import type { Part, User } from './types';
+import type { User } from './types';
 
+// Load environment variables from .env file
 dotenv.config({ path: './.env' });
 
 if (!process.env.POSTGRES_URL) {
   throw new Error('POSTGRES_URL environment variable is not set');
 }
-
-const MOCK_PARTS: Omit<Part, 'id'>[] = [
-    // All mock product data has been removed.
-    // You can add your own sample products here if needed for testing.
-];
 
 const MOCK_USERS: Omit<User, 'id'>[] = [
   { name: 'John Doe', email: 'john@example.com', username: 'johndoe', role: 'customer', password: 'password123', createdAt: new Date() },
@@ -24,51 +20,43 @@ const MOCK_USERS: Omit<User, 'id'>[] = [
   { name: 'Nizwa Car Parts', email: 'nizwa@example.com', username: 'nizwaparts', role: 'vendor', password: 'password123', shopAddress: 'Nizwa Car Parts', zipCode: '611', createdAt: new Date() },
 ];
 
-
 async function seed() {
   const client = new Client({
     connectionString: process.env.POSTGRES_URL,
   });
-  await client.connect();
-  const db = drizzle(client, { schema });
+  
+  try {
+    await client.connect();
+    const db = drizzle(client, { schema });
 
-  console.log("Seeding database...");
+    console.log("Seeding database...");
 
-  // Clear existing data in the correct order
-  await db.delete(schema.bookings);
-  await db.delete(schema.orders);
-  await db.delete(schema.parts);
-  await db.delete(schema.users);
-  console.log("Cleared existing data.");
+    // Clear existing data in the correct order to avoid foreign key constraints
+    console.log("Clearing existing data...");
+    await db.delete(schema.bookings).execute();
+    await db.delete(schema.orders).execute();
+    await db.delete(schema.parts).execute();
+    await db.delete(schema.users).execute();
+    console.log("Cleared existing data.");
 
-  // Seed Users
-  for (const user of MOCK_USERS) {
-    await db.insert(schema.users).values({
-      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      ...user,
-    });
-  }
-  console.log("Seeded users.");
-
-  // Seed Parts
-  if (MOCK_PARTS.length > 0) {
-    for (const part of MOCK_PARTS) {
-        await db.insert(schema.parts).values({
-          id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-          ...part,
-        });
+    // Seed Users
+    console.log("Seeding users...");
+    for (const user of MOCK_USERS) {
+      await db.insert(schema.users).values({
+        id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        ...user,
+      });
     }
-    console.log("Seeded parts.");
-  } else {
-    console.log("No mock parts to seed.");
+    console.log("Seeded users.");
+
+    console.log("Database seeding complete!");
+
+  } catch (err) {
+    console.error("Error during seeding:", err);
+    process.exit(1);
+  } finally {
+    await client.end();
   }
-
-
-  console.log("Database seeding complete!");
-  await client.end();
 }
 
-seed().catch((err) => {
-  console.error("Error during seeding:", err);
-  process.exit(1);
-});
+seed();
