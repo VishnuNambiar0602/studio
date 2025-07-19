@@ -3,17 +3,30 @@
 
 import Link from "next/link"
 import {
+  Car,
   Home,
+  LogOut,
   Settings,
   Users,
 } from "lucide-react"
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
+import { useSettings } from "@/context/settings-context";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from "./ui/dropdown-menu";
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 
 export function AdminHeader() {
     const pathname = usePathname();
+    const { logoutUser, loggedInUser } = useSettings();
+    const router = useRouter();
+
+    const handleLogout = () => {
+        logoutUser();
+        router.push('/admin/login');
+    }
 
     const navItems = [
         { href: "/admin/dashboard", label: "Dashboard", icon: Home },
@@ -28,6 +41,7 @@ export function AdminHeader() {
               href="/admin/dashboard"
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
+              <Car className="h-6 w-6" />
               <span className="">Admin Panel</span>
             </Link>
             {navItems.map((item) => (
@@ -45,6 +59,31 @@ export function AdminHeader() {
         </nav>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           <div className="ml-auto flex items-center gap-2">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="overflow-hidden rounded-full h-9 w-9"
+                    >
+                    <Avatar className="h-9 w-9">
+                        <AvatarFallback>A</AvatarFallback>
+                    </Avatar>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{loggedInUser?.name || 'Admin Account'}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                        <Link href="/settings"><Settings className="mr-2 h-4 w-4" />Settings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
           </div>
       </div>
     </header>
