@@ -94,7 +94,7 @@ export async function getAllUsers(): Promise<PublicUser[]> {
     return allUsersData.map(u => ({...u, profilePictureUrl: null}));
 }
 
-export async function updateUser(userId: string, data: Partial<PublicUser>): Promise<{ success: boolean; message: string }> {
+export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
     try {
         await db.update(users).set(data).where(eq(users.id, userId));
         revalidatePath('/admin/users');
@@ -106,7 +106,6 @@ export async function updateUser(userId: string, data: Partial<PublicUser>): Pro
         return { success: false, message: 'Failed to update user. The email or username might already be in use.' };
     }
 }
-
 
 export async function registerUser(userData: UserRegistration) {
     const existingUser = await db.select().from(users).where(or(eq(users.email, userData.email), eq(users.username, userData.username)));
@@ -215,6 +214,7 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
         status: 'Placed',
         orderDate: new Date(),
         cancelable: true,
+        completionDate: undefined,
     };
 
     await db.insert(orders).values(newOrder);
@@ -438,17 +438,11 @@ export async function getAdminDashboardStats() {
         partsResult,
     ]);
 
-    // Bloat the numbers for a more impressive demo
-    const bloatedRevenue = (revenue[0]?.total || 1000) * 150 + 50000;
-    const bloatedUsers = (userCount[0]?.count || 10) * 100 + 1234;
-    const bloatedVendors = (vendorCount[0]?.count || 3) * 50 + 75;
-    const bloatedParts = (partCount[0]?.count || 20) * 200 + 5000;
-
     return {
-        totalRevenue: bloatedRevenue,
-        totalUsers: bloatedUsers,
-        totalVendors: bloatedVendors,
-        totalParts: bloatedParts,
+        totalRevenue: revenue[0]?.total || 0,
+        totalUsers: userCount[0]?.count || 0,
+        totalVendors: vendorCount[0]?.count || 0,
+        totalParts: partCount[0]?.count || 0,
     };
 }
 
