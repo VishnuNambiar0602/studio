@@ -1,10 +1,26 @@
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getWeeklyTrafficData } from "@/lib/actions";
+"use client";
 
-export async function AdminTrafficChart() {
-  const data = await getWeeklyTrafficData();
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
+import { getWeeklyTrafficData } from "@/lib/actions";
+import { useEffect, useState } from "react";
+
+interface TrafficData {
+    name: string;
+    visitors: number;
+}
+
+export function AdminTrafficChart() {
+  const [data, setData] = useState<TrafficData[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+        const trafficData = await getWeeklyTrafficData();
+        setData(trafficData);
+    }
+    fetchData();
+  }, []);
+
 
   return (
     <div className="h-[350px]">
