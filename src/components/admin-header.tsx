@@ -7,6 +7,7 @@ import {
   LogOut,
   Package,
   Settings,
+  User,
   Users,
 } from "lucide-react"
 
@@ -23,6 +24,7 @@ import Image from "next/image"
 import { useSettings } from "@/context/settings-context";
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 
 export function AdminHeader() {
@@ -71,16 +73,11 @@ export function AdminHeader() {
             <Button
                 variant="outline"
                 size="icon"
-                className="overflow-hidden rounded-full"
+                className="overflow-hidden rounded-full h-9 w-9"
             >
-                <Image
-                    src="https://placehold.co/36x36.png"
-                    width={36}
-                    height={36}
-                    alt="Avatar"
-                    className="overflow-hidden rounded-full"
-                    data-ai-hint="logo"
-                />
+                 <Avatar className="h-9 w-9">
+                    <AvatarFallback><User /></AvatarFallback>
+                  </Avatar>
             </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

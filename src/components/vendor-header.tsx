@@ -3,6 +3,7 @@
 
 import Link from "next/link"
 import {
+  Car,
   Home,
   ListTodo,
   LogOut,
@@ -26,6 +27,7 @@ import { useSettings } from "@/context/settings-context";
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 
 export function VendorHeader() {
@@ -92,16 +94,11 @@ export function VendorHeader() {
             <Button
                 variant="outline"
                 size="icon"
-                className="overflow-hidden rounded-full"
+                className="overflow-hidden rounded-full h-9 w-9"
             >
-                <Image
-                    src="https://placehold.co/36x36.png"
-                    width={36}
-                    height={36}
-                    alt="Avatar"
-                    className="overflow-hidden rounded-full"
-                    data-ai-hint="logo"
-                />
+                 <Avatar className="h-9 w-9">
+                    <AvatarFallback><Car /></AvatarFallback>
+                  </Avatar>
             </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

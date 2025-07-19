@@ -1,7 +1,7 @@
 
 "use client";
 
-import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle } from "lucide-react";
+import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle, Car } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
@@ -11,6 +11,7 @@ import Image from "next/image";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 export function Header() {
   const { cart } = useCart();
@@ -62,16 +63,13 @@ export function Header() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="overflow-hidden rounded-full"
+                  className="overflow-hidden rounded-full h-9 w-9"
                 >
-                  <Image
-                      src="https://placehold.co/36x36.png"
-                      width={36}
-                      height={36}
-                      alt="Avatar"
-                      className="overflow-hidden rounded-full"
-                      data-ai-hint="person avatar"
-                    />
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback>
+                        {loggedInUser.role === 'vendor' ? <Car /> : <User />}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

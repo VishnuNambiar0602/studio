@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays } from "lucide-react";
+import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays, Car } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
 
@@ -29,9 +29,8 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
         <Card className="lg:col-span-1">
           <CardHeader className="text-center">
             <Avatar className="w-24 h-24 mx-auto mb-4 border-2 border-primary">
-              <AvatarImage src={user.profilePictureUrl || undefined} data-ai-hint="logo" />
               <AvatarFallback className="text-3xl">
-                {user.name.split(' ').map(n => n[0]).join('')}
+                <Car className="h-12 w-12"/>
               </AvatarFallback>
             </Avatar>
             <CardTitle>{user.name}</CardTitle>

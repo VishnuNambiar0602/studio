@@ -1,5 +1,7 @@
+
 import { Header } from "@/components/header";
 import { SettingsForm } from "./_components/settings-form";
+import { UserProfile } from "./_components/user-profile";
 
 export default function SettingsPage() {
   return (
@@ -9,7 +11,8 @@ export default function SettingsPage() {
         <div className="flex items-center">
           <h1 className="text-lg font-semibold md:text-2xl">Settings</h1>
         </div>
-        <div className="max-w-4xl mx-auto w-full">
+        <div className="max-w-4xl mx-auto w-full space-y-8">
+            <UserProfile />
             <SettingsForm />
         </div>
       </main>
