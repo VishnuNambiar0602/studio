@@ -138,7 +138,7 @@ export async function registerUser(userData: UserRegistration) {
         }
     }
     
-    const newUserForDb: User = { 
+    const newUserForDb: Omit<User, 'isBlocked'> = { 
         id: `user-${Date.now()}`, 
         name: userData.name,
         email: userData.email,
@@ -148,12 +148,11 @@ export async function registerUser(userData: UserRegistration) {
         shopAddress: userData.shopAddress,
         zipCode: userData.zipCode,
         createdAt: new Date(),
-        isBlocked: false,
     };
 
     await db.insert(users).values(newUserForDb);
     
-    const { password, ...createdUser } = newUserForDb;
+    const { password, ...createdUser } = { ...newUserForDb, isBlocked: false};
 
     revalidatePath('/admin/users');
     revalidatePath('/admin');
@@ -162,14 +161,24 @@ export async function registerUser(userData: UserRegistration) {
 
 export async function loginUser(credentials: UserLogin) {
     const db = await getDb();
-    const results = await db.select().from(users).where(and(
-        or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
-        eq(users.password, credentials.password!)
-    )).limit(1);
+    const results = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        username: users.username,
+        role: users.role,
+        shopAddress: users.shopAddress,
+        zipCode: users.zipCode,
+        createdAt: users.createdAt,
+        password: users.password,
+        isBlocked: users.isBlocked,
+    }).from(users).where(
+        or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier))
+    ).limit(1);
     
     const user = results[0];
 
-    if (!user) {
+    if (!user || user.password !== credentials.password) {
         return { success: false, message: "Invalid credentials." };
     }
     
@@ -182,11 +191,15 @@ export async function loginUser(credentials: UserLogin) {
 }
 
 export async function adminLogin(credentials: { username?: string, password?: string }) {
-    if (credentials.username === 'admin' && credentials.password === 'admin') {
-        const db = await getDb();
-        let adminUser = await db.query.users.findFirst({
-            where: eq(users.role, 'admin')
-        });
+    if (credentials.username !== 'admin' || credentials.password !== 'admin') {
+        return { success: false, message: 'Invalid admin credentials.' };
+    }
+
+    const db = await getDb();
+    
+    try {
+        let adminUserResult = await db.select().from(users).where(eq(users.role, 'admin')).limit(1);
+        let adminUser = adminUserResult[0];
 
         if (!adminUser) {
             // Create admin user if it doesn't exist
@@ -198,7 +211,7 @@ export async function adminLogin(credentials: { username?: string, password?: st
                 role: 'admin',
                 password: 'admin',
                 createdAt: new Date(),
-                isBlocked: false,
+                isBlocked: false, // Ensure this is present
             };
             await db.insert(users).values(newAdmin);
             adminUser = newAdmin;
@@ -206,15 +219,22 @@ export async function adminLogin(credentials: { username?: string, password?: st
 
         const { password, ...publicAdminUser } = adminUser;
         return { success: true, user: publicAdminUser };
-    }
 
-    return { success: false, message: 'Invalid admin credentials.' };
+    } catch (error) {
+        console.error("Admin login error:", error);
+        return { success: false, message: "An unexpected database error occurred during admin login." };
+    }
 }
 
 
 export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
     const db = await getDb();
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const result = await db.select({
+        id: users.id,
+        username: users.username,
+        role: users.role,
+    }).from(users).where(eq(users.email, email)).limit(1);
+
     const user = result[0];
     if (!user) {
         return { success: false, message: "No account found with that email address." };
