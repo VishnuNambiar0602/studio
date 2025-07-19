@@ -6,7 +6,7 @@ import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, Use
 import { getDb } from "./db";
 import { bookings, orders, parts, users } from "./schema";
 import { eq, and, desc, sql, gte, or } from "drizzle-orm";
-import { subMonths, format, getYear, getMonth, subDays } from 'date-fns';
+import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 
 
 // --- PART ACTIONS ---
@@ -29,7 +29,7 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): P
         revalidatePath('/vendor/inventory');
         revalidatePath('/vendor/dashboard');
         revalidatePath('/vendor/account');
-        revalidatePath('/admin/dashboard');
+        revalidatePath('/admin');
         revalidatePath('/admin/vendors', 'layout');
 
 
@@ -52,7 +52,7 @@ export async function updatePart(partId: string, partData: Part) {
     revalidatePath("/oem-parts");
     revalidatePath('/vendor/dashboard');
     revalidatePath('/vendor/account');
-    revalidatePath('/admin/dashboard');
+    revalidatePath('/admin');
     revalidatePath('/admin/vendors', 'layout');
 }
 
@@ -147,7 +147,7 @@ export async function registerUser(userData: UserRegistration) {
     };
 
     revalidatePath('/admin/users');
-    revalidatePath('/admin/dashboard');
+    revalidatePath('/admin');
     return { success: true, user: createdUser, message: "User registered successfully." };
 }
 
@@ -558,4 +558,31 @@ export async function getVendorDetailsForAdmin(vendorId: string) {
         parts: partsWithSales,
         stats,
     };
+}
+
+export async function getWeeklyTrafficData(): Promise<{ name: string; visitors: number }[]> {
+    const db = await getDb();
+    const today = new Date();
+    const last7DaysData = [];
+
+    for (let i = 6; i >= 0; i--) {
+        const day = subDays(today, i);
+        const dayStart = startOfDay(day);
+        const dayEnd = startOfDay(subDays(today, i - 1));
+
+        const result = await db
+            .select({ count: sql<number>`count(*)` })
+            .from(users)
+            .where(and(
+                gte(users.createdAt, dayStart),
+                lt(users.createdAt, dayEnd)
+            ));
+
+        last7DaysData.push({
+            name: format(day, 'E'), // Format date as 'Mon', 'Tue', etc.
+            visitors: Number(result[0].count),
+        });
+    }
+    
+    return last7DaysData;
 }

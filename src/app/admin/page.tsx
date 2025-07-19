@@ -1,12 +1,28 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Package, Users, BarChart, ExternalLink, Settings, ShieldCheck, Building } from "lucide-react";
+import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building } from "lucide-react";
 import { AdminAdToggle } from "./_components/admin-ad-toggle";
 import { AdminTrafficChart } from "./_components/admin-traffic-chart";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AdminVendorPerformance } from "./_components/admin-vendor-performance";
 import { getAdminDashboardStats } from "@/lib/actions";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function ChartSkeleton() {
+  return (
+    <div className="h-[350px] flex items-end gap-2 p-4">
+      <Skeleton className="h-[50%] w-12" />
+      <Skeleton className="h-[75%] w-12" />
+      <Skeleton className="h-[30%] w-12" />
+      <Skeleton className="h-[90%] w-12" />
+      <Skeleton className="h-[60%] w-12" />
+      <Skeleton className="h-[40%] w-12" />
+      <Skeleton className="h-[80%] w-12" />
+    </div>
+  )
+}
 
 export default async function AdminDashboard() {
   const stats = await getAdminDashboardStats();
@@ -75,10 +91,12 @@ export default async function AdminDashboard() {
         <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle>Website Traffic</CardTitle>
-            <CardDescription>An overview of unique visitors for the last 7 days.</CardDescription>
+            <CardDescription>An overview of new user sign-ups for the last 7 days.</CardDescription>
           </CardHeader>
           <CardContent>
-            <AdminTrafficChart />
+            <Suspense fallback={<ChartSkeleton />}>
+              <AdminTrafficChart />
+            </Suspense>
           </CardContent>
         </Card>
         <div className="space-y-4">

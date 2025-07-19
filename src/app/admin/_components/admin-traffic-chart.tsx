@@ -1,20 +1,11 @@
 
-"use client";
-
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getWeeklyTrafficData } from "@/lib/actions";
 
-const data = [
-  { name: "Mon", visitors: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Tue", visitors: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Wed", visitors: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Thu", visitors: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Fri", visitors: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Sat", visitors: Math.floor(Math.random() * 5000) + 1000 },
-  { name: "Sun", visitors: Math.floor(Math.random() * 5000) + 1000 },
-];
+export async function AdminTrafficChart() {
+  const data = await getWeeklyTrafficData();
 
-export function AdminTrafficChart() {
   return (
     <div className="h-[350px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -31,7 +22,8 @@ export function AdminTrafficChart() {
             fontSize={12}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value) => `${value / 1000}k`}
+            tickFormatter={(value) => `${value}`}
+            allowDecimals={false}
           />
           <Tooltip
             cursor={{ fill: "hsl(var(--muted))" }}
