@@ -145,8 +145,8 @@ export async function registerUser(userData: UserRegistration) {
         username: userData.username,
         role: userData.role,
         password: userData.password, // In a real app, this should be hashed
-        shopAddress: userData.shopAddress,
-        zipCode: userData.zipCode,
+        shopAddress: userData.shopAddress || null,
+        zipCode: userData.zipCode || null,
         createdAt: new Date(),
         isBlocked: false,
     };
@@ -200,23 +200,25 @@ export async function adminLogin(credentials: { username?: string, password?: st
     const db = await getDb();
     
     try {
-        let adminUserResult = await db.select().from(users).where(eq(users.role, 'admin')).limit(1);
-        let adminUser = adminUserResult[0];
+        const adminUsers = await db.select().from(users).where(eq(users.role, 'admin')).limit(1);
+        let adminUser = adminUsers[0];
 
         if (!adminUser) {
             // Create admin user if it doesn't exist
-            const newAdmin: User = {
+            const newAdminData: User = {
                 id: `user-admin-${Date.now()}`,
                 name: 'Admin',
                 email: 'admin@gulfcarx.com',
                 username: 'admin',
                 role: 'admin',
                 password: 'admin',
+                shopAddress: null,
+                zipCode: null,
                 createdAt: new Date(),
                 isBlocked: false,
             };
-            await db.insert(users).values(newAdmin);
-            adminUser = newAdmin;
+            await db.insert(users).values(newAdminData);
+            adminUser = newAdminData;
         }
 
         const { password, ...publicAdminUser } = adminUser;

@@ -30,12 +30,12 @@ export interface User {
   role: UserRole;
   createdAt: Date;
   isBlocked: boolean;
-  shopAddress?: string; // For vendors
-  zipCode?: string; // For vendors
+  shopAddress?: string | null; // For vendors
+  zipCode?: string | null; // For vendors
   // In a real app, you would never store the password in plain text.
   // It would be hashed and salted.
   password?: string; 
-  verificationCode?: string;
+  verificationCode?: string | null;
   verificationCodeExpires?: Date;
 }
 
