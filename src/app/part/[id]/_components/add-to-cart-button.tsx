@@ -21,12 +21,10 @@ export function AddToCartButton({ part }: AddToCartButtonProps) {
     const isInStock = part.quantity > 0;
 
     const handleAddToCart = () => {
-        // In a real app, you might add multiple quantities, but our context is simple for now.
-        // This logic adds the part to the cart once.
-        addToCart(part); 
+        addToCart(part, quantity); 
         toast({
             title: "Added to Cart!",
-            description: `${part.name} has been added to your cart.`
+            description: `${quantity} x ${part.name} has been added to your cart.`
         });
     };
 

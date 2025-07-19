@@ -2,7 +2,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails } from "./types";
+import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem } from "./types";
 import { getDb } from "./db";
 import { bookings, orders, parts, users } from "./schema";
 import { eq, and, desc, sql, gte, or } from "drizzle-orm";
@@ -217,7 +217,7 @@ export async function resetPasswordWithCode(data: { email: string; code: string;
 
 // --- ORDER & BOOKING ACTIONS ---
 
-export async function placeOrder(orderData: { userId: string; items: Part[]; total: number; shippingDetails: CheckoutDetails }): Promise<{ success: boolean; message: string; orderId?: string; }> {
+export async function placeOrder(orderData: { userId: string; items: CartItem[]; total: number; shippingDetails: CheckoutDetails }): Promise<{ success: boolean; message: string; orderId?: string; }> {
     const db = await getDb();
     const newOrder: Order = {
         id: `order-${Date.now()}`,
@@ -235,7 +235,7 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
     for (const item of orderData.items) {
         const partInStock = await getPart(item.id);
         if (partInStock) {
-            const newQuantity = partInStock.quantity - 1;
+            const newQuantity = partInStock.quantity - item.purchaseQuantity;
             await db.update(parts).set({ quantity: newQuantity }).where(eq(parts.id, item.id));
         }
 
@@ -247,7 +247,7 @@ export async function placeOrder(orderData: { userId: string; items: Part[]; tot
             userName: orderData.shippingDetails.name,
             bookingDate: newOrder.orderDate,
             status: 'Order Fulfillment',
-            cost: item.price,
+            cost: item.price * item.purchaseQuantity,
             vendorName: item.vendorAddress
         };
         await db.insert(bookings).values(newBookingTask);

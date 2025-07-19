@@ -6,12 +6,16 @@ export type Part = {
   description: string;
   price: number;
   imageUrls: string[]; // Changed from imageUrl to imageUrls
-  quantity: number; // Changed from inStock boolean
+  quantity: number; // Represents available stock
   vendorAddress: string;
   manufacturer: string;
   isVisibleForSale?: boolean;
   category: ('new' | 'used' | 'oem')[];
 };
+
+export interface CartItem extends Part {
+  purchaseQuantity: number; // Quantity user wants to buy
+}
 
 export type FontSize = 'sm' | 'md' | 'lg';
 export type Language = 'en' | 'ar';
@@ -51,7 +55,7 @@ export type OrderStatus = 'Placed' | 'Processing' | 'Ready for Pickup' | 'Picked
 export interface Order {
   id: string;
   userId: string;
-  items: Part[];
+  items: CartItem[];
   total: number;
   status: OrderStatus;
   orderDate: Date;

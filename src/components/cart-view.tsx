@@ -6,12 +6,13 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import Image from "next/image";
-import { Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Input } from "./ui/input";
 
 export function CartView() {
-  const { cart, removeFromCart, total } = useCart();
+  const { cart, removeFromCart, updateCartItemQuantity, total } = useCart();
   const router = useRouter();
 
   if (cart.length === 0) {
@@ -36,13 +37,43 @@ export function CartView() {
                     <Image src={item.imageUrls[0]} alt={item.name} width={100} height={100} className="rounded-md object-cover" />
                     <div className="ml-4 flex-grow">
                         <h2 className="font-semibold">{item.name}</h2>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                        <p className="text-lg font-bold text-primary mt-1">${item.price.toFixed(2)}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                             <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => updateCartItemQuantity(item.id, item.purchaseQuantity - 1)}
+                                disabled={item.purchaseQuantity <= 1}
+                            >
+                                <Minus className="h-4 w-4" />
+                            </Button>
+                            <Input
+                                type="number"
+                                className="h-8 w-16 text-center"
+                                value={item.purchaseQuantity}
+                                onChange={(e) => updateCartItemQuantity(item.id, parseInt(e.target.value, 10) || 1)}
+                                min={1}
+                                max={item.quantity}
+                            />
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => updateCartItemQuantity(item.id, item.purchaseQuantity + 1)}
+                                disabled={item.purchaseQuantity >= item.quantity}
+                            >
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
-                        <Trash2 className="h-5 w-5" />
-                        <span className="sr-only">Remove item</span>
-                    </Button>
+                     <div className="flex flex-col items-end justify-between h-full ml-4">
+                        <p className="text-lg font-bold text-primary">${(item.price * item.purchaseQuantity).toFixed(2)}</p>
+                        <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
+                            <Trash2 className="h-5 w-5" />
+                            <span className="sr-only">Remove item</span>
+                        </Button>
+                    </div>
                 </Card>
             ))}
             </div>

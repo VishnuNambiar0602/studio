@@ -284,8 +284,9 @@ export function CheckoutForm() {
                                     <Image src={item.imageUrls[0]} alt={item.name} width={64} height={64} className="rounded-md object-cover border" />
                                     <div className="flex-grow">
                                         <p className="font-medium text-sm">{item.name}</p>
+                                        <p className="text-muted-foreground text-sm">Qty: {item.purchaseQuantity}</p>
                                     </div>
-                                    <p className="text-sm font-semibold">${item.price.toFixed(2)}</p>
+                                    <p className="text-sm font-semibold">${(item.price * item.purchaseQuantity).toFixed(2)}</p>
                                 </div>
                             ))}
                         </ScrollArea>

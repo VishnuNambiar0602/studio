@@ -9,7 +9,7 @@ import {
   pgEnum,
   jsonb,
 } from 'drizzle-orm/pg-core';
-import type { Part, User, Order, Booking } from './types';
+import type { Part, User, Order, Booking, CartItem } from './types';
 
 export const userRoleEnum = pgEnum('user_role', ['customer', 'vendor', 'admin']);
 export const partCategoryEnum = pgEnum('part_category', ['new', 'used', 'oem']);
@@ -46,7 +46,7 @@ export const parts = pgTable('parts', {
 export const orders = pgTable('orders', {
     id: varchar('id').primaryKey(),
     userId: varchar('user_id').notNull().references(() => users.id),
-    items: jsonb('items').$type<Part[]>().notNull(),
+    items: jsonb('items').$type<CartItem[]>().notNull(),
     total: real('total').notNull(),
     status: orderStatusEnum('status').notNull(),
     orderDate: timestamp('order_date', { withTimezone: true }).notNull(),
