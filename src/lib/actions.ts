@@ -162,17 +162,7 @@ export async function registerUser(userData: UserRegistration) {
 
 export async function loginUser(credentials: UserLogin) {
     const db = await getDb();
-    const results = await db.select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        username: users.username,
-        role: users.role,
-        createdAt: users.createdAt,
-        shopAddress: users.shopAddress,
-        zipCode: users.zipCode,
-        isBlocked: users.isBlocked,
-    }).from(users).where(and(
+    const results = await db.select().from(users).where(and(
         or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier)),
         eq(users.password, credentials.password!)
     )).limit(1);
@@ -183,7 +173,12 @@ export async function loginUser(credentials: UserLogin) {
         return { success: false, message: "Invalid credentials." };
     }
     
-    return { success: true, user };
+    if (user.isBlocked) {
+        return { success: false, message: "This account has been blocked. Please contact support." };
+    }
+
+    const { password, ...publicUser } = user;
+    return { success: true, user: publicUser };
 }
 
 export async function adminLogin(credentials: { username?: string, password?: string }) {
@@ -667,3 +662,6 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
     
 
 
+
+
+    
