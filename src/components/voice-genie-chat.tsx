@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, CornerDownLeft, Sparkles, AlertCircle, ArrowRight } from "lucide-react";
+import { Bot, User, CornerDownLeft, Sparkles, AlertCircle, ArrowRight, Mic, MicOff, Volume2 } from "lucide-react";
 import { useParts } from "@/context/part-context";
 import { suggestParts, SuggestPartsOutput } from "@/ai/flows/suggest-parts-from-request";
+import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -22,26 +23,24 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   suggestions?: SuggestPartsOutput['suggestions'];
+  audioUrl?: string;
 }
 
 const formSchema = z.object({
   prompt: z.string().min(1, "Prompt cannot be empty."),
 });
 
-const examplePrompts = [
-  { title: "Find a part", description: "Brake pads for a 2021 Toyota Land Cruiser" },
-  { title: "Ask a question", description: "What's the difference between OEM and aftermarket parts?" },
-  { title: "Get a recommendation", description: "I need a durable oil filter for off-road use" },
-  { title: "Identify from description", description: "A filter that sits in a black box in the engine bay" },
-];
-
-export function GeminiChat() {
+export function VoiceGenieChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { parts } = useParts();
   const { setLanguage } = useSettings();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,6 +55,19 @@ export function GeminiChat() {
       });
     }
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (audioUrl) {
+      audioRef.current = new Audio(audioUrl);
+      audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+    }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [audioUrl]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     const userInput = values.prompt;
@@ -79,6 +91,14 @@ export function GeminiChat() {
         content: response.answer || "Here's what I found based on your request:",
         suggestions: response.suggestions,
       };
+      
+      if (response.answer) {
+        const audioResponse = await textToSpeech({ text: response.answer });
+        if (audioResponse.media) {
+            assistantMessage.audioUrl = audioResponse.media;
+            setAudioUrl(audioResponse.media);
+        }
+      }
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (e) {
@@ -89,9 +109,40 @@ export function GeminiChat() {
     }
   };
 
-  const handleExamplePrompt = (prompt: string) => {
-    form.setValue("prompt", prompt);
-    handleSubmit({ prompt });
+  const handleToggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      startRecording();
+    }
+  };
+
+  const startRecording = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+
+    recognitionRef.current.onstart = () => setIsRecording(true);
+    recognitionRef.current.onend = () => setIsRecording(false);
+    recognitionRef.current.onerror = (event: any) => {
+      setError(`Speech recognition error: ${event.error}`);
+      setIsRecording(false);
+    };
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      form.setValue("prompt", transcript);
+      handleSubmit({ prompt: transcript });
+    };
+
+    recognitionRef.current.start();
   };
 
   return (
@@ -99,23 +150,15 @@ export function GeminiChat() {
       <ScrollArea className="flex-grow" ref={scrollAreaRef}>
         <div className="py-6 px-4">
           {messages.length === 0 && !loading && (
-            <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="flex flex-col items-center justify-center h-full text-center py-16">
               <div className="relative mb-4">
                 <div className="absolute -inset-2 bg-primary/10 rounded-full blur-2xl"></div>
-                <Image src="https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080" width={96} height={96} alt="Genie Avatar" className="relative rounded-full border" />
+                 <Avatar className="relative h-24 w-24 border-2 border-primary">
+                    <AvatarFallback className="bg-primary/20"><Volume2 className="h-12 w-12 text-primary" /></AvatarFallback>
+                </Avatar>
               </div>
-              <h1 className="text-4xl font-bold">Hello!</h1>
-              <p className="text-xl text-muted-foreground mt-2">How can I help you today?</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12 w-full">
-                {examplePrompts.map((prompt) => (
-                  <Card key={prompt.title} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => handleExamplePrompt(prompt.description)}>
-                    <CardContent className="p-4 text-left">
-                      <p className="font-semibold">{prompt.title}</p>
-                      <p className="text-sm text-muted-foreground">{prompt.description}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <h1 className="text-4xl font-bold">Talk to the Genie</h1>
+              <p className="text-xl text-muted-foreground mt-2">Click the microphone to start the conversation.</p>
             </div>
           )}
 
@@ -171,24 +214,16 @@ export function GeminiChat() {
                 <p>{error}</p>
             </div>
         )}
-        <Card className="p-2 rounded-2xl shadow-lg">
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex items-center gap-2">
-            <Input
-              {...form.register("prompt")}
-              placeholder="Message the Genie..."
-              className="flex-grow border-none focus-visible:ring-0 shadow-none text-base"
-              disabled={loading}
-              autoComplete="off"
-            />
-            <Button type="submit" size="icon" disabled={loading} className="rounded-xl h-10 w-10">
-              {loading ? (
-                <div className="h-4 w-4 border-2 border-background/50 border-t-background rounded-full animate-spin"></div>
-              ) : (
-                <CornerDownLeft className="h-5 w-5" />
-              )}
+        <div className="flex items-center justify-center">
+            <Button 
+                size="lg" 
+                className={cn("rounded-full h-20 w-20 transition-all duration-300", isRecording && "bg-destructive scale-110")}
+                onClick={handleToggleRecording}
+                disabled={loading}
+            >
+                {isRecording ? <MicOff className="h-8 w-8" /> : <Mic className="h-8 w-8" />}
             </Button>
-          </form>
-        </Card>
+        </div>
       </div>
     </div>
   );

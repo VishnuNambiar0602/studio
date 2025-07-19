@@ -5,7 +5,7 @@ import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import Image from "next/image";
 import { Button } from "./ui/button";
-import { Camera, Bot } from "lucide-react";
+import { Camera, Bot, Volume2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { TakeSnap } from "./take-snap";
 import { useState } from "react";
@@ -34,7 +34,7 @@ export function HeroSection() {
         setResult(null);
         setError(null);
         try {
-          const partsList = parts; // Use parts directly from context
+          const partsList = parts;
           const availableParts = JSON.stringify(
             partsList.map(({ id, name, description, price }) => ({ id, name, description, price }))
           );
@@ -44,10 +44,6 @@ export function HeroSection() {
             photoDataUri: photoDataUri || undefined,
           });
           setResult(response);
-          if (response.isPartQuery && response.suggestions.length > 0) {
-            // Optional: directly navigate if only one suggestion?
-            // For now, let's just show the suggestions.
-          }
         } catch (e) {
           setError("An error occurred while suggesting parts. Please try again.");
           console.error(e);
@@ -102,7 +98,7 @@ export function HeroSection() {
                              />
                              {result && (
                                 <div className="mt-4">
-                                  {result.isPartQuery && result.suggestions.length > 0 ? (
+                                  {result.suggestions && result.suggestions.length > 0 ? (
                                     <div className="space-y-2">
                                       <h4 className="font-semibold">Here's what I found:</h4>
                                       {result.suggestions.map(s => (
@@ -138,6 +134,12 @@ export function HeroSection() {
                         <Link href="/genie">
                             <Bot className="mr-2 h-5 w-5" />
                             Ask the Genie
+                        </Link>
+                    </Button>
+                     <Button size="lg" asChild>
+                        <Link href="/voice-genie">
+                            <Volume2 className="mr-2 h-5 w-5" />
+                            Talk to the Genie
                         </Link>
                     </Button>
                 </div>
