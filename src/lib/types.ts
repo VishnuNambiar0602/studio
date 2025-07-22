@@ -11,6 +11,9 @@ export type Part = {
   manufacturer: string;
   isVisibleForSale: boolean;
   category: ('new' | 'used' | 'oem')[];
+  make?: string;
+  model?: string;
+  vehicleYear?: number;
 };
 
 export interface CartItem extends Part {
