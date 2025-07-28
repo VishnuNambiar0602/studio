@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -99,11 +98,11 @@ export function AddPartForm() {
   const fileRef = form.register("images");
 
   async function onSubmit(data: AddPartFormValues) {
-    if (!loggedInUser || !loggedInUser.name) {
+    if (!loggedInUser || !loggedInUser.shopAddress) {
         toast({
             variant: "destructive",
             title: "Error",
-            description: "You must be logged in as a vendor to add a part.",
+            description: "You must be logged in as a vendor with a valid shop address to add a part.",
         });
         return;
     }
@@ -120,7 +119,7 @@ export function AddPartForm() {
             price: data.price,
             imageUrls: imageUrls,
             quantity: data.quantity,
-            vendorAddress: loggedInUser.name,
+            vendorAddress: loggedInUser.shopAddress,
             manufacturer: data.manufacturer,
             make: data.make,
             model: data.model,
