@@ -44,9 +44,6 @@ export const parts = pgTable('parts', {
   manufacturer: varchar('manufacturer').notNull(),
   isVisibleForSale: boolean('is_visible_for_sale').default(true).notNull(),
   category: jsonb('category').$type<Array<'new' | 'used' | 'oem'>>().default([]).notNull(),
-  make: varchar('make'),
-  model: varchar('model'),
-  vehicleYear: integer('vehicle_year'),
 });
 
 export const orders = pgTable('orders', {

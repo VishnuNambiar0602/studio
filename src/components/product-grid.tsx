@@ -23,9 +23,6 @@ export function ProductGrid({ category }: ProductGridProps) {
   const initialFilters: Filters = {
     search: '',
     locations: [],
-    make: '',
-    model: '',
-    year: '',
     priceRange: [0, 5000],
     sort: 'price-asc',
   };
@@ -82,27 +79,12 @@ export function ProductGrid({ category }: ProductGridProps) {
       );
     }
     
-    // 3. Filter by make
-    if (activeFilters.make) {
-        processedParts = processedParts.filter(part => part.make === activeFilters.make);
-    }
-
-    // 4. Filter by model
-    if (activeFilters.model) {
-        processedParts = processedParts.filter(part => part.model === activeFilters.model);
-    }
-    
-    // 5. Filter by year
-    if (activeFilters.year) {
-        processedParts = processedParts.filter(part => part.vehicleYear?.toString() === activeFilters.year);
-    }
-
-    // 6. Filter by price range
+    // 3. Filter by price range
     processedParts = processedParts.filter(part =>
       part.price >= activeFilters.priceRange[0] && part.price <= (activeFilters.priceRange[1] < 5000 ? activeFilters.priceRange[1] : Infinity)
     );
 
-    // 7. Sort
+    // 4. Sort
     switch (activeFilters.sort) {
       case 'price-asc':
         processedParts.sort((a, b) => a.price - b.price);
@@ -110,38 +92,18 @@ export function ProductGrid({ category }: ProductGridProps) {
       case 'price-desc':
         processedParts.sort((a, b) => b.price - a.price);
         break;
-      case 'year-asc':
-        processedParts.sort((a, b) => (a.vehicleYear || 0) - (b.vehicleYear || 0));
-        break;
-      case 'year-desc':
-        processedParts.sort((a, b) => (b.vehicleYear || 0) - (a.vehicleYear || 0));
-        break;
     }
 
     return processedParts;
   }, [allParts, activeFilters]);
 
   const availableFilterOptions = useMemo(() => {
-        let relevantParts = allParts;
-        if (tempFilters.make) {
-            relevantParts = relevantParts.filter(p => p.make === tempFilters.make);
-        }
-        if (tempFilters.model) {
-            relevantParts = relevantParts.filter(p => p.model === tempFilters.model);
-        }
-
         const locations = new Set(allParts.map(part => part.vendorAddress));
-        const makes = new Set(allParts.map(part => part.make).filter(Boolean));
-        const models = new Set(relevantParts.map(part => part.model).filter(Boolean));
-        const years = new Set(relevantParts.map(part => part.vehicleYear?.toString()).filter(Boolean));
         
         return {
             locations: Array.from(locations).sort(),
-            makes: Array.from(makes).sort(),
-            models: Array.from(models).sort(),
-            years: Array.from(years).sort((a,b) => parseInt(b) - parseInt(a)), // Sort years descending
         }
-  }, [allParts, tempFilters.make, tempFilters.model]);
+  }, [allParts]);
 
   return (
     <>
@@ -168,9 +130,6 @@ export function ProductGrid({ category }: ProductGridProps) {
                   <div className="py-4">
                     <ProductFilters 
                         availableLocations={availableFilterOptions.locations}
-                        availableMakes={availableFilterOptions.makes}
-                        availableModels={availableFilterOptions.models}
-                        availableYears={availableFilterOptions.years}
                         filters={tempFilters}
                         onFilterChange={handleTempFilterChange}
                         onApply={applyFilters}

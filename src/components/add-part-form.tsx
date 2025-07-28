@@ -40,9 +40,6 @@ const addPartFormSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters."),
   partNumber: z.string().min(1, "Part number is required."),
   manufacturer: z.string().min(2, "Manufacturer name is required."),
-  make: z.string().min(2, "Vehicle make is required."),
-  model: z.string().min(1, "Vehicle model is required."),
-  vehicleYear: z.coerce.number().int().min(1900, "Year must be after 1900.").max(new Date().getFullYear() + 1, "Year cannot be in the future."),
   quantity: z.coerce.number().int().positive("Quantity must be a positive number."),
   dateOfManufacture: z.date({
     required_error: "A date of manufacture is required.",
@@ -87,8 +84,6 @@ export function AddPartForm() {
       description: "",
       partNumber: "",
       manufacturer: "",
-      make: "",
-      model: "",
       price: 0,
       quantity: 1,
       category: [],
@@ -121,9 +116,6 @@ export function AddPartForm() {
             quantity: data.quantity,
             vendorAddress: loggedInUser.shopAddress,
             manufacturer: data.manufacturer,
-            make: data.make,
-            model: data.model,
-            vehicleYear: data.vehicleYear,
             category: data.category as ('new' | 'used' | 'oem')[],
         };
 
@@ -253,45 +245,6 @@ export function AddPartForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="make"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Vehicle Make</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Toyota" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-         <FormField
-          control={form.control}
-          name="model"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Vehicle Model</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Land Cruiser" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="vehicleYear"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Vehicle Year</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="e.g., 2022" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="price"
