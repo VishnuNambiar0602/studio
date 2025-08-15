@@ -69,16 +69,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("loggedInUser");
   }
 
+  // The loading state is for hydrating from localStorage, we don't need a visual spinner for this,
+  // as it would cause a flicker. The main loading spinner is now in the PartProvider.
   if (isLoading) {
-    return (
-        <html lang="en" dir="ltr">
-            <body>
-                <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
-                </div>
-            </body>
-        </html>
-    );
+    return null; 
   }
 
   return (

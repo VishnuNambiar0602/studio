@@ -44,7 +44,8 @@ export function PartProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  // While loading, you might want to show a spinner or nothing
+  // While loading parts from the database, show a full-screen spinner.
+  // This is the primary data loading step for the application.
   if (loading) {
       return (
         <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
