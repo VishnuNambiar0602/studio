@@ -5,7 +5,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter as FontSans } from 'next/font/google';
 import { CartProvider } from '@/context/cart-context';
-import { SettingsProvider } from '@/context/settings-context';
+import { SettingsProvider, useSettings } from '@/context/settings-context';
 import { cn } from '@/lib/utils';
 import { Suspense } from 'react';
 import { PartProvider } from '@/context/part-context';
@@ -21,20 +21,16 @@ export const metadata: Metadata = {
   description: 'AI-powered automotive parts platform for used, OEM, and new parts.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+function AppLayout({ children }: { children: React.ReactNode }) {
+  const { language, fontSize } = useSettings();
 
   return (
-    <html lang="en" dir="ltr" className={fontSans.variable}>
+    <html lang={language} dir={language === 'ar' ? 'rtl' : 'ltr'} className={cn(fontSans.variable, `font-${fontSize}`)}>
       <body
         className={cn('min-h-screen bg-background font-sans antialiased flex flex-col')}
         suppressHydrationWarning={true}
       >
-        <SettingsProvider>
-          <PartProvider>
+        <PartProvider>
             <CartProvider>
               <div className="flex-grow">
                 {children}
@@ -42,9 +38,21 @@ export default function RootLayout({
               <Footer />
             </CartProvider>
           </PartProvider>
-        </SettingsProvider>
         <Toaster />
       </body>
     </html>
+  )
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+
+  return (
+    <SettingsProvider>
+      <AppLayout>{children}</AppLayout>
+    </SettingsProvider>
   );
 }

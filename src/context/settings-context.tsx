@@ -34,26 +34,28 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             setLoggedInUser(user);
             setIsLoggedIn(true);
         }
+        const storedFontSize = localStorage.getItem("fontSize") as FontSize;
+        if (storedFontSize) setFontSize(storedFontSize);
+
+        const storedLanguage = localStorage.getItem("language") as Language;
+        if (storedLanguage) setLanguage(storedLanguage);
     } catch (error) {
-        console.error("Failed to parse user from localStorage", error);
-        localStorage.removeItem("loggedInUser");
+        console.error("Failed to parse from localStorage", error);
+        localStorage.clear();
     } finally {
         setIsLoading(false);
     }
   }, []);
 
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove('font-sm', 'font-md', 'font-lg');
-    root.classList.add(`font-${fontSize}`);
-  }, [fontSize]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.lang = language;
-    root.dir = language === 'ar' ? 'rtl' : 'ltr';
-  }, [language]);
+  const handleSetFontSize = (size: FontSize) => {
+    setFontSize(size);
+    localStorage.setItem("fontSize", size);
+  }
+  
+  const handleSetLanguage = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem("language", lang);
+  }
 
   const loginUser = (user: PublicUser) => {
     setLoggedInUser(user);
@@ -69,17 +71,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   if (isLoading) {
     return (
-        <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
-        </div>
+        <html lang="en" dir="ltr">
+            <body>
+                <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary"></div>
+                </div>
+            </body>
+        </html>
     );
   }
 
-
   return (
     <SettingsContext.Provider value={{ 
-      fontSize, setFontSize,
-      language, setLanguage,
+      fontSize, setFontSize: handleSetFontSize,
+      language, setLanguage: handleSetLanguage,
       isLoggedIn, setIsLoggedIn,
       loggedInUser, loginUser, logoutUser
     }}>
