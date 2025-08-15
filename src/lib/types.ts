@@ -21,6 +21,7 @@ export type FontSize = 'sm' | 'md' | 'lg';
 export type Language = 'en' | 'ar';
 
 export type UserRole = 'customer' | 'vendor' | 'admin';
+export type AccountType = 'individual' | 'business';
 
 export interface User {
   id: string;
@@ -30,6 +31,8 @@ export interface User {
   role: UserRole;
   createdAt: Date;
   isBlocked: boolean;
+  phone?: string | null;
+  accountType?: AccountType | null;
   shopAddress?: string | null; // For vendors
   zipCode?: string | null; // For vendors
   profilePictureUrl?: string | null;

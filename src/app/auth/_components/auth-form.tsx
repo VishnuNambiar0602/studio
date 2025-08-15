@@ -15,18 +15,21 @@ import { useRouter } from "next/navigation";
 import { useSettings } from "@/context/settings-context";
 import { registerUser } from "@/lib/actions";
 import { getDictionary } from "@/lib/i18n";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
   username: z.string().min(3, { message: "Usernametag must be at least 3 characters." }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  accountType: z.enum(["individual", "business"], { required_error: "Please select an account type." }),
   shopAddress: z.string().optional(),
   zipCode: z.string().optional(),
 });
 
 interface AuthFormProps {
-    userType: 'customer' | 'vendor';
+    userType: 'customer';
 }
 
 export function AuthForm({ userType }: AuthFormProps) {
@@ -44,10 +47,13 @@ export function AuthForm({ userType }: AuthFormProps) {
       password: "",
       name: "",
       username: "",
+      phone: "",
       shopAddress: "",
       zipCode: "",
     },
   });
+
+  const accountType = form.watch("accountType");
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -59,6 +65,8 @@ export function AuthForm({ userType }: AuthFormProps) {
             password: values.password,
             username: values.username,
             role: userType,
+            phone: values.phone,
+            accountType: values.accountType,
             shopAddress: values.shopAddress,
             zipCode: values.zipCode,
         });
@@ -81,12 +89,8 @@ export function AuthForm({ userType }: AuthFormProps) {
         });
         
         form.reset();
+        router.push('/');
 
-        if (userType === 'vendor') {
-            router.push('/vendor/dashboard');
-        } else {
-            router.push('/');
-        }
     } catch (error) {
         toast({
             variant: "destructive",
@@ -103,12 +107,42 @@ export function AuthForm({ userType }: AuthFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
+          name="accountType"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Are you signing up as an individual or a business?</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="individual" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Individual</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="business" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Business</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>{userType === 'vendor' ? t.auth.companyName : t.auth.fullName}</FormLabel>
+              <FormLabel>{accountType === 'business' ? t.auth.companyName : t.auth.fullName}</FormLabel>
               <FormControl>
-                <Input placeholder={userType === 'vendor' ? t.auth.companyNamePlaceholder : t.auth.fullNamePlaceholder} {...field} />
+                <Input placeholder={accountType === 'business' ? t.auth.companyNamePlaceholder : t.auth.fullNamePlaceholder} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -143,36 +177,19 @@ export function AuthForm({ userType }: AuthFormProps) {
             </FormItem>
           )}
         />
-         {userType === 'vendor' && (
-            <>
-                <FormField
-                    control={form.control}
-                    name="shopAddress"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t.auth.shopAddress}</FormLabel>
-                            <FormControl>
-                                <Input placeholder={t.auth.shopAddressPlaceholder} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="zipCode"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t.auth.zipCode}</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., 113" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            </>
-        )}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormControl>
+                <Input placeholder="+1 234 567 890" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="password"

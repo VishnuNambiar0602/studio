@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuthForm } from "./_components/auth-form";
+import { VendorAuthForm } from "./_components/vendor-auth-form";
 import { LoginForm } from "./_components/login-form";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
@@ -52,7 +53,7 @@ export default function AuthPage() {
                         <AuthForm userType="customer" />
                     </TabsContent>
                     <TabsContent value="vendor-signup" className="pt-6">
-                        <AuthForm userType="vendor" />
+                        <VendorAuthForm />
                     </TabsContent>
                 </Tabs>
               </CardContent>

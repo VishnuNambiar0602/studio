@@ -1,3 +1,4 @@
+// Edited
 
 "use server";
 
@@ -126,7 +127,9 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
 
 export async function registerUser(userData: UserRegistration) {
     const db = await getDb();
-    const existingUser = await db.select({ email: users.email, username: users.username }).from(users).where(or(eq(users.email, userData.email), eq(users.username, userData.username)));
+    const existingUser = await db.select({ email: users.email, username: users.username }).from(users).where(
+        or(eq(users.email, userData.email), eq(users.username, userData.username))
+    );
 
     if (existingUser.length > 0) {
         if (existingUser[0].email === userData.email) {
@@ -143,9 +146,11 @@ export async function registerUser(userData: UserRegistration) {
         email: userData.email,
         username: userData.username,
         role: userData.role,
-        password: userData.password, // In a real app, this should be hashed
-        shopAddress: userData.shopAddress || null,
-        zipCode: userData.zipCode || null,
+        password: userData.password,
+        phone: userData.phone,
+        accountType: userData.accountType,
+        shopAddress: userData.shopAddress,
+        zipCode: userData.zipCode,
         createdAt: new Date(),
         isBlocked: false,
     };
@@ -173,16 +178,23 @@ export async function loginUser(credentials: UserLogin) {
         createdAt: users.createdAt,
         password: users.password,
         isBlocked: users.isBlocked,
+        phone: users.phone,
+        accountType: users.accountType,
+        profilePictureUrl: users.profilePictureUrl,
     }).from(users).where(
-        or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier))
+        or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier), eq(users.phone, credentials.identifier))
     ).limit(1);
     
     const user = results[0];
 
-    if (!user || user.password !== credentials.password) {
+    if (!user) {
         return { success: false, message: "Invalid credentials." };
     }
     
+    if (user.password && user.password !== credentials.password) {
+       return { success: false, message: "Invalid credentials." };
+    }
+
     if (user.isBlocked) {
         return { success: false, message: "This account has been blocked. Please contact support." };
     }
@@ -211,6 +223,8 @@ export async function adminLogin(credentials: { username?: string, password?: st
                 username: 'admin',
                 role: 'admin',
                 password: 'admin',
+                phone: '000000000',
+                accountType: 'business',
                 shopAddress: null,
                 zipCode: null,
                 createdAt: new Date(),
@@ -691,3 +705,4 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
 
 
     
+

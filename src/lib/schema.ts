@@ -13,6 +13,7 @@ import {
 import type { Part, User, Order, Booking, CartItem } from './types';
 
 export const userRoleEnum = pgEnum('user_role', ['customer', 'vendor', 'admin']);
+export const accountTypeEnum = pgEnum('account_type', ['individual', 'business']);
 export const partCategoryEnum = pgEnum('part_category', ['new', 'used', 'oem']);
 export const orderStatusEnum = pgEnum('order_status', ['Placed', 'Processing', 'Ready for Pickup', 'Picked Up', 'Cancelled']);
 export const bookingStatusEnum = pgEnum('booking_status', ['Pending', 'Completed', 'Order Fulfillment']);
@@ -24,13 +25,15 @@ export const users = pgTable('users', {
   email: varchar('email').notNull().unique(),
   username: varchar('username').notNull().unique(),
   role: userRoleEnum('role').notNull(),
-  password: text('password').notNull(),
+  password: text('password'), // Optional for OTP-based vendors
   shopAddress: varchar('shop_address'),
   zipCode: varchar('zip_code'),
   verificationCode: varchar('verification_code'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   isBlocked: boolean('is_blocked').default(false).notNull(),
   profilePictureUrl: varchar('profile_picture_url'),
+  phone: varchar('phone').notNull(),
+  accountType: accountTypeEnum('account_type'),
 });
 
 export const parts = pgTable('parts', {
