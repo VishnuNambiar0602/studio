@@ -3,10 +3,11 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 import * as schema from './schema';
 import type { User } from './types';
+import * as dotenv from 'dotenv';
 
-// Seeding now relies on the environment being correctly set up, e.g., using `dotenv` with the script command
-// Example: `npm run db:seed` with `tsx` might need `dotenv-cli` -> `dotenv -e .env -- tsx src/lib/seed.ts`
-// Or ensure your execution environment loads .env automatically.
+// tsx command for seeding should handle this, but adding for robustness in different environments.
+dotenv.config({ path: '.env' });
+
 
 if (!process.env.POSTGRES_URL) {
   throw new Error('POSTGRES_URL environment variable is not set');
