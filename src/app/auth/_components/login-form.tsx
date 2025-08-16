@@ -1,4 +1,4 @@
-// Edited
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,7 +16,7 @@ import { loginUser } from "@/lib/actions";
 import { ForgotPasswordDialog } from "./forgot-password-dialog";
 
 const formSchema = z.object({
-  identifier: z.string().min(1, { message: "Please enter your email or usernametag." }),
+  identifier: z.string().min(1, { message: "Please enter your email, username, or phone." }),
   password: z.string().min(1, { message: "Please enter your password." }),
 });
 
@@ -38,11 +38,10 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     
-    // Quick check for admin credentials on the main login form
-    if (values.identifier === 'admin' && values.password === 'admin') {
-        router.push('/admin');
-        setLoading(false);
-        return;
+    if (values.identifier.toLowerCase() === 'admin') {
+      router.push('/admin/login');
+      setLoading(false);
+      return;
     }
 
     try {
@@ -96,7 +95,7 @@ export function LoginForm() {
             name="identifier"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email or Usernametag</FormLabel>
+                <FormLabel>Email, Username, or Phone</FormLabel>
                 <FormControl>
                   <Input placeholder="you@example.com or YourUsernametag" {...field} />
                 </FormControl>
