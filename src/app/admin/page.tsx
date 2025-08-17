@@ -10,7 +10,6 @@ import { AdminVendorPerformance } from "./_components/admin-vendor-performance";
 import { getAdminDashboardStats } from "@/lib/actions";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AdminHeader } from "@/components/admin-header";
 
 function ChartSkeleton() {
   return (
