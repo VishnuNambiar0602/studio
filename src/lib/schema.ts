@@ -1,4 +1,9 @@
-// Edited
+
+// This file defines the database schema using Drizzle ORM.
+// While the app is running on mock data, this file is kept for future-proofing
+// and to allow Drizzle Studio to potentially visualize the data structure.
+// No database connection is made, so these definitions are for structure only.
+
 import {
   pgTable,
   text,
@@ -18,6 +23,8 @@ export const partCategoryEnum = pgEnum('part_category', ['new', 'used', 'oem']);
 export const orderStatusEnum = pgEnum('order_status', ['Placed', 'Processing', 'Ready for Pickup', 'Picked Up', 'Cancelled']);
 export const bookingStatusEnum = pgEnum('booking_status', ['Pending', 'Completed', 'Order Fulfillment']);
 
+// The following table definitions are not actively connected to a database
+// in the current mock data setup.
 
 export const users = pgTable('users', {
   id: varchar('id').primaryKey(),
@@ -25,7 +32,7 @@ export const users = pgTable('users', {
   email: varchar('email').notNull().unique(),
   username: varchar('username').notNull().unique(),
   role: userRoleEnum('role').notNull(),
-  password: text('password'), // Optional for OTP-based vendors
+  password: text('password'),
   shopAddress: varchar('shop_address'),
   zipCode: varchar('zip_code'),
   verificationCode: varchar('verification_code'),
@@ -51,7 +58,7 @@ export const parts = pgTable('parts', {
 
 export const orders = pgTable('orders', {
     id: varchar('id').primaryKey(),
-    userId: varchar('user_id').notNull().references(() => users.id),
+    userId: varchar('user_id').notNull(), // No foreign key in mock setup
     items: jsonb('items').$type<CartItem[]>().notNull(),
     total: real('total').notNull(),
     status: orderStatusEnum('status').notNull(),
@@ -62,13 +69,13 @@ export const orders = pgTable('orders', {
 
 export const bookings = pgTable('bookings', {
     id: varchar('id').primaryKey(),
-    partId: varchar('part_id').notNull().references(() => parts.id),
+    partId: varchar('part_id').notNull(), // No foreign key in mock setup
     partName: varchar('part_name').notNull(),
-    userId: varchar('user_id').notNull().references(() => users.id),
+    userId: varchar('user_id').notNull(), // No foreign key
     userName: varchar('user_name').notNull(),
     bookingDate: timestamp('booking_date', { withTimezone: true }).notNull(),
     status: bookingStatusEnum('status').notNull(),
     cost: real('cost').notNull(),
     vendorName: varchar('vendor_name').notNull(),
-    orderId: varchar('order_id').references(() => orders.id),
+    orderId: varchar('order_id'), // No foreign key
 });

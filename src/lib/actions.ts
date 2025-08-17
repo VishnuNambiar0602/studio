@@ -3,24 +3,20 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem } from "./types";
-import { getDb } from "./db";
-import { bookings, orders, parts, users } from "./schema";
-import { eq, and, desc, sql, gte, or, lt, not } from "drizzle-orm";
+import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
-
 
 // --- PART ACTIONS ---
 
 export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
     try {
-        const db = await getDb();
         const newPartData: Part = {
             id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             ...part,
             isVisibleForSale: true,
         };
         
-        await db.insert(parts).values(newPartData);
+        MOCK_PARTS.unshift(newPartData);
         
         revalidatePath('/');
         revalidatePath('/new-parts');
@@ -32,17 +28,18 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): P
         revalidatePath('/admin');
         revalidatePath('/admin/vendors', 'layout');
 
-
         return newPartData;
     } catch (error) {
-        console.error("Failed to create part in DB:", error);
+        console.error("Failed to create part in mock DB:", error);
         return null;
     }
 }
 
 export async function updatePart(partId: string, partData: Part) {
-    const db = await getDb();
-    await db.update(parts).set(partData).where(eq(parts.id, partId));
+    const partIndex = MOCK_PARTS.findIndex(p => p.id === partId);
+    if (partIndex !== -1) {
+        MOCK_PARTS[partIndex] = partData;
+    }
 
     revalidatePath(`/part/${partId}`);
     revalidatePath("/vendor/inventory");
@@ -57,134 +54,91 @@ export async function updatePart(partId: string, partData: Part) {
 }
 
 export async function getParts(): Promise<Part[]> {
-    const db = await getDb();
-    const allParts = await db.select().from(parts);
-    return allParts;
+    return JSON.parse(JSON.stringify(MOCK_PARTS));
 }
 
 export async function getPart(id: string): Promise<Part | undefined> {
-    const db = await getDb();
-    const result = await db.select().from(parts).where(eq(parts.id, id)).limit(1);
-    return result[0];
+    return MOCK_PARTS.find(p => p.id === id);
 }
 
 export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
-    const db = await getDb();
-    return db.select().from(parts).where(eq(parts.vendorAddress, vendorName));
+    return MOCK_PARTS.filter(p => p.vendorAddress === vendorName);
 }
 
 // --- USER ACTIONS ---
 
 export async function getUserById(userId: string): Promise<User | null> {
-    const db = await getDb();
-    const result = await db.select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        username: users.username,
-        role: users.role,
-        shopAddress: users.shopAddress,
-        zipCode: users.zipCode,
-        createdAt: users.createdAt,
-    }).from(users).where(eq(users.id, userId)).limit(1);
-
-    if (!result[0]) {
-        return null;
-    }
-    return result[0] as User;
+    const user = MOCK_USERS.find(u => u.id === userId);
+    if (!user) return null;
+    return JSON.parse(JSON.stringify(user));
 }
 
 export async function getAllUsers(): Promise<PublicUser[]> {
-    const db = await getDb();
-    const allUsersData = await db.select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        username: users.username,
-        role: users.role,
-        shopAddress: users.shopAddress,
-        zipCode: users.zipCode,
-        createdAt: users.createdAt,
-        isBlocked: users.isBlocked,
-    }).from(users);
-    
-    return allUsersData;
+    const users = MOCK_USERS.map(user => {
+        const { password, verificationCode, verificationCodeExpires, ...publicUser } = user;
+        return publicUser;
+    });
+    return JSON.parse(JSON.stringify(users));
 }
 
 export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
-    try {
-        const db = await getDb();
-        await db.update(users).set(data).where(eq(users.id, userId));
-        revalidatePath('/admin/users');
-        revalidatePath(`/admin/vendors/${userId}`);
-        return { success: true, message: 'User updated successfully.' };
-    } catch (error) {
-        console.error("Failed to update user:", error);
-        return { success: false, message: 'Failed to update user. The email or username might already be in use.' };
+    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        return { success: false, message: 'User not found.' };
     }
+
+    // Check for email/username collision
+    const otherUsers = MOCK_USERS.filter(u => u.id !== userId);
+    if (data.email && otherUsers.some(u => u.email === data.email)) {
+        return { success: false, message: 'Email is already in use by another account.' };
+    }
+     if (data.username && otherUsers.some(u => u.username === data.username)) {
+        return { success: false, message: 'Username is already in use by another account.' };
+    }
+
+    MOCK_USERS[userIndex] = { ...MOCK_USERS[userIndex], ...data };
+    
+    revalidatePath('/admin/users');
+    revalidatePath(`/admin/vendors/${userId}`);
+    return { success: true, message: 'User updated successfully.' };
 }
 
 export async function registerUser(userData: UserRegistration) {
-    const db = await getDb();
-    const existingUser = await db.select({ email: users.email, username: users.username }).from(users).where(
-        or(eq(users.email, userData.email), eq(users.username, userData.username))
+    const existingUser = MOCK_USERS.find(
+        u => u.email === userData.email || u.username === userData.username
     );
 
-    if (existingUser.length > 0) {
-        if (existingUser[0].email === userData.email) {
+    if (existingUser) {
+        if (existingUser.email === userData.email) {
             return { success: false, message: "A user with this email already exists." };
         }
-        if (existingUser[0].username === userData.username) {
+        if (existingUser.username === userData.username) {
             return { success: false, message: "This username is already taken." };
         }
     }
     
-    const newUserForDb: User = { 
+    const newUser: User = { 
         id: `user-${Date.now()}`, 
-        name: userData.name,
-        email: userData.email,
-        username: userData.username,
-        role: userData.role,
-        password: userData.password,
-        phone: userData.phone,
-        accountType: userData.accountType,
-        shopAddress: userData.shopAddress,
-        zipCode: userData.zipCode,
         createdAt: new Date(),
         isBlocked: false,
+        ...userData
     };
 
-    await db.insert(users).values(newUserForDb);
+    MOCK_USERS.push(newUser);
     
-    const { password, ...createdUser } = newUserForDb;
+    const { password, ...createdUser } = newUser;
 
     revalidatePath('/admin/users');
     revalidatePath('/admin');
     return { success: true, user: createdUser, message: "User registered successfully." };
 }
 
-
 export async function loginUser(credentials: UserLogin) {
-    const db = await getDb();
-    const results = await db.select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        username: users.username,
-        role: users.role,
-        shopAddress: users.shopAddress,
-        zipCode: users.zipCode,
-        createdAt: users.createdAt,
-        password: users.password,
-        isBlocked: users.isBlocked,
-        phone: users.phone,
-        accountType: users.accountType,
-        profilePictureUrl: users.profilePictureUrl,
-    }).from(users).where(
-        or(eq(users.email, credentials.identifier), eq(users.username, credentials.identifier), eq(users.phone, credentials.identifier))
-    ).limit(1);
-    
-    const user = results[0];
+    const user = MOCK_USERS.find(u => 
+        u.email === credentials.identifier || 
+        u.username === credentials.identifier ||
+        u.phone === credentials.identifier
+    );
 
     if (!user) {
         return { success: false, message: "Invalid credentials." };
@@ -193,6 +147,13 @@ export async function loginUser(credentials: UserLogin) {
     if (user.password && user.password !== credentials.password) {
        return { success: false, message: "Invalid credentials." };
     }
+     if (!user.password && user.role === 'vendor' && user.phone === credentials.identifier) {
+        // This is a passwordless (OTP-based) vendor login, which we'll simulate as successful for now.
+        // In a real app, you'd check an OTP here.
+    } else if (user.password !== credentials.password) {
+        return { success: false, message: "Invalid credentials." };
+    }
+
 
     if (user.isBlocked) {
         return { success: false, message: "This account has been blocked. Please contact support." };
@@ -206,87 +167,68 @@ export async function adminLogin(credentials: { username?: string, password?: st
     if (credentials.username !== 'admin' || credentials.password !== 'admin') {
         return { success: false, message: 'Invalid admin credentials.' };
     }
-
-    const db = await getDb();
     
-    try {
-        const adminUsers = await db.select().from(users).where(eq(users.role, 'admin')).limit(1);
-        let adminUser = adminUsers[0];
+    let adminUser = MOCK_USERS.find(u => u.role === 'admin');
 
-        if (!adminUser) {
-            // Create admin user if it doesn't exist
-            const newAdminData: User = {
-                id: `user-admin-${Date.now()}`,
-                name: 'Admin',
-                email: 'admin@gulfcarx.com',
-                username: 'admin',
-                role: 'admin',
-                password: 'admin',
-                phone: '000000000',
-                accountType: 'business',
-                shopAddress: null,
-                zipCode: null,
-                createdAt: new Date(),
-                isBlocked: false,
-            };
-            await db.insert(users).values(newAdminData);
-            adminUser = newAdminData;
-        }
-
-        const { password, ...publicAdminUser } = adminUser;
-        return { success: true, user: publicAdminUser };
-
-    } catch (error) {
-        console.error("Admin login error:", error);
-        return { success: false, message: "An unexpected database error occurred during admin login." };
+    if (!adminUser) {
+        // Create admin user if it doesn't exist
+        const newAdminData: User = {
+            id: `user-admin-${Date.now()}`,
+            name: 'Admin',
+            email: 'admin@gulfcarx.com',
+            username: 'admin',
+            role: 'admin',
+            password: 'admin',
+            phone: '000000000',
+            accountType: 'business',
+            createdAt: new Date(),
+            isBlocked: false,
+        };
+        MOCK_USERS.push(newAdminData);
+        adminUser = newAdminData;
     }
+
+    const { password, ...publicAdminUser } = adminUser;
+    return { success: true, user: publicAdminUser };
 }
 
-
 export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
-    const db = await getDb();
-    const result = await db.select({
-        id: users.id,
-        username: users.username,
-        role: users.role,
-    }).from(users).where(eq(users.email, email)).limit(1);
-
-    const user = result[0];
-    if (!user) {
+    const userIndex = MOCK_USERS.findIndex(u => u.email === email);
+    if (userIndex === -1) {
         return { success: false, message: "No account found with that email address." };
     }
+    const user = MOCK_USERS[userIndex];
 
     if (isAdminCheck && user.role !== 'admin') {
         return { success: false, message: "This email does not belong to an administrator." };
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit code
-    await db.update(users).set({ verificationCode: code }).where(eq(users.id, user.id));
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    MOCK_USERS[userIndex].verificationCode = code;
     
     return { success: true, message: "Verification code sent.", code: code, username: user.username };
 }
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
-   const db = await getDb();
-   const result = await db.select({ 
-       id: users.id, 
-       verificationCode: users.verificationCode 
-    }).from(users).where(eq(users.email, data.email)).limit(1);
-   const user = result[0];
+   const userIndex = MOCK_USERS.findIndex(u => u.email === data.email);
+   if (userIndex === -1) {
+       return { success: false, message: "Invalid verification code." };
+   }
+   const user = MOCK_USERS[userIndex];
+
    if (!user || user.verificationCode !== data.code) {
         return { success: false, message: "Invalid verification code." };
    }
    
-   await db.update(users).set({ password: data.newPassword, verificationCode: null }).where(eq(users.id, user.id));
+   MOCK_USERS[userIndex].password = data.newPassword;
+   MOCK_USERS[userIndex].verificationCode = undefined;
 
    return { success: true, message: "Password has been reset successfully." };
 }
 
-
 // --- ORDER & BOOKING ACTIONS ---
 
 export async function placeOrder(orderData: { userId: string; items: CartItem[]; total: number; shippingDetails: CheckoutDetails }): Promise<{ success: boolean; message: string; orderId?: string; }> {
-    const db = await getDb();
     const newOrder: Order = {
         id: `order-${Date.now()}`,
         userId: orderData.userId,
@@ -295,16 +237,15 @@ export async function placeOrder(orderData: { userId: string; items: CartItem[];
         status: 'Placed',
         orderDate: new Date(),
         cancelable: true,
-        completionDate: undefined,
     };
 
-    await db.insert(orders).values(newOrder);
+    MOCK_ORDERS.unshift(newOrder);
 
     for (const item of orderData.items) {
-        const partInStock = await getPart(item.id);
-        if (partInStock) {
-            const newQuantity = partInStock.quantity - item.purchaseQuantity;
-            await db.update(parts).set({ quantity: newQuantity }).where(eq(parts.id, item.id));
+        const partIndex = MOCK_PARTS.findIndex(p => p.id === item.id);
+        if (partIndex !== -1) {
+            const newQuantity = MOCK_PARTS[partIndex].quantity - item.purchaseQuantity;
+            MOCK_PARTS[partIndex].quantity = newQuantity;
         }
 
         const newBookingTask: Booking = {
@@ -319,7 +260,7 @@ export async function placeOrder(orderData: { userId: string; items: CartItem[];
             vendorName: item.vendorAddress,
             orderId: newOrder.id,
         };
-        await db.insert(bookings).values(newBookingTask);
+        MOCK_BOOKINGS.unshift(newBookingTask);
     }
     
     revalidatePath('/my-orders');
@@ -328,31 +269,28 @@ export async function placeOrder(orderData: { userId: string; items: CartItem[];
     return { success: true, message: "Order placed successfully!", orderId: newOrder.id };
 }
 
-
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
-    const db = await getDb();
     if (!userId) return [];
-    return db.select().from(orders).where(eq(orders.userId, userId)).orderBy(desc(orders.orderDate));
+    return MOCK_ORDERS.filter(o => o.userId === userId).sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
 }
 
 export async function getOrderById(orderId: string): Promise<Order | null> {
-    const db = await getDb();
-    const result = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-    return result[0] || null;
+    const order = MOCK_ORDERS.find(o => o.id === orderId);
+    return order || null;
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
-    const db = await getDb();
-    await db.update(orders).set({ status: 'Cancelled', cancelable: false }).where(eq(orders.id, orderId));
+    const orderIndex = MOCK_ORDERS.findIndex(o => o.id === orderId);
+    if (orderIndex !== -1) {
+        MOCK_ORDERS[orderIndex].status = 'Cancelled';
+        MOCK_ORDERS[orderIndex].cancelable = false;
+    }
     revalidatePath('/my-orders');
     return { success: true, message: 'Order has been cancelled.' };
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string) {
-    const db = await getDb();
-    // This is a mock: in a real app, you'd get the logged-in user's ID
-    const userResult = await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.role, 'customer')).limit(1);
-    const mockUser = userResult[0];
+    const mockUser = MOCK_USERS.find(u => u.role === 'customer');
 
     if (!mockUser) {
         return { success: false, message: "No customer user found to create a booking for." };
@@ -370,34 +308,33 @@ export async function submitBooking(partId: string, partName: string, bookingDat
         vendorName: vendorName,
     };
 
-    await db.insert(bookings).values(newBooking);
+    MOCK_BOOKINGS.unshift(newBooking);
 
     revalidatePath('/vendor/tasks');
     return { success: true, message: "Viewing booked successfully!" };
 }
 
 export async function getVendorBookings(vendorName: string): Promise<Booking[]> {
-    const db = await getDb();
     if (!vendorName) return [];
-    return db.select().from(bookings).where(eq(bookings.vendorName, vendorName)).orderBy(desc(bookings.bookingDate));
+    return MOCK_BOOKINGS.filter(b => b.vendorName === vendorName).sort((a, b) => b.bookingDate.getTime() - a.bookingDate.getTime());
 }
 
 export async function completeBooking(bookingId: string) {
-    const db = await getDb();
-    const bookingResult = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
-    const booking = bookingResult[0];
-
-    if (!booking) {
+    const bookingIndex = MOCK_BOOKINGS.findIndex(b => b.id === bookingId);
+    if (bookingIndex === -1) {
         return { success: false };
     }
 
-    if (booking.status === 'Order Fulfillment') {
-        if (booking.orderId) {
-            await db.update(orders).set({ status: 'Picked Up', cancelable: false }).where(eq(orders.id, booking.orderId));
+    const booking = MOCK_BOOKINGS[bookingIndex];
+    if (booking.status === 'Order Fulfillment' && booking.orderId) {
+        const orderIndex = MOCK_ORDERS.findIndex(o => o.id === booking.orderId);
+        if (orderIndex !== -1) {
+            MOCK_ORDERS[orderIndex].status = 'Picked Up';
+            MOCK_ORDERS[orderIndex].cancelable = false;
         }
     }
     
-    await db.update(bookings).set({ status: 'Completed' }).where(eq(bookings.id, bookingId));
+    MOCK_BOOKINGS[bookingIndex].status = 'Completed';
     
     revalidatePath('/vendor/tasks');
     revalidatePath('/vendor/dashboard');
@@ -409,68 +346,43 @@ export async function completeBooking(bookingId: string) {
 }
 
 export async function getVendorStats(vendorName: string) {
-    const db = await getDb();
     if (!vendorName) {
-        return {
-            totalRevenue: 0,
-            itemsOnHold: 0,
-            activeListings: 0,
-            totalSales: 0,
-        };
+        return { totalRevenue: 0, itemsOnHold: 0, activeListings: 0, totalSales: 0 };
     }
 
-    const revenueResult = await db.select({
-        total: sql<number>`sum(${bookings.cost})`
-    }).from(bookings).where(and(
-        eq(bookings.vendorName, vendorName),
-        eq(bookings.status, 'Completed')
-    ));
+    const totalRevenue = MOCK_BOOKINGS
+        .filter(b => b.vendorName === vendorName && b.status === 'Completed')
+        .reduce((sum, b) => sum + b.cost, 0);
 
-    const holdResult = await db.select({
-        count: sql<number>`count(*)`
-    }).from(bookings).where(and(
-        eq(bookings.vendorName, vendorName),
-        eq(bookings.status, 'Pending')
-    ));
-    
-    const listingsResult = await db.select({
-        count: sql<number>`count(*)`
-    }).from(parts).where(eq(parts.vendorAddress, vendorName));
+    const itemsOnHold = MOCK_BOOKINGS
+        .filter(b => b.vendorName === vendorName && b.status === 'Pending')
+        .length;
 
-    const salesResult = await db.select({
-        count: sql<number>`count(*)`
-    }).from(bookings).where(and(
-        eq(bookings.vendorName, vendorName),
-        eq(bookings.status, 'Completed')
-    ));
+    const activeListings = MOCK_PARTS
+        .filter(p => p.vendorAddress === vendorName)
+        .length;
+        
+    const totalSales = MOCK_BOOKINGS
+        .filter(b => b.vendorName === vendorName && b.status === 'Completed')
+        .length;
 
-    return {
-        totalRevenue: revenueResult[0]?.total || 0,
-        itemsOnHold: holdResult[0]?.count || 0,
-        activeListings: listingsResult[0]?.count || 0,
-        totalSales: salesResult[0]?.count || 0,
-    };
+
+    return { totalRevenue, itemsOnHold, activeListings, totalSales };
 }
 
-
 export async function getMonthlyRevenue(vendorName: string): Promise<{name: string, total: number}[]> {
-    const db = await getDb();
     if (!vendorName) return [];
 
     const twelveMonthsAgo = subMonths(new Date(), 11);
     twelveMonthsAgo.setDate(1);
     twelveMonthsAgo.setHours(0, 0, 0, 0);
 
-    const sales = await db.select({
-        cost: bookings.cost,
-        date: bookings.bookingDate,
-    }).from(bookings).where(and(
-        eq(bookings.vendorName, vendorName),
-        eq(bookings.status, 'Completed'),
-        gte(bookings.bookingDate, twelveMonthsAgo)
-    ));
+    const sales = MOCK_BOOKINGS.filter(b => 
+        b.vendorName === vendorName && 
+        b.status === 'Completed' &&
+        b.bookingDate >= twelveMonthsAgo
+    );
 
-    // Initialize an object to hold revenue for each of the last 12 months
     const monthlyRevenue: {[key: string]: number} = {};
     const monthLabels: {year: number, month: number, name: string}[] = [];
 
@@ -487,104 +399,60 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
         }
     }
     
-    // Aggregate sales data
     for (const sale of sales) {
-        const year = getYear(sale.date);
-        const month = getMonth(sale.date);
+        const year = getYear(sale.bookingDate);
+        const month = getMonth(sale.bookingDate);
         const key = `${year}-${month}`;
         if (monthlyRevenue.hasOwnProperty(key)) {
             monthlyRevenue[key] += sale.cost;
         }
     }
 
-    // Format for the chart
     const chartData = monthLabels.map(label => {
         const key = `${label.year}-${label.month}`;
-        return {
-            name: label.name,
-            total: monthlyRevenue[key],
-        }
+        return { name: label.name, total: monthlyRevenue[key] || 0 };
     });
 
     return chartData;
 }
 
-
 // --- ADMIN ACTIONS ---
 export async function getAdminDashboardStats() {
-    const db = await getDb();
-    const revenueResult = db.select({
-        total: sql<number>`sum(${orders.total})`.mapWith(Number),
-    }).from(orders).where(eq(orders.status, 'Picked Up'));
+    const totalRevenue = MOCK_ORDERS
+        .filter(o => o.status === 'Picked Up')
+        .reduce((sum, o) => sum + o.total, 0);
+    
+    const totalUsers = MOCK_USERS.length;
+    const totalVendors = MOCK_USERS.filter(u => u.role === 'vendor').length;
+    const totalParts = MOCK_PARTS.length;
 
-    const usersResult = db.select({
-        count: sql<number>`count(*)`.mapWith(Number),
-    }).from(users);
-
-    const vendorsResult = db.select({
-        count: sql<number>`count(*)`.mapWith(Number),
-    }).from(users).where(eq(users.role, 'vendor'));
-
-    const partsResult = db.select({
-        count: sql<number>`count(*)`.mapWith(Number),
-    }).from(parts);
-
-    const [revenue, userCount, vendorCount, partCount] = await Promise.all([
-        revenueResult,
-        usersResult,
-        vendorsResult,
-        partsResult,
-    ]);
-
-    return {
-        totalRevenue: revenue[0]?.total || 0,
-        totalUsers: userCount[0]?.count || 0,
-        totalVendors: vendorCount[0]?.count || 0,
-        totalParts: partCount[0]?.count || 0,
-    };
+    return { totalRevenue, totalUsers, totalVendors, totalParts };
 }
 
-
 export async function getVendorPerformanceSummary() {
-    const db = await getDb();
-    const vendorUsers = await db.select().from(users).where(eq(users.role, 'vendor'));
+    const vendorUsers = MOCK_USERS.filter(u => u.role === 'vendor');
     const thirtyDaysAgo = subDays(new Date(), 30);
-
     const performanceData = [];
 
     for (const vendor of vendorUsers) {
-        const monthlySales = await db
-            .select({
-                total: sql<number>`sum(${bookings.cost})`.mapWith(Number),
-            })
-            .from(bookings)
-            .where(
-                and(
-                    eq(bookings.vendorName, vendor.name),
-                    eq(bookings.status, 'Completed'),
-                    gte(bookings.bookingDate, thirtyDaysAgo)
-                )
-            );
-
-        const recentItems = await db
-            .select({
-                partName: bookings.partName,
-                cost: bookings.cost,
-            })
-            .from(bookings)
-            .where(
-                and(
-                    eq(bookings.vendorName, vendor.name),
-                    eq(bookings.status, 'Completed')
-                )
+        const monthlySalesTotal = MOCK_BOOKINGS
+            .filter(b => 
+                b.vendorName === vendor.name &&
+                b.status === 'Completed' &&
+                b.bookingDate >= thirtyDaysAgo
             )
-            .orderBy(desc(bookings.bookingDate))
-            .limit(3);
+            .reduce((sum, b) => sum + b.cost, 0);
+
+        const recentItems = MOCK_BOOKINGS
+            .filter(b => b.vendorName === vendor.name && b.status === 'Completed')
+            .sort((a,b) => b.bookingDate.getTime() - a.bookingDate.getTime())
+            .slice(0, 3)
+            .map(b => ({ partName: b.partName, cost: b.cost }));
         
         performanceData.push({
             id: vendor.id,
             name: vendor.name,
-            monthlySales: monthlySales[0]?.total || 0,
+            monthlySales: monthlySalesTotal,
             recentItems: recentItems,
         });
     }
@@ -593,45 +461,24 @@ export async function getVendorPerformanceSummary() {
 }
 
 export async function getVendorDetailsForAdmin(vendorId: string) {
-    const db = await getDb();
-    const userResult = await db.select().from(users).where(eq(users.id, vendorId)).limit(1);
-    const user = userResult[0];
+    const user = MOCK_USERS.find(u => u.id === vendorId);
 
-    if (!user || user.role !== 'vendor') {
-        return null;
-    }
-
+    if (!user || user.role !== 'vendor') return null;
+    
     const vendorParts = await getPartsByVendor(user.name);
     const stats = await getVendorStats(user.name);
 
-    const partsWithSales = await Promise.all(vendorParts.map(async (part) => {
-        const salesData = await db
-            .select({
-                unitsSold: sql<number>`count(${bookings.id})`.mapWith(Number),
-                revenue: sql<number>`sum(${bookings.cost})`.mapWith(Number),
-            })
-            .from(bookings)
-            .where(and(
-                eq(bookings.partId, part.id),
-                eq(bookings.status, 'Completed')
-            ));
-        
-        return {
-            ...part,
-            unitsSold: salesData[0]?.unitsSold || 0,
-            revenue: salesData[0]?.revenue || 0,
-        };
-    }));
+    const partsWithSales = vendorParts.map(part => {
+        const salesForPart = MOCK_BOOKINGS.filter(b => b.partId === part.id && b.status === 'Completed');
+        const unitsSold = salesForPart.length;
+        const revenue = salesForPart.reduce((sum, b) => sum + b.cost, 0);
+        return { ...part, unitsSold, revenue };
+    });
 
-    return {
-        user,
-        parts: partsWithSales,
-        stats,
-    };
+    return { user, parts: partsWithSales, stats };
 }
 
 export async function getWeeklyTrafficData(): Promise<{ name: string; visitors: number }[]> {
-    const db = await getDb();
     const today = new Date();
     const last7DaysData = [];
 
@@ -640,17 +487,13 @@ export async function getWeeklyTrafficData(): Promise<{ name: string; visitors: 
         const dayStart = startOfDay(day);
         const dayEnd = startOfDay(subDays(today, i - 1));
 
-        const result = await db
-            .select({ count: sql<number>`count(*)` })
-            .from(users)
-            .where(and(
-                gte(users.createdAt, dayStart),
-                lt(users.createdAt, dayEnd)
-            ));
+        const newUsers = MOCK_USERS.filter(u => 
+            u.createdAt >= dayStart && u.createdAt < dayEnd
+        ).length;
 
         last7DaysData.push({
-            name: format(day, 'E'), // Format date as 'Mon', 'Tue', etc.
-            visitors: Number(result[0].count),
+            name: format(day, 'E'),
+            visitors: newUsers,
         });
     }
     
@@ -658,51 +501,30 @@ export async function getWeeklyTrafficData(): Promise<{ name: string; visitors: 
 }
 
 export async function deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
-    const db = await getDb();
-    try {
-        await db.delete(users).where(eq(users.id, userId));
-        revalidatePath('/admin/users');
-        return { success: true, message: "User deleted successfully." };
-    } catch (error: any) {
-        console.error("Failed to delete user:", error);
-        if (error.code === '23503') { // Foreign key violation
-            return { success: false, message: "Cannot delete this user. They are associated with existing orders or parts. Please block the user instead." };
-        }
-        return { success: false, message: "An unexpected error occurred while deleting the user." };
+    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        return { success: false, message: "User not found." };
     }
+    
+    const hasDependencies = MOCK_ORDERS.some(o => o.userId === userId) || MOCK_BOOKINGS.some(b => b.userId === userId);
+    if (hasDependencies) {
+        return { success: false, message: "Cannot delete this user. They are associated with existing orders or parts. Please block the user instead." };
+    }
+
+    MOCK_USERS.splice(userIndex, 1);
+    revalidatePath('/admin/users');
+    return { success: true, message: "User deleted successfully." };
 }
 
 export async function toggleUserBlockStatus(userId: string): Promise<{ success: boolean, message: string }> {
-    const db = await getDb();
-    try {
-        const userResult = await db.select({ isBlocked: users.isBlocked }).from(users).where(eq(users.id, userId)).limit(1);
-        
-        if (!userResult.length) {
-            return { success: false, message: "User not found." };
-        }
-        
-        const currentStatus = userResult[0].isBlocked;
-        const newStatus = !currentStatus;
-        
-        await db.update(users).set({ isBlocked: newStatus }).where(eq(users.id, userId));
-        
-        revalidatePath('/admin/users');
-        return { success: true, message: `User has been ${newStatus ? 'blocked' : 'unblocked'}.` };
-    } catch (error) {
-        console.error("Failed to toggle user block status:", error);
-        return { success: false, message: "An unexpected error occurred." };
+    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        return { success: false, message: "User not found." };
     }
+    
+    const newStatus = !MOCK_USERS[userIndex].isBlocked;
+    MOCK_USERS[userIndex].isBlocked = newStatus;
+    
+    revalidatePath('/admin/users');
+    return { success: true, message: `User has been ${newStatus ? 'blocked' : 'unblocked'}.` };
 }
-    
-
-    
-
-
-
-
-    
-
-
-    
-
-

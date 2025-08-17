@@ -1,28 +1,12 @@
 
 "use server";
 
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Client } from 'pg';
-import * as schema from './schema';
+// This file is now a placeholder. The application uses mock data from src/lib/mock-data.ts
+// and the data logic is handled in src/lib/actions.ts.
 
-// This function now creates a new client for each call, which is more robust for serverless environments.
-export async function getDb(): Promise<NodePgDatabase<typeof schema>> {
-  if (!process.env.POSTGRES_URL) {
-      throw new Error("Database URL is not configured. Please set POSTGRES_URL in your environment variables.");
-  }
-
-  const client = new Client({
-    connectionString: process.env.POSTGRES_URL,
-  });
-
-  try {
-    await client.connect();
-    // The drizzle instance is created on each request, ensuring a fresh connection.
-    const db = drizzle(client, { schema, logger: false });
-    return db;
-  } catch (error) {
-      console.error("Failed to connect to the database. Details:", error);
-      // This will help diagnose the specific issue if it persists.
-      throw new Error("Could not connect to the database.");
-  }
+// This function is kept to prevent breaking imports, but it doesn't do anything.
+export async function getDb() {
+  // In a real database setup, this would return a Drizzle instance.
+  // For the mock setup, we return a null-like object.
+  return null;
 }
