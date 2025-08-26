@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     // The RootLayout is a Server Component and MUST return <html> and <body>
     <html lang="en" dir="ltr" suppressHydrationWarning>
-      <body className={cn('min-h-screen bg-background font-sans antialiased flex flex-col', fontSans.variable)}>
+      <body className={cn('min-h-screen bg-background font-sans antialiased flex flex-col', fontSans.variable)} suppressHydrationWarning>
           <Providers>
             <div className="flex-grow">
                 {children}
