@@ -15,6 +15,8 @@ interface SettingsContextType {
   loggedInUser: PublicUser | null;
   loginUser: (user: PublicUser) => void;
   logoutUser: () => void;
+  taxRate: number;
+  setTaxRate: (rate: number) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSize] = useState<FontSize>('md');
   const [language, setLanguage] = useState<Language>('en');
+  const [taxRate, setTaxRate] = useState<number>(0); // Default tax rate
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<PublicUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +42,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
         const storedLanguage = localStorage.getItem("language") as Language;
         if (storedLanguage) setLanguage(storedLanguage);
+        
+        const storedTaxRate = localStorage.getItem("taxRate");
+        if (storedTaxRate) setTaxRate(parseFloat(storedTaxRate));
+
     } catch (error) {
         console.error("Failed to parse from localStorage", error);
         localStorage.clear();
@@ -55,6 +62,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem("language", lang);
+  }
+  
+  const handleSetTaxRate = (rate: number) => {
+    setTaxRate(rate);
+    localStorage.setItem("taxRate", rate.toString());
   }
 
   const loginUser = (user: PublicUser) => {
@@ -79,6 +91,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     <SettingsContext.Provider value={{ 
       fontSize, setFontSize: handleSetFontSize,
       language, setLanguage: handleSetLanguage,
+      taxRate, setTaxRate: handleSetTaxRate,
       isLoggedIn, setIsLoggedIn,
       loggedInUser, loginUser, logoutUser
     }}>

@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
 
 export function CartView() {
-  const { cart, removeFromCart, updateCartItemQuantity, total } = useCart();
+  const { cart, removeFromCart, updateCartItemQuantity, subtotal, taxAmount, grandTotal } = useCart();
   const router = useRouter();
 
   if (cart.length === 0) {
@@ -88,16 +88,20 @@ export function CartView() {
                 <CardContent className="space-y-4">
                     <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>${subtotal.toFixed(2)}</span>
                     </div>
                      <div className="flex justify-between">
                         <span>Shipping</span>
                         <span>Free</span>
                     </div>
+                     <div className="flex justify-between">
+                        <span>Tax</span>
+                        <span>${taxAmount.toFixed(2)}</span>
+                    </div>
                     <Separator />
                     <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>${grandTotal.toFixed(2)}</span>
                     </div>
                 </CardContent>
                 <CardFooter>

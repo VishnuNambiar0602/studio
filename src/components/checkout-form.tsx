@@ -50,7 +50,7 @@ const formSchema = z.object({
 
 
 export function CheckoutForm() {
-    const { cart, total, clearCart } = useCart();
+    const { cart, grandTotal, subtotal, taxAmount, clearCart } = useCart();
     const { loggedInUser } = useSettings();
     const [loading, setLoading] = useState(false);
     const { toast } = useToast();
@@ -80,7 +80,7 @@ export function CheckoutForm() {
         const result = await placeOrder({
             userId: loggedInUser?.id || 'guest-user',
             items: cart,
-            total: total,
+            total: grandTotal, // Use grandTotal for the final order
             shippingDetails: values
         });
 
@@ -294,7 +294,11 @@ export function CheckoutForm() {
                         <Separator />
                         <div className="flex justify-between">
                             <span>Subtotal</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>${subtotal.toFixed(2)}</span>
+                        </div>
+                         <div className="flex justify-between">
+                            <span>Tax</span>
+                            <span>${taxAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
                             <span>Shipping</span>
@@ -303,7 +307,7 @@ export function CheckoutForm() {
                         <Separator />
                         <div className="flex justify-between font-bold text-lg">
                             <span>Total</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>${grandTotal.toFixed(2)}</span>
                         </div>
                     </CardContent>
                 </Card>

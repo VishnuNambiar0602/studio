@@ -4,6 +4,7 @@
 
 import type { Part } from "@/lib/types";
 import { createContext, useContext, useState, ReactNode, useMemo } from "react";
+import { useSettings } from "./settings-context";
 
 export interface CartItem extends Part {
   purchaseQuantity: number;
@@ -15,13 +16,16 @@ interface CartContextType {
   removeFromCart: (partId: string) => void;
   updateCartItemQuantity: (partId: string, quantity: number) => void;
   clearCart: () => void;
-  total: number;
+  subtotal: number;
+  taxAmount: number;
+  grandTotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const { taxRate } = useSettings();
 
   const addToCart = (part: Part, quantity: number) => {
     setCart((prevCart) => {
@@ -58,12 +62,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart([]);
   }
 
-  const total = useMemo(() => {
+  const subtotal = useMemo(() => {
     return cart.reduce((acc, item) => acc + (item.price * item.purchaseQuantity), 0);
   }, [cart]);
+  
+  const taxAmount = useMemo(() => {
+    return subtotal * (taxRate / 100);
+  }, [subtotal, taxRate]);
+
+  const grandTotal = useMemo(() => {
+    return subtotal + taxAmount;
+  }, [subtotal, taxAmount]);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, total, clearCart, updateCartItemQuantity }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateCartItemQuantity, clearCart, subtotal, taxAmount, grandTotal }}>
       {children}
     </CartContext.Provider>
   );

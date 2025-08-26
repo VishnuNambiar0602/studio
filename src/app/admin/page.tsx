@@ -1,7 +1,7 @@
 // Edited
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building } from "lucide-react";
+import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building, Percent } from "lucide-react";
 import { AdminAdToggle } from "./_components/admin-ad-toggle";
 import { AdminTrafficChart } from "./_components/admin-traffic-chart";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { AdminVendorPerformance } from "./_components/admin-vendor-performance";
 import { getAdminDashboardStats } from "@/lib/actions";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdminTaxSettings } from "./_components/admin-tax-settings";
 
 function ChartSkeleton() {
   return (
@@ -103,6 +104,15 @@ export default async function AdminDashboard() {
           </Card>
           <div className="space-y-4">
               <Card>
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2"><Percent className="h-5 w-5" /> Tax Settings</CardTitle>
+                      <CardDescription>Manage site-wide tax rates.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                      <AdminTaxSettings />
+                  </CardContent>
+              </Card>
+               <Card>
                   <CardHeader>
                       <CardTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Website Controls</CardTitle>
                       <CardDescription>Manage global settings for the site.</CardDescription>
