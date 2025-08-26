@@ -94,3 +94,13 @@ export interface CheckoutDetails {
     expiryDate?: string;
     cvc?: string;
 }
+
+export interface AiInteraction {
+    id: string; // interaction-timestamp-random
+    partId: string;
+    partName: string;
+    userQuery: string;
+    timestamp: Date;
+    clicked: boolean;
+    ordered: boolean;
+}

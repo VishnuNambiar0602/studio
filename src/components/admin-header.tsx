@@ -6,6 +6,7 @@ import {
   Car,
   Home,
   Users,
+  Sparkles,
 } from "lucide-react"
 
 import { usePathname } from 'next/navigation'
@@ -18,6 +19,7 @@ export function AdminHeader() {
     const navItems = [
         { href: "/admin", label: "Dashboard", icon: Home },
         { href: "/admin/users", label: "Users", icon: Users },
+        { href: "/admin/ai-analytics", label: "AI Analytics", icon: Sparkles },
     ];
 
 

@@ -2,8 +2,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem } from "./types";
+import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem, AiInteraction } from "./types";
 import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data";
+import { MOCK_AI_INTERACTIONS } from "./mock-ai-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 
 // --- PART ACTIONS ---
@@ -228,7 +229,7 @@ export async function resetPasswordWithCode(data: { email: string; code: string;
 
 // --- ORDER & BOOKING ACTIONS ---
 
-export async function placeOrder(orderData: { userId: string; items: CartItem[]; total: number; shippingDetails: CheckoutDetails }): Promise<{ success: boolean; message: string; orderId?: string; }> {
+export async function placeOrder(orderData: { userId: string; items: CartItem[]; total: number; shippingDetails: CheckoutDetails; aiInteractionId?: string }): Promise<{ success: boolean; message: string; orderId?: string; }> {
     const newOrder: Order = {
         id: `order-${Date.now()}`,
         userId: orderData.userId,
@@ -240,6 +241,14 @@ export async function placeOrder(orderData: { userId: string; items: CartItem[];
     };
 
     MOCK_ORDERS.unshift(newOrder);
+
+    // If an AI interaction led to this order, update the log
+    if (orderData.aiInteractionId) {
+        const interactionIndex = MOCK_AI_INTERACTIONS.findIndex(i => i.id === orderData.aiInteractionId);
+        if (interactionIndex !== -1) {
+            MOCK_AI_INTERACTIONS[interactionIndex].ordered = true;
+        }
+    }
 
     for (const item of orderData.items) {
         const partIndex = MOCK_PARTS.findIndex(p => p.id === item.id);
@@ -265,6 +274,7 @@ export async function placeOrder(orderData: { userId: string; items: CartItem[];
     
     revalidatePath('/my-orders');
     revalidatePath('/vendor/tasks');
+    revalidatePath('/admin/ai-analytics');
     
     return { success: true, message: "Order placed successfully!", orderId: newOrder.id };
 }
@@ -289,13 +299,21 @@ export async function cancelOrder(orderId: string): Promise<{ success: boolean; 
     return { success: true, message: 'Order has been cancelled.' };
 }
 
-export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string) {
+export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string, aiInteractionId?: string) {
     const mockUser = MOCK_USERS.find(u => u.role === 'customer');
 
     if (!mockUser) {
         return { success: false, message: "No customer user found to create a booking for." };
     }
     
+    // If an AI interaction led to this booking, update the log
+    if (aiInteractionId) {
+        const interactionIndex = MOCK_AI_INTERACTIONS.findIndex(i => i.id === aiInteractionId);
+        if (interactionIndex !== -1) {
+            MOCK_AI_INTERACTIONS[interactionIndex].clicked = true; // A booking counts as a click
+        }
+    }
+
     const newBooking: Booking = {
         id: `booking-${Date.now()}`,
         partId,
@@ -311,6 +329,7 @@ export async function submitBooking(partId: string, partName: string, bookingDat
     MOCK_BOOKINGS.unshift(newBooking);
 
     revalidatePath('/vendor/tasks');
+    revalidatePath('/admin/ai-analytics');
     return { success: true, message: "Viewing booked successfully!" };
 }
 
@@ -527,4 +546,30 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
     
     revalidatePath('/admin/users');
     return { success: true, message: `User has been ${newStatus ? 'blocked' : 'unblocked'}.` };
+}
+
+// --- AI INTERACTION ACTIONS ---
+
+export async function logAiInteraction(interaction: Omit<AiInteraction, 'id' | 'timestamp' | 'clicked' | 'ordered'>): Promise<AiInteraction> {
+    const newInteraction: AiInteraction = {
+        id: `interaction-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        timestamp: new Date(),
+        clicked: false,
+        ordered: false,
+        ...interaction,
+    };
+    MOCK_AI_INTERACTIONS.unshift(newInteraction);
+    revalidatePath('/admin/ai-analytics');
+    return newInteraction;
+}
+
+export async function getAiInteractions(): Promise<AiInteraction[]> {
+    return JSON.parse(JSON.stringify(MOCK_AI_INTERACTIONS.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())));
+}
+
+export async function getAiInteractionStats(): Promise<{suggestions: number, clicks: number, orders: number}> {
+    const suggestions = MOCK_AI_INTERACTIONS.length;
+    const clicks = MOCK_AI_INTERACTIONS.filter(i => i.clicked).length;
+    const orders = MOCK_AI_INTERACTIONS.filter(i => i.ordered).length;
+    return { suggestions, clicks, orders };
 }

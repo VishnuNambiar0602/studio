@@ -10,6 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import { logAiInteraction } from '@/lib/actions';
 import {z} from 'genkit';
 
 const SuggestPartsInputSchema = z.object({
@@ -60,15 +61,15 @@ Here is your process:
 
 **Example Scenarios:**
 
-*   **User asks, "What are OEM parts?"**
+*   User asks: "What are OEM parts?"
     *   answer: "OEM stands for Original Equipment Manufacturer... (detailed explanation)".
     *   suggestions: [] (empty, as it's a general question).
 
-*   **User asks, "I need brake pads for a 2021 Toyota Land Cruiser."**
+*   User asks: "I need brake pads for a 2021 Toyota Land Cruiser."
     *   answer: "For a 2021 Land Cruiser, you'll typically be looking for ceramic brake pads known for their quiet operation... (general helpful info). I've checked our inventory and found some options that might work for you."
     *   suggestions: [{id: "part-001", name: "OEM Brake Pads", reason: "These are high-quality OEM pads that ensure a perfect fit and great performance for your Land Cruiser."}, ... (other matches)]
 
-*   **User asks for a part you DON'T have, e.g., "Spark plugs for a 1995 Ferrari F50."**
+*   User asks for a part you DON'T have: "Spark plugs for a 1995 Ferrari F50."
     *   answer: "The Ferrari F50 is a classic! It typically uses specialized high-performance spark plugs... (general info). While I don't have the exact spark plugs for that specific model in our current inventory, I can help you find other parts or answer any other questions."
     *   suggestions: [] (empty)
 
@@ -89,6 +90,21 @@ const suggestPartsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error("The AI model did not return a valid output.");
+    }
+
+    // Log each suggestion as a separate interaction
+    if (output.suggestions && output.suggestions.length > 0) {
+      for (const suggestion of output.suggestions) {
+        await logAiInteraction({
+          partId: suggestion.id,
+          partName: suggestion.name,
+          userQuery: input.partDescription,
+        });
+      }
+    }
+
+    return output;
   }
 );
