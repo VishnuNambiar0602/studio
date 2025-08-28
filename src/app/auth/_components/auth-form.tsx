@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -21,7 +20,6 @@ const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
-  username: z.string().min(3, { message: "Usernametag must be at least 3 characters." }),
   phone: z.string().min(10, { message: "Please enter a valid phone number." }),
   accountType: z.enum(["individual", "business"], { required_error: "Please select an account type." }),
   shopAddress: z.string().optional(),
@@ -46,7 +44,6 @@ export function AuthForm({ userType }: AuthFormProps) {
       email: "",
       password: "",
       name: "",
-      username: "",
       phone: "",
       shopAddress: "",
       zipCode: "",
@@ -63,7 +60,6 @@ export function AuthForm({ userType }: AuthFormProps) {
             name: values.name,
             email: values.email,
             password: values.password,
-            username: values.username,
             role: userType,
             phone: values.phone,
             accountType: values.accountType,
@@ -85,7 +81,7 @@ export function AuthForm({ userType }: AuthFormProps) {
 
         toast({
             title: t.auth.accountCreated,
-            description: `${t.auth.your} ${userType} ${t.auth.accountHasBeenCreated} ${result.user?.username}.`,
+            description: `${t.auth.your} ${userType} account has been successfully created.`,
         });
         
         form.reset();
@@ -144,22 +140,6 @@ export function AuthForm({ userType }: AuthFormProps) {
               <FormControl>
                 <Input placeholder={accountType === 'business' ? t.auth.companyNamePlaceholder : t.auth.fullNamePlaceholder} {...field} />
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-         <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t.auth.usernametag}</FormLabel>
-              <FormControl>
-                <Input placeholder={t.auth.usernametagPlaceholder} {...field} />
-              </FormControl>
-               <FormDescription>
-                {t.auth.usernametagDescription}
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

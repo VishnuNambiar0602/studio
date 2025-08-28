@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -86,7 +85,6 @@ export function VendorAuthForm() {
         const result = await registerUser({
             name: vendorData.name,
             email: vendorData.email || `${vendorData.phone}@gulfcarx.local`, // Use phone as email if not provided
-            username: vendorData.phone, // Use phone as username
             role: 'vendor',
             phone: vendorData.phone,
             accountType: 'business',

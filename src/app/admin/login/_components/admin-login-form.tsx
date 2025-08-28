@@ -76,7 +76,7 @@ export function AdminLoginForm() {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Admin Username</FormLabel>
               <FormControl>
                 <Input placeholder="admin" {...field} />
               </FormControl>

@@ -82,7 +82,7 @@ export async function getAllUsers(): Promise<PublicUser[]> {
     return JSON.parse(JSON.stringify(users));
 }
 
-export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl'>>): Promise<{ success: boolean; message: string }> {
+export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl' | 'username'>>): Promise<{ success: boolean; message: string }> {
     const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
     if (userIndex === -1) {
         return { success: false, message: 'User not found.' };
@@ -92,9 +92,6 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
     const otherUsers = MOCK_USERS.filter(u => u.id !== userId);
     if (data.email && otherUsers.some(u => u.email === data.email)) {
         return { success: false, message: 'Email is already in use by another account.' };
-    }
-     if (data.username && otherUsers.some(u => u.username === data.username)) {
-        return { success: false, message: 'Username is already in use by another account.' };
     }
 
     MOCK_USERS[userIndex] = { ...MOCK_USERS[userIndex], ...data };
@@ -106,23 +103,27 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
 
 export async function registerUser(userData: UserRegistration) {
     const existingUser = MOCK_USERS.find(
-        u => u.email === userData.email || u.username === userData.username
+        u => u.email === userData.email || u.phone === userData.phone
     );
 
     if (existingUser) {
         if (existingUser.email === userData.email) {
             return { success: false, message: "A user with this email already exists." };
         }
-        if (existingUser.username === userData.username) {
-            return { success: false, message: "This username is already taken." };
+        if (existingUser.phone === userData.phone) {
+            return { success: false, message: "This phone number is already registered." };
         }
     }
     
+    const baseUsername = userData.name.toLowerCase().replace(/\s+/g, '') || 'user';
+    const username = `${baseUsername}${Math.floor(100 + Math.random() * 900)}`;
+
     const newUser: User = { 
         id: `user-${Date.now()}`, 
         createdAt: new Date(),
         isBlocked: false,
-        ...userData
+        ...userData,
+        username: userData.username || username
     };
 
     MOCK_USERS.push(newUser);
@@ -137,7 +138,6 @@ export async function registerUser(userData: UserRegistration) {
 export async function loginUser(credentials: UserLogin) {
     const user = MOCK_USERS.find(u => 
         u.email === credentials.identifier || 
-        u.username === credentials.identifier ||
         u.phone === credentials.identifier
     );
 
@@ -169,7 +169,7 @@ export async function adminLogin(credentials: { username?: string, password?: st
         return { success: false, message: 'Invalid admin credentials.' };
     }
     
-    let adminUser = MOCK_USERS.find(u => u.role === 'admin');
+    let adminUser = MOCK_USERS.find(u => u.username === 'admin' && u.role === 'admin');
 
     if (!adminUser) {
         // Create admin user if it doesn't exist
@@ -193,7 +193,7 @@ export async function adminLogin(credentials: { username?: string, password?: st
     return { success: true, user: publicAdminUser };
 }
 
-export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; username?: string; }> {
+export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; }> {
     const userIndex = MOCK_USERS.findIndex(u => u.email === email);
     if (userIndex === -1) {
         return { success: false, message: "No account found with that email address." };
@@ -207,7 +207,7 @@ export async function sendPasswordResetCode(email: string, isAdminCheck: boolean
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     MOCK_USERS[userIndex].verificationCode = code;
     
-    return { success: true, message: "Verification code sent.", code: code, username: user.username };
+    return { success: true, message: "Verification code sent.", code: code };
 }
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {

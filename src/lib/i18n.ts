@@ -1,4 +1,3 @@
-// Edited
 
 import type { Language } from './types';
 
@@ -58,7 +57,7 @@ const dictionaries = {
       registrationFailed: 'Registration Failed',
       accountCreated: 'Account Created!',
       your: 'Your',
-      accountHasBeenCreated: 'account has been successfully created. Your usernametag is',
+      accountHasBeenCreated: 'account has been successfully created.',
       anErrorOccurred: 'An Error Occurred',
       somethingWentWrong: 'Something went wrong. Please try again.',
     },
@@ -191,7 +190,7 @@ const dictionaries = {
       registrationFailed: 'فشل التسجيل',
       accountCreated: 'تم إنشاء الحساب!',
       your: 'تم إنشاء حساب',
-      accountHasBeenCreated: 'الخاص بك بنجاح. اسم المستخدم الخاص بك هو',
+      accountHasBeenCreated: 'الخاص بك بنجاح.',
       anErrorOccurred: 'حدث خطأ',
       somethingWentWrong: 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
     },

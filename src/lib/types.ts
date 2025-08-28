@@ -1,4 +1,3 @@
-// Edited
 
 export type Part = {
   id: string;
@@ -27,7 +26,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  username: string; // This is the usernametag
+  username: string; // This is the usernametag, now auto-generated
   role: UserRole;
   createdAt: Date;
   isBlocked: boolean;
@@ -47,10 +46,12 @@ export interface User {
 export type PublicUser = Omit<User, 'password' | 'verificationCode' | 'verificationCodeExpires'>;
 
 
-export type UserRegistration = Omit<User, 'id' | 'createdAt' | 'isBlocked'>;
+export type UserRegistration = Omit<User, 'id' | 'createdAt' | 'isBlocked' | 'username'> & {
+  username?: string; // Make username optional here for the registration payload
+};
 
 export type UserLogin = {
-  identifier: string; // Can be email or username
+  identifier: string; // Can be email or phone
   password?: string;
 }
 

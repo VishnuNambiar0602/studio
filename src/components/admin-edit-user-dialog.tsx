@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -25,7 +24,6 @@ import type { PublicUser, UserRole } from "@/lib/types";
 const editUserSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email." }),
-  username: z.string().min(3, { message: "Username must be at least 3 characters." }),
   role: z.enum(["customer", "vendor", "admin"]),
 });
 
@@ -45,7 +43,6 @@ export function AdminEditUserDialog({ user, isOpen, onOpenChange, onUserUpdated 
     defaultValues: {
       name: user.name,
       email: user.email,
-      username: user.username,
       role: user.role,
     },
   });
@@ -55,7 +52,6 @@ export function AdminEditUserDialog({ user, isOpen, onOpenChange, onUserUpdated 
       form.reset({
         name: user.name,
         email: user.email,
-        username: user.username,
         role: user.role,
       });
     }
@@ -111,19 +107,6 @@ export function AdminEditUserDialog({ user, isOpen, onOpenChange, onUserUpdated 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>

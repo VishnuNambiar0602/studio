@@ -16,7 +16,7 @@ import { loginUser } from "@/lib/actions";
 import { ForgotPasswordDialog } from "./forgot-password-dialog";
 
 const formSchema = z.object({
-  identifier: z.string().min(1, { message: "Please enter your email, username, or phone." }),
+  identifier: z.string().min(1, { message: "Please enter your email or phone." }),
   password: z.string().min(1, { message: "Please enter your password." }),
 });
 
@@ -95,9 +95,9 @@ export function LoginForm() {
             name="identifier"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email, Username, or Phone</FormLabel>
+                <FormLabel>Email or Phone</FormLabel>
                 <FormControl>
-                  <Input placeholder="you@example.com or YourUsernametag" {...field} />
+                  <Input placeholder="you@example.com or phone number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
