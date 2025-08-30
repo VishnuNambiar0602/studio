@@ -1,9 +1,10 @@
-// Edited
 
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import type { FontSize, Language, PublicUser, User } from "@/lib/types";
+
+const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080";
 
 interface SettingsContextType {
   fontSize: FontSize;
@@ -17,6 +18,8 @@ interface SettingsContextType {
   logoutUser: () => void;
   taxRate: number;
   setTaxRate: (rate: number) => void;
+  heroImageUrl: string;
+  setHeroImageUrl: (url: string) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -24,7 +27,8 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [fontSize, setFontSize] = useState<FontSize>('md');
   const [language, setLanguage] = useState<Language>('en');
-  const [taxRate, setTaxRate] = useState<number>(0); // Default tax rate
+  const [taxRate, setTaxRate] = useState<number>(0);
+  const [heroImageUrl, setHeroImageUrl] = useState<string>(DEFAULT_HERO_IMAGE);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<PublicUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +49,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         
         const storedTaxRate = localStorage.getItem("taxRate");
         if (storedTaxRate) setTaxRate(parseFloat(storedTaxRate));
+        
+        const storedHeroImage = localStorage.getItem("heroImageUrl");
+        if (storedHeroImage) setHeroImageUrl(storedHeroImage);
+
 
     } catch (error) {
         console.error("Failed to parse from localStorage", error);
@@ -69,6 +77,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("taxRate", rate.toString());
   }
 
+  const handleSetHeroImageUrl = (url: string) => {
+    setHeroImageUrl(url);
+    localStorage.setItem("heroImageUrl", url);
+  }
+
   const loginUser = (user: PublicUser) => {
     setLoggedInUser(user);
     setIsLoggedIn(true);
@@ -81,8 +94,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("loggedInUser");
   }
 
-  // The loading state is for hydrating from localStorage, we don't need a visual spinner for this,
-  // as it would cause a flicker. The main loading spinner is now in the PartProvider.
   if (isLoading) {
     return null; 
   }
@@ -92,6 +103,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       fontSize, setFontSize: handleSetFontSize,
       language, setLanguage: handleSetLanguage,
       taxRate, setTaxRate: handleSetTaxRate,
+      heroImageUrl, setHeroImageUrl: handleSetHeroImageUrl,
       isLoggedIn, setIsLoggedIn,
       loggedInUser, loginUser, logoutUser
     }}>

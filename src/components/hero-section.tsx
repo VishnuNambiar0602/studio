@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -18,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "./ui/card";
 
 export function HeroSection() {
-    const { language } = useSettings();
+    const { language, heroImageUrl } = useSettings();
     const { parts } = useParts();
     const t = getDictionary(language);
     const router = useRouter();
@@ -61,7 +60,7 @@ export function HeroSection() {
     return (
         <section className="relative w-full h-[60vh] flex items-center justify-center text-center">
             <Image 
-              src="https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080" 
+              src={heroImageUrl} 
               alt={t.hero.alt} 
               fill 
               className="object-cover"
