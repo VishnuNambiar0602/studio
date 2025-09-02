@@ -15,12 +15,15 @@ import { useSettings } from "@/context/settings-context";
 import { registerUser } from "@/lib/actions";
 import { getDictionary } from "@/lib/i18n";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CountryCodeSelect } from "@/components/country-code-select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters long." }),
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
-  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  countryCode: z.string(),
+  phone: z.string().min(7, { message: "Please enter a valid phone number." }),
   accountType: z.enum(["individual", "business"], { required_error: "Please select an account type." }),
   shopAddress: z.string().optional(),
   zipCode: z.string().optional(),
@@ -37,6 +40,7 @@ export function AuthForm({ userType }: AuthFormProps) {
   const router = useRouter();
   const { loginUser: setLoggedInUserContext, language } = useSettings();
   const t = getDictionary(language);
+  const [showWelcomeAlert, setShowWelcomeAlert] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,6 +48,7 @@ export function AuthForm({ userType }: AuthFormProps) {
       email: "",
       password: "",
       name: "",
+      countryCode: "+968",
       phone: "",
       shopAddress: "",
       zipCode: "",
@@ -56,12 +61,14 @@ export function AuthForm({ userType }: AuthFormProps) {
     setLoading(true);
 
     try {
+        const fullPhoneNumber = `${values.countryCode}${values.phone.replace(/^0+/, '')}`;
+
         const result = await registerUser({
             name: values.name,
             email: values.email,
             password: values.password,
             role: userType,
-            phone: values.phone,
+            phone: fullPhoneNumber,
             accountType: values.accountType,
             shopAddress: values.shopAddress,
             zipCode: values.zipCode,
@@ -76,15 +83,14 @@ export function AuthForm({ userType }: AuthFormProps) {
             setLoading(false);
             return;
         }
-
-        setLoggedInUserContext(result.user);
-
-        toast({
-            title: t.auth.accountCreated,
-            description: `${t.auth.your} ${userType} account has been successfully created.`,
-        });
         
-        router.push('/');
+        setShowWelcomeAlert(true);
+        // Defer redirection to allow user to see welcome message.
+        setTimeout(() => {
+            setLoggedInUserContext(result.user);
+            router.push('/');
+        }, 3000);
+
 
     } catch (error) {
         toast({
@@ -92,9 +98,19 @@ export function AuthForm({ userType }: AuthFormProps) {
             title: t.auth.anErrorOccurred,
             description: t.auth.somethingWentWrong,
         });
-    } finally {
         setLoading(false);
     }
+  }
+
+  if (showWelcomeAlert) {
+    return (
+        <Alert>
+            <AlertTitle className="text-xl font-bold">Welcome to GulfCarX!</AlertTitle>
+            <AlertDescription className="mt-2">
+                Your account has been created successfully. A confirmation message has been sent to your mobile number. You will be redirected shortly.
+            </AlertDescription>
+        </Alert>
+    )
   }
 
   return (
@@ -156,19 +172,28 @@ export function AuthForm({ userType }: AuthFormProps) {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input placeholder="+1 234 567 890" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+            <FormLabel>Phone Number</FormLabel>
+            <div className="flex gap-2">
+                <FormField
+                    control={form.control}
+                    name="countryCode"
+                    render={({ field }) => (
+                        <CountryCodeSelect field={field} />
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                         <FormControl>
+                            <Input type="tel" placeholder="123 456 789" {...field} />
+                        </FormControl>
+                    )}
+                />
+            </div>
+            <FormMessage>{form.formState.errors.phone?.message}</FormMessage>
+        </FormItem>
         <FormField
           control={form.control}
           name="password"

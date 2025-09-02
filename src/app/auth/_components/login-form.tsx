@@ -97,7 +97,7 @@ export function LoginForm() {
               <FormItem>
                 <FormLabel>Email or Phone</FormLabel>
                 <FormControl>
-                  <Input placeholder="you@example.com or phone number" {...field} />
+                  <Input placeholder="you@example.com or +96812345678" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

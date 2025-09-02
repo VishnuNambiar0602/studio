@@ -15,9 +15,11 @@ import { useSettings } from "@/context/settings-context";
 import { registerUser } from "@/lib/actions";
 import { getDictionary } from "@/lib/i18n";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { CountryCodeSelect } from "@/components/country-code-select";
 
 const phoneSchema = z.object({
-  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  countryCode: z.string(),
+  phone: z.string().min(7, { message: "Please enter a valid phone number." }),
   name: z.string().min(2, { message: "Company name must be at least 2 characters." }),
   shopAddress: z.string().min(5, { message: "Please enter a valid shop address." }),
   zipCode: z.string().min(3, { message: "Please enter a valid postal code." }),
@@ -42,7 +44,7 @@ export function VendorAuthForm() {
 
   const phoneForm = useForm<z.infer<typeof phoneSchema>>({
     resolver: zodResolver(phoneSchema),
-    defaultValues: { phone: "", name: "", shopAddress: "", zipCode: "" },
+    defaultValues: { countryCode: "+968", phone: "", name: "", shopAddress: "", zipCode: "" },
   });
 
   const otpForm = useForm<z.infer<typeof otpSchema>>({
@@ -82,11 +84,12 @@ export function VendorAuthForm() {
     }
 
     try {
+        const fullPhoneNumber = `${vendorData.countryCode}${vendorData.phone.replace(/^0+/, '')}`;
         const result = await registerUser({
             name: vendorData.name,
-            email: vendorData.email || `${vendorData.phone}@gulfcarx.local`, // Use phone as email if not provided
+            email: vendorData.email || `${fullPhoneNumber}@gulfcarx.local`, // Use phone as email if not provided
             role: 'vendor',
-            phone: vendorData.phone,
+            phone: fullPhoneNumber,
             accountType: 'business',
             shopAddress: vendorData.shopAddress,
             zipCode: vendorData.zipCode,
@@ -143,20 +146,29 @@ export function VendorAuthForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={phoneForm.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Login Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+968 1234 5678" {...field} />
-                  </FormControl>
-                  <FormDescription>This will be your login identifier. An OTP will be sent here.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+                <FormLabel>Login Phone Number</FormLabel>
+                <div className="flex gap-2">
+                    <FormField
+                        control={phoneForm.control}
+                        name="countryCode"
+                        render={({ field }) => (
+                            <CountryCodeSelect field={field} />
+                        )}
+                    />
+                    <FormField
+                        control={phoneForm.control}
+                        name="phone"
+                        render={({ field }) => (
+                            <FormControl>
+                                <Input type="tel" placeholder="123 456 789" {...field} />
+                            </FormControl>
+                        )}
+                    />
+                </div>
+                 <FormDescription>This will be your login identifier. An OTP will be sent here.</FormDescription>
+                 <FormMessage>{phoneForm.formState.errors.phone?.message}</FormMessage>
+            </FormItem>
              <FormField
               control={phoneForm.control}
               name="email"
@@ -216,7 +228,7 @@ export function VendorAuthForm() {
                       <FormControl>
                         <Input placeholder="123456" {...field} />
                       </FormControl>
-                      <FormDescription>An OTP was sent to {vendorData?.phone}.</FormDescription>
+                      <FormDescription>An OTP was sent to {vendorData?.countryCode}{vendorData?.phone}.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

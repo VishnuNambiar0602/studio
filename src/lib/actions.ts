@@ -172,9 +172,13 @@ export async function registerUser(userData: UserRegistration) {
 }
 
 export async function loginUser(credentials: UserLogin) {
+    const identifier = credentials.identifier.startsWith('+') 
+        ? credentials.identifier 
+        : credentials.identifier.toLowerCase();
+        
     const user = MOCK_USERS.find(u => 
-        u.email === credentials.identifier || 
-        u.phone === credentials.identifier
+        u.email.toLowerCase() === identifier || 
+        u.phone === identifier
     );
 
     if (!user) {
@@ -184,7 +188,7 @@ export async function loginUser(credentials: UserLogin) {
     if (user.password && user.password !== credentials.password) {
        return { success: false, message: "Invalid credentials." };
     }
-     if (!user.password && user.role === 'vendor' && user.phone === credentials.identifier) {
+     if (!user.password && user.role === 'vendor' && user.phone === identifier) {
         // This is a passwordless (OTP-based) vendor login, which we'll simulate as successful for now.
         // In a real app, you'd check an OTP here.
     } else if (user.password !== credentials.password) {
@@ -216,7 +220,7 @@ export async function adminLogin(credentials: { username?: string, password?: st
             username: 'admin',
             role: 'admin',
             password: 'admin',
-            phone: '000000000',
+            phone: '+1000000000',
             accountType: 'business',
             createdAt: new Date(),
             isBlocked: false,
