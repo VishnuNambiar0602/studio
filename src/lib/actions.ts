@@ -6,6 +6,37 @@ import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, Use
 import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data";
 import { MOCK_AI_INTERACTIONS } from "./mock-ai-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
+import axios from 'axios';
+
+async function sendSms(phone: string, message: string) {
+    if (!process.env.TEXTBEE_API_KEY) {
+        console.warn("TEXTBEE_API_KEY is not set. Skipping SMS.");
+        return { success: false, message: "SMS service not configured." };
+    }
+    
+    try {
+        const response = await axios.post('https://app.textbee.dev/api/v1/messaging/sms', {
+            message: message,
+            recipient: phone,
+        }, {
+            headers: {
+                'Authorization': `Bearer ${process.env.TEXTBEE_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.data && response.data.success) {
+            console.log("SMS sent successfully:", response.data);
+            return { success: true };
+        } else {
+            console.error("SMS sending failed:", response.data);
+            return { success: false, message: "Failed to send SMS." };
+        }
+    } catch (error) {
+        console.error("Error sending SMS:", error);
+        return { success: false, message: "An error occurred while sending SMS." };
+    }
+}
 
 // --- PART ACTIONS ---
 
@@ -103,14 +134,14 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
 
 export async function registerUser(userData: UserRegistration) {
     const existingUser = MOCK_USERS.find(
-        u => u.email === userData.email || u.phone === userData.phone
+        u => u.email === userData.email || (userData.phone && u.phone === userData.phone)
     );
 
     if (existingUser) {
         if (existingUser.email === userData.email) {
             return { success: false, message: "A user with this email already exists." };
         }
-        if (existingUser.phone === userData.phone) {
+        if (userData.phone && existingUser.phone === userData.phone) {
             return { success: false, message: "This phone number is already registered." };
         }
     }
@@ -129,6 +160,11 @@ export async function registerUser(userData: UserRegistration) {
     MOCK_USERS.push(newUser);
     
     const { password, ...createdUser } = newUser;
+
+    // Send welcome SMS
+    if(createdUser.phone) {
+      await sendSms(createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
+    }
 
     revalidatePath('/admin/users');
     revalidatePath('/admin');
@@ -193,7 +229,7 @@ export async function adminLogin(credentials: { username?: string, password?: st
     return { success: true, user: publicAdminUser };
 }
 
-export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; code?: string; }> {
+export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; }> {
     const userIndex = MOCK_USERS.findIndex(u => u.email === email);
     if (userIndex === -1) {
         return { success: false, message: "No account found with that email address." };
@@ -204,10 +240,21 @@ export async function sendPasswordResetCode(email: string, isAdminCheck: boolean
         return { success: false, message: "This email does not belong to an administrator." };
     }
 
+    if (!user.phone) {
+        return { success: false, message: "No phone number is associated with this account for password reset." };
+    }
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     MOCK_USERS[userIndex].verificationCode = code;
     
-    return { success: true, message: "Verification code sent.", code: code };
+    // Send the code via SMS
+    const smsResult = await sendSms(user.phone, `Your GulfCarX password reset code is: ${code}`);
+
+    if (smsResult.success) {
+      return { success: true, message: "Verification code sent." };
+    } else {
+      return { success: false, message: "Failed to send verification code. Please try again later." };
+    }
 }
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
