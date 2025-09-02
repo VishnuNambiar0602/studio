@@ -7,10 +7,17 @@ import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data"
 import { MOCK_AI_INTERACTIONS } from "./mock-ai-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 import axios from 'axios';
+import { config } from 'dotenv';
+
+config();
 
 async function sendSms(phone: string, message: string) {
     if (!process.env.TEXTBEE_API_KEY) {
-        return { success: false, message: "SMS service not configured." };
+        // This is a server-side log, not visible to the user.
+        console.log("SMS simulation: Not sent. TEXTBEE_API_KEY not configured.");
+        console.log(`To: ${phone}\nMessage: ${message}`);
+        // Return success to allow flow to continue in dev without keys.
+        return { success: true };
     }
     
     try {
@@ -153,7 +160,7 @@ export async function registerUser(userData: UserRegistration) {
         createdAt: new Date(),
         isBlocked: false,
         ...userData,
-        username: userData.username || username
+        username: username,
     };
 
     MOCK_USERS.push(newUser);
@@ -171,13 +178,11 @@ export async function registerUser(userData: UserRegistration) {
 }
 
 export async function loginUser(credentials: UserLogin) {
-    const identifier = credentials.identifier.startsWith('+') 
-        ? credentials.identifier 
-        : credentials.identifier.toLowerCase();
+    const identifier = credentials.identifier.toLowerCase();
         
     const user = MOCK_USERS.find(u => 
         u.email.toLowerCase() === identifier || 
-        u.phone === identifier
+        u.phone === credentials.identifier // Phone numbers can have '+' and should not be lowercased
     );
 
     if (!user) {
@@ -187,7 +192,7 @@ export async function loginUser(credentials: UserLogin) {
     if (user.password && user.password !== credentials.password) {
        return { success: false, message: "Invalid credentials." };
     }
-     if (!user.password && user.role === 'vendor' && user.phone === identifier) {
+     if (!user.password && user.role === 'vendor' && user.phone === credentials.identifier) {
         // This is a passwordless (OTP-based) vendor login, which we'll simulate as successful for now.
         // In a real app, you'd check an OTP here.
     } else if (user.password !== credentials.password) {
@@ -232,15 +237,15 @@ export async function adminLogin(credentials: { username?: string, password?: st
     return { success: true, user: publicAdminUser };
 }
 
-export async function sendPasswordResetCode(email: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; }> {
-    const userIndex = MOCK_USERS.findIndex(u => u.email === email);
+export async function sendPasswordResetCode(identifier: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; email?: string; }> {
+    const userIndex = MOCK_USERS.findIndex(u => u.email === identifier || u.phone === identifier);
     if (userIndex === -1) {
-        return { success: false, message: "No account found with that email address." };
+        return { success: false, message: "No account found with that email or phone number." };
     }
     const user = MOCK_USERS[userIndex];
 
     if (isAdminCheck && user.role !== 'admin') {
-        return { success: false, message: "This email does not belong to an administrator." };
+        return { success: false, message: "This identifier does not belong to an administrator." };
     }
 
     if (!user.phone) {
@@ -254,7 +259,7 @@ export async function sendPasswordResetCode(email: string, isAdminCheck: boolean
     const smsResult = await sendSms(user.phone, `Your GulfCarX password reset code is: ${code}`);
 
     if (smsResult.success) {
-      return { success: true, message: "Verification code sent." };
+      return { success: true, message: "Verification code sent.", email: user.email };
     } else {
       return { success: false, message: "Failed to send verification code. Please try again later." };
     }

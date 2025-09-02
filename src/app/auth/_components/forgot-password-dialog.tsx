@@ -21,8 +21,8 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendPasswordResetCode, resetPasswordWithCode } from "@/lib/actions";
 
-const emailSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
+const identifierSchema = z.object({
+  identifier: z.string().min(1, { message: "Please enter your email or phone number." }),
 });
 
 const resetSchema = z.object({
@@ -30,18 +30,18 @@ const resetSchema = z.object({
   newPassword: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
-type Step = "enter-email" | "enter-code" | "success";
+type Step = "enter-identifier" | "enter-code" | "success";
 
 export function ForgotPasswordDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<Step>("enter-email");
-  const [userEmail, setUserEmail] = useState("");
+  const [step, setStep] = useState<Step>("enter-identifier");
+  const [userEmail, setUserEmail] = useState(""); // We still need the email to finalize the reset
   const { toast } = useToast();
 
-  const emailForm = useForm<z.infer<typeof emailSchema>>({
-    resolver: zodResolver(emailSchema),
-    defaultValues: { email: "" },
+  const identifierForm = useForm<z.infer<typeof identifierSchema>>({
+    resolver: zodResolver(identifierSchema),
+    defaultValues: { identifier: "" },
   });
 
   const resetForm = useForm<z.infer<typeof resetSchema>>({
@@ -49,16 +49,16 @@ export function ForgotPasswordDialog() {
     defaultValues: { code: "", newPassword: "" },
   });
 
-  const handleEmailSubmit = async (values: z.infer<typeof emailSchema>) => {
+  const handleIdentifierSubmit = async (values: z.infer<typeof identifierSchema>) => {
     setLoading(true);
-    const result = await sendPasswordResetCode(values.email);
+    const result = await sendPasswordResetCode(values.identifier);
 
-    if (result.success) {
+    if (result.success && result.email) {
       toast({
         title: "Code Sent",
         description: "A verification code has been sent to your registered mobile number."
       });
-      setUserEmail(values.email);
+      setUserEmail(result.email);
       setStep("enter-code");
     } else {
       toast({
@@ -95,8 +95,8 @@ export function ForgotPasswordDialog() {
   };
   
   const resetFlow = () => {
-    setStep("enter-email");
-    emailForm.reset();
+    setStep("enter-identifier");
+    identifierForm.reset();
     resetForm.reset();
     setOpen(false);
   }
@@ -109,24 +109,24 @@ export function ForgotPasswordDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        {step === "enter-email" && (
+        {step === "enter-identifier" && (
           <>
             <DialogHeader>
               <DialogTitle>Reset Your Password</DialogTitle>
               <DialogDescription>
-                Enter your email address and we'll send a verification code to your associated phone number.
+                Enter your email address or phone number and we'll send a verification code to your associated mobile number.
               </DialogDescription>
             </DialogHeader>
-            <Form {...emailForm}>
-              <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-4">
+            <Form {...identifierForm}>
+              <form onSubmit={identifierForm.handleSubmit(handleIdentifierSubmit)} className="space-y-4">
                 <FormField
-                  control={emailForm.control}
-                  name="email"
+                  control={identifierForm.control}
+                  name="identifier"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Email or Phone Number</FormLabel>
                       <FormControl>
-                        <Input placeholder="you@example.com" {...field} />
+                        <Input placeholder="you@example.com or +96812345678" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
