@@ -14,12 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { sendPasswordResetCode, resetPasswordWithCode } from "@/lib/actions";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const identifierSchema = z.object({
   identifier: z.string().min(1, { message: "Please enter your email or phone number." }),
@@ -36,7 +38,8 @@ export function ForgotPasswordDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>("enter-identifier");
-  const [userEmail, setUserEmail] = useState(""); // We still need the email to finalize the reset
+  const [userEmail, setUserEmail] = useState("");
+  const [simulatedCode, setSimulatedCode] = useState("");
   const { toast } = useToast();
 
   const identifierForm = useForm<z.infer<typeof identifierSchema>>({
@@ -53,12 +56,13 @@ export function ForgotPasswordDialog() {
     setLoading(true);
     const result = await sendPasswordResetCode(values.identifier);
 
-    if (result.success && result.email) {
+    if (result.success && result.code) {
       toast({
-        title: "Code Sent",
-        description: "A verification code has been sent to your registered mobile number."
+        title: "Code Sent (Simulated)",
+        description: "A verification code has been 'sent' to your registered mobile number."
       });
-      setUserEmail(result.email);
+      setUserEmail(values.identifier.includes('@') ? values.identifier : MOCK_USERS.find(u => u.phone === values.identifier)?.email || "");
+      setSimulatedCode(result.code);
       setStep("enter-code");
     } else {
       toast({
@@ -72,8 +76,15 @@ export function ForgotPasswordDialog() {
 
   const handleResetSubmit = async (values: z.infer<typeof resetSchema>) => {
     setLoading(true);
+    // In simulation, we check against the simulated code
+    if (values.code !== simulatedCode) {
+      toast({ variant: "destructive", title: "Invalid Code", description: "The verification code is incorrect." });
+      setLoading(false);
+      return;
+    }
+
     const result = await resetPasswordWithCode({
-      email: userEmail,
+      email: userEmail, // We still need the email to find the user in the mock DB
       code: values.code,
       newPassword: values.newPassword,
     });
@@ -98,11 +109,13 @@ export function ForgotPasswordDialog() {
     setStep("enter-identifier");
     identifierForm.reset();
     resetForm.reset();
+    setUserEmail("");
+    setSimulatedCode("");
     setOpen(false);
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => { if(!isOpen) resetFlow(); else setOpen(true); }}>
       <DialogTrigger asChild>
           <Button variant="link" className="p-0 h-auto text-sm">
           Forgot Password?
@@ -151,6 +164,12 @@ export function ForgotPasswordDialog() {
                 Check your mobile phone for the code and enter it below along with a new password.
               </DialogDescription>
             </DialogHeader>
+              <Alert>
+                <AlertTitle>Simulation Mode</AlertTitle>
+                <AlertDescription>
+                  Your verification code is: <span className="font-bold">{simulatedCode}</span>
+                </AlertDescription>
+              </Alert>
             <Form {...resetForm}>
               <form onSubmit={resetForm.handleSubmit(handleResetSubmit)} className="space-y-4">
                 <FormField
@@ -199,7 +218,9 @@ export function ForgotPasswordDialog() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-                <Button onClick={resetFlow}>Close</Button>
+                <DialogClose asChild>
+                    <Button onClick={resetFlow}>Close</Button>
+                </DialogClose>
             </DialogFooter>
           </>
           )}
@@ -207,3 +228,12 @@ export function ForgotPasswordDialog() {
     </Dialog>
   );
 }
+
+// A hack to get MOCK_USERS in the client component for simulation purposes
+const MOCK_USERS = [
+  { id: 'user-cust1', name: 'John Doe', email: 'john@example.com', phone: '1112223333' },
+  { id: 'user-vendor1', name: 'Muscat Modern Auto', email: 'mma@example.com', phone: '2223334444' },
+  { id: 'user-vendor2', name: 'Salalah Auto Spares', email: 'sas@example.com', phone: '3334445555' },
+  { id: 'user-vendor3', name: 'Nizwa Car Parts', email: 'nizwa@example.com', phone: '4445556666' },
+  { id: 'user-admin1', name: 'Admin', email: 'admin@gulfcarx.com', phone: '000000000' }
+];

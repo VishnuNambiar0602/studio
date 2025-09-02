@@ -6,57 +6,15 @@ import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, Use
 import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data";
 import { MOCK_AI_INTERACTIONS } from "./mock-ai-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
-import axios from 'axios';
 import { config } from 'dotenv';
 
 config();
 
 async function sendSms(apiKey: string | undefined, phone: string, message: string): Promise<{ success: boolean; message?: string }> {
-    if (!apiKey) {
-        const simulatedMessage = `SMS simulation (no API key): To: ${phone}, Message: "${message}"`;
-        console.log(simulatedMessage);
-        // To make the flow testable without an API key, we will treat this as a success.
-        // In a real production environment, you might want this to be an error.
-        return { success: true };
-    }
-    
-    try {
-        const response = await axios.post('https://app.textbee.dev/api/v1/messaging/sms', {
-            message: message,
-            recipient: phone,
-        }, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.data && response.data.success) {
-            console.log("SMS sent successfully via Textbee:", response.data);
-            return { success: true };
-        } else {
-            // Textbee API returned a non-success response
-            const errorMessage = `Textbee API Error: ${JSON.stringify(response.data)}`;
-            console.error(errorMessage);
-            return { success: false, message: errorMessage };
-        }
-    } catch (error: any) {
-        // Axios or network error
-        let detailedError = "An unknown error occurred while sending SMS.";
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          detailedError = `Textbee API Request Failed: ${error.message} - Response: ${JSON.stringify(error.response.data)}`;
-        } else if (error.request) {
-          // The request was made but no response was received
-          detailedError = `Textbee API No Response: ${error.message}`;
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          detailedError = `SMS Client Error: ${error.message}`;
-        }
-        console.error("Detailed SMS Error:", detailedError);
-        return { success: false, message: detailedError };
-    }
+    const simulatedMessage = `SMS simulation: To: ${phone}, Message: "${message}"`;
+    console.log(simulatedMessage);
+    // Always return success in simulation mode to allow user flows to continue.
+    return { success: true };
 }
 
 // --- PART ACTIONS ---
@@ -252,16 +210,12 @@ export async function adminLogin(credentials: { username?: string, password?: st
     return { success: true, user: publicAdminUser };
 }
 
-export async function sendPasswordResetCode(identifier: string, isAdminCheck: boolean = false): Promise<{ success: boolean; message: string; email?: string; }> {
+export async function sendPasswordResetCode(identifier: string): Promise<{ success: boolean; message: string; code?: string; }> {
     const userIndex = MOCK_USERS.findIndex(u => u.email === identifier || u.phone === identifier);
     if (userIndex === -1) {
         return { success: false, message: "No account found with that email or phone number." };
     }
     const user = MOCK_USERS[userIndex];
-
-    if (isAdminCheck && user.role !== 'admin') {
-        return { success: false, message: "This identifier does not belong to an administrator." };
-    }
 
     if (!user.phone) {
         return { success: false, message: "No phone number is associated with this account for password reset." };
@@ -274,7 +228,7 @@ export async function sendPasswordResetCode(identifier: string, isAdminCheck: bo
     const smsResult = await sendSms(process.env.TEXTBEE_API_KEY, user.phone, `Your GulfCarX password reset code is: ${code}`);
 
     if (smsResult.success) {
-      return { success: true, message: "Verification code sent.", email: user.email };
+      return { success: true, message: "Verification code sent.", code: code };
     } else {
       return { success: false, message: smsResult.message || "Failed to send verification code. Please try again later." };
     }
