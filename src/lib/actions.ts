@@ -7,38 +7,40 @@ import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data"
 import { MOCK_AI_INTERACTIONS } from "./mock-ai-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 import { config } from 'dotenv';
-import axios from "axios";
+import twilio from 'twilio';
 
-config();
+config({ path: '.env' });
 
-async function sendSms(apiKey: string, phone: string, message: string): Promise<{ success: boolean; message?: string }> {
-    if (!apiKey) {
-        console.error("SMS API Key is not configured.");
-        return { success: false, message: "Server configuration error: SMS service is not set up." };
+async function sendSms(phone: string, message: string): Promise<{ success: boolean; message?: string }> {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+
+    if (!accountSid || !authToken || !fromNumber) {
+        const missingVars = [
+            !accountSid && "TWILIO_ACCOUNT_SID",
+            !authToken && "TWILIO_AUTH_TOKEN",
+            !fromNumber && "TWILIO_PHONE_NUMBER"
+        ].filter(Boolean).join(', ');
+        
+        const errorMsg = `Server configuration error: The following environment variables are not set: ${missingVars}. Please check your .env file.`;
+        console.error(errorMsg);
+        return { success: false, message: errorMsg };
     }
 
     try {
-        const response = await axios.post('https://api.textbee.dev/api/v1/messaging/sms', {
-            message: message,
-            phone_number: phone,
-        }, {
-            headers: {
-                'x-api-key': apiKey,
-                'Content-Type': 'application/json',
-            }
+        const client = twilio(accountSid, authToken);
+        const response = await client.messages.create({
+            body: message,
+            from: fromNumber,
+            to: phone,
         });
 
-        if (response.data && (response.status === 200 || response.status === 201)) {
-            console.log("SMS sent successfully:", response.data);
-            return { success: true };
-        } else {
-            console.error("Failed to send SMS, unexpected response:", response.data);
-            return { success: false, message: response.data.message || "An unknown error occurred with the SMS service." };
-        }
+        console.log("SMS sent successfully with SID:", response.sid);
+        return { success: true };
     } catch (error: any) {
-        console.error("Axios error sending SMS:", error);
-        const errorMessage = error.response?.data?.message || error.message || "A server error occurred while trying to send the SMS.";
-        return { success: false, message: `Raw API Error: ${errorMessage}` };
+        console.error("Twilio error sending SMS:", error);
+        return { success: false, message: `Twilio Error: ${error.message}` };
     }
 }
 
@@ -168,7 +170,7 @@ export async function registerUser(userData: UserRegistration) {
 
     // Send welcome SMS
     if(createdUser.phone) {
-      await sendSms(process.env.TEXTBEE_API_KEY as string, createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
+      await sendSms(createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
     }
 
     revalidatePath('/admin/users');
@@ -251,7 +253,7 @@ export async function sendPasswordResetCode(identifier: string): Promise<{ succe
     MOCK_USERS[userIndex].verificationCode = code;
     
     // Send the code via SMS
-    const smsResult = await sendSms(process.env.TEXTBEE_API_KEY as string, user.phone, `Your GulfCarX password reset code is: ${code}`);
+    const smsResult = await sendSms(user.phone, `Your GulfCarX password reset code is: ${code}`);
 
     if (smsResult.success) {
       // In a real app, you wouldn't return the code here. It's returned for simulation purposes.
