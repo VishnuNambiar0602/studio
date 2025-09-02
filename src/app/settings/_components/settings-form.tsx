@@ -9,6 +9,7 @@ import { AccountManagement } from "./account-management";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { ProfilePictureEditor } from "./profile-picture-editor";
+import { ProfileDetailsForm } from "./profile-details-form";
 
 export function SettingsForm() {
     const { language } = useSettings();
@@ -16,6 +17,7 @@ export function SettingsForm() {
 
     return (
         <div className="space-y-8">
+             <ProfileDetailsForm />
              <Card>
                 <CardHeader>
                     <CardTitle>{t.settings.profilePicture}</CardTitle>

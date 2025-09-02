@@ -139,6 +139,30 @@ export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 
     return { success: true, message: 'User updated successfully.' };
 }
 
+export async function updateUserProfile(userId: string, data: { name: string; email: string; phone: string; }): Promise<{ success: boolean; message: string; user?: PublicUser; }> {
+    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
+    if (userIndex === -1) {
+        return { success: false, message: "User not found." };
+    }
+
+    const otherUsers = MOCK_USERS.filter(u => u.id !== userId);
+    if (data.email && otherUsers.some(u => u.email === data.email)) {
+        return { success: false, message: "This email is already in use by another account." };
+    }
+    if (data.phone && otherUsers.some(u => u.phone === data.phone)) {
+        return { success: false, message: "This phone number is already in use by another account." };
+    }
+
+    MOCK_USERS[userIndex] = { ...MOCK_USERS[userIndex], ...data };
+
+    const { password, ...updatedUser } = MOCK_USERS[userIndex];
+
+    revalidatePath('/settings');
+
+    return { success: true, message: "Profile updated successfully.", user: updatedUser };
+}
+
+
 export async function registerUser(userData: UserRegistration) {
     const existingUser = MOCK_USERS.find(
         u => u.email === userData.email || (userData.phone && u.phone === userData.phone)
