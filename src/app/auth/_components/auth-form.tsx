@@ -15,6 +15,7 @@ import { useSettings } from "@/context/settings-context";
 import { registerUser } from "@/lib/actions";
 import { getDictionary } from "@/lib/i18n";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -33,6 +34,7 @@ interface AuthFormProps {
 export function AuthForm({ userType }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showWelcomeAlert, setShowWelcomeAlert] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { loginUser: setLoggedInUserContext, language } = useSettings();
@@ -84,8 +86,7 @@ export function AuthForm({ userType }: AuthFormProps) {
             description: `${t.auth.your} ${userType} account has been successfully created.`,
         });
         
-        form.reset();
-        router.push('/');
+        setShowWelcomeAlert(true);
 
     } catch (error) {
         toast({
@@ -98,7 +99,14 @@ export function AuthForm({ userType }: AuthFormProps) {
     }
   }
 
+  const handleAlertContinue = () => {
+    setShowWelcomeAlert(false);
+    form.reset();
+    router.push('/');
+  }
+
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
@@ -198,5 +206,25 @@ export function AuthForm({ userType }: AuthFormProps) {
         </Button>
       </form>
     </Form>
+
+    <AlertDialog open={showWelcomeAlert} onOpenChange={setShowWelcomeAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>SMS Sent (Simulation)</AlertDialogTitle>
+            <AlertDialogDescription>
+                An SMS has been sent to your registered number.
+                 <div className="text-center text-sm text-foreground py-4 bg-muted rounded-md my-4">
+                  "Welcome to GulfCarX! Your account has been created successfully."
+                </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={handleAlertContinue}>
+              Continue to Site
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
