@@ -11,12 +11,10 @@ import { config } from 'dotenv';
 
 config();
 
-async function sendSms(phone: string, message: string) {
-    if (!process.env.TEXTBEE_API_KEY) {
-        // This is a server-side log, not visible to the user.
+async function sendSms(apiKey: string | undefined, phone: string, message: string) {
+    if (!apiKey) {
         console.log("SMS simulation: Not sent. TEXTBEE_API_KEY not configured.");
         console.log(`To: ${phone}\nMessage: ${message}`);
-        // Return success to allow flow to continue in dev without keys.
         return { success: true };
     }
     
@@ -26,7 +24,7 @@ async function sendSms(phone: string, message: string) {
             recipient: phone,
         }, {
             headers: {
-                'Authorization': `Bearer ${process.env.TEXTBEE_API_KEY}`,
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -169,7 +167,7 @@ export async function registerUser(userData: UserRegistration) {
 
     // Send welcome SMS
     if(createdUser.phone) {
-      await sendSms(createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
+      await sendSms(process.env.TEXTBEE_API_KEY, createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
     }
 
     revalidatePath('/admin/users');
@@ -256,7 +254,7 @@ export async function sendPasswordResetCode(identifier: string, isAdminCheck: bo
     MOCK_USERS[userIndex].verificationCode = code;
     
     // Send the code via SMS
-    const smsResult = await sendSms(user.phone, `Your GulfCarX password reset code is: ${code}`);
+    const smsResult = await sendSms(process.env.TEXTBEE_API_KEY, user.phone, `Your GulfCarX password reset code is: ${code}`);
 
     if (smsResult.success) {
       return { success: true, message: "Verification code sent.", email: user.email };
@@ -628,5 +626,3 @@ export async function getAiInteractionStats(): Promise<{suggestions: number, cli
     const orders = MOCK_AI_INTERACTIONS.filter(i => i.ordered).length;
     return { suggestions, clicks, orders };
 }
-
-    
