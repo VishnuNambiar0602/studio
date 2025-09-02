@@ -16,6 +16,7 @@ export interface CartItem extends Part {
   purchaseQuantity: number; // Quantity user wants to buy
 }
 
+export type Theme = 'light' | 'dark';
 export type FontSize = 'sm' | 'md' | 'lg';
 export type Language = 'en' | 'ar';
 

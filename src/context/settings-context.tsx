@@ -2,11 +2,13 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import type { FontSize, Language, PublicUser, User } from "@/lib/types";
+import type { FontSize, Language, PublicUser, User, Theme } from "@/lib/types";
 
 const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080";
 
 interface SettingsContextType {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
   fontSize: FontSize;
   setFontSize: (size: FontSize) => void;
   language: Language;
@@ -25,6 +27,7 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<Theme>('light');
   const [fontSize, setFontSize] = useState<FontSize>('md');
   const [language, setLanguage] = useState<Language>('en');
   const [taxRate, setTaxRate] = useState<number>(0);
@@ -41,6 +44,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             setLoggedInUser(user);
             setIsLoggedIn(true);
         }
+        
+        const storedTheme = localStorage.getItem("theme") as Theme;
+        if (storedTheme) setTheme(storedTheme);
+
         const storedFontSize = localStorage.getItem("fontSize") as FontSize;
         if (storedFontSize) setFontSize(storedFontSize);
 
@@ -61,6 +68,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }
   }, []);
+
+  const handleSetTheme = (theme: Theme) => {
+    setTheme(theme);
+    localStorage.setItem("theme", theme);
+  }
 
   const handleSetFontSize = (size: FontSize) => {
     setFontSize(size);
@@ -100,6 +112,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   return (
     <SettingsContext.Provider value={{ 
+      theme, setTheme: handleSetTheme,
       fontSize, setFontSize: handleSetFontSize,
       language, setLanguage: handleSetLanguage,
       taxRate, setTaxRate: handleSetTaxRate,

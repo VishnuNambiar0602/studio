@@ -9,7 +9,7 @@ import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-
 import { config } from 'dotenv';
 import twilio from 'twilio';
 
-config({ path: '.env' });
+config();
 
 async function sendSms(phone: string, message: string): Promise<{ success: boolean; message?: string }> {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;

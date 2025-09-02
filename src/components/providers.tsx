@@ -8,17 +8,25 @@ import { cn } from "@/lib/utils";
 
 // This component applies settings to the <html> tag
 function SettingsApplier({ children }: { children: React.ReactNode }) {
-    const { language, fontSize } = useSettings();
+    const { language, fontSize, theme } = useSettings();
 
     useEffect(() => {
         const html = document.documentElement;
         html.lang = language;
         html.dir = language === 'ar' ? 'rtl' : 'ltr';
-        // Remove previous font size classes to avoid conflicts
+        
+        // Apply theme
+        if (theme === 'dark') {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        // Apply font size
         html.classList.remove('font-sm', 'font-md', 'font-lg');
-        // Add the current font size class
         html.classList.add(`font-${fontSize}`);
-    }, [language, fontSize]);
+
+    }, [language, fontSize, theme]);
 
     return <>{children}</>;
 }

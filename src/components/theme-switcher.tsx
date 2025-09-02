@@ -5,18 +5,10 @@ import * as React from "react"
 import { Moon, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { useSettings } from "@/context/settings-context"
 
 export function ThemeSwitcher() {
-  const [theme, setTheme] = React.useState("light");
-
-  React.useEffect(() => {
-    const root = window.document.documentElement
-    if (theme === 'dark') {
-      root.classList.add("dark")
-    } else {
-      root.classList.remove("dark")
-    }
-  }, [theme])
+  const { theme, setTheme } = useSettings();
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light")
