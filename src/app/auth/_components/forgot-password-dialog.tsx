@@ -58,10 +58,11 @@ export function ForgotPasswordDialog() {
 
     if (result.success && result.code) {
       toast({
-        title: "Code Sent (Simulated)",
-        description: "A verification code has been 'sent' to your registered mobile number."
+        title: "Code Sent",
+        description: "A verification code has been sent to your registered mobile number."
       });
       setUserEmail(values.identifier.includes('@') ? values.identifier : MOCK_USERS.find(u => u.phone === values.identifier)?.email || "");
+      // In a real app, you wouldn't get the code back. This is a temporary measure for development.
       setSimulatedCode(result.code);
       setStep("enter-code");
     } else {
@@ -76,13 +77,6 @@ export function ForgotPasswordDialog() {
 
   const handleResetSubmit = async (values: z.infer<typeof resetSchema>) => {
     setLoading(true);
-    // In simulation, we check against the simulated code
-    if (values.code !== simulatedCode) {
-      toast({ variant: "destructive", title: "Invalid Code", description: "The verification code is incorrect." });
-      setLoading(false);
-      return;
-    }
-
     const result = await resetPasswordWithCode({
       email: userEmail, // We still need the email to find the user in the mock DB
       code: values.code,
@@ -164,12 +158,6 @@ export function ForgotPasswordDialog() {
                 Check your mobile phone for the code and enter it below along with a new password.
               </DialogDescription>
             </DialogHeader>
-              <Alert>
-                <AlertTitle>Simulation Mode</AlertTitle>
-                <AlertDescription>
-                  Your verification code is: <span className="font-bold">{simulatedCode}</span>
-                </AlertDescription>
-              </Alert>
             <Form {...resetForm}>
               <form onSubmit={resetForm.handleSubmit(handleResetSubmit)} className="space-y-4">
                 <FormField

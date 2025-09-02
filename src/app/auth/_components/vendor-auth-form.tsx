@@ -33,8 +33,6 @@ const otpSchema = z.object({
 export function VendorAuthForm() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [showOtpAlert, setShowOtpAlert] = useState(false);
-  const [simulatedOtp, setSimulatedOtp] = useState('');
   const [vendorData, setVendorData] = useState<z.infer<typeof phoneSchema> | null>(null);
 
   const { toast } = useToast();
@@ -55,26 +53,21 @@ export function VendorAuthForm() {
   async function onPhoneSubmit(values: z.infer<typeof phoneSchema>) {
     setLoading(true);
     // In a real app, you would call your backend to send an OTP here.
-    // For now, we simulate it.
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    setSimulatedOtp(otp);
+    // For now, we simulate it by just moving to the next step.
     setVendorData(values);
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setShowOtpAlert(true);
+    
+    // Simulate API delay and move to next step
+    await new Promise(resolve => setTimeout(resolve, 500));
     setStep('otp');
+    toast({
+      title: "Enter OTP",
+      description: "A one-time password has been sent to your phone. (This is a simulation)"
+    });
     setLoading(false);
   }
 
   async function onOtpSubmit(values: z.infer<typeof otpSchema>) {
     setLoading(true);
-    if (values.otp !== simulatedOtp) {
-      toast({ variant: "destructive", title: "Invalid OTP", description: "The OTP you entered is incorrect. Please try again." });
-      setLoading(false);
-      return;
-    }
 
     if (!vendorData) {
         toast({ variant: "destructive", title: "Error", description: "Something went wrong, please start over." });
@@ -84,6 +77,8 @@ export function VendorAuthForm() {
     }
 
     try {
+        // In a real app, you would verify the OTP here with a server action.
+        // We'll just pretend it's correct for the simulation.
         const fullPhoneNumber = `${vendorData.countryCode}${vendorData.phone.replace(/^0+/, '')}`;
         const result = await registerUser({
             name: vendorData.name,
@@ -240,25 +235,6 @@ export function VendorAuthForm() {
             </form>
         </Form>
       )}
-
-      <AlertDialog open={showOtpAlert} onOpenChange={setShowOtpAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>OTP Sent (Simulation)</AlertDialogTitle>
-            <AlertDialogDescription>
-                In a real application, this OTP would be sent via SMS. For now, use this code:
-                 <div className="text-center font-mono text-2xl tracking-widest py-4 bg-muted rounded-md my-4">
-                  {simulatedOtp}
-                </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowOtpAlert(false)}>
-              Continue
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

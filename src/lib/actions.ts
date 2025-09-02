@@ -7,15 +7,41 @@ import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data"
 import { MOCK_AI_INTERACTIONS } from "./mock-ai-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 import { config } from 'dotenv';
+import axios from "axios";
 
 config();
 
-async function sendSms(apiKey: string | undefined, phone: string, message: string): Promise<{ success: boolean; message?: string }> {
-    const simulatedMessage = `SMS simulation: To: ${phone}, Message: "${message}"`;
-    console.log(simulatedMessage);
-    // Always return success in simulation mode to allow user flows to continue.
-    return { success: true };
+async function sendSms(apiKey: string, phone: string, message: string): Promise<{ success: boolean; message?: string }> {
+    if (!apiKey) {
+        console.error("SMS API Key is not configured.");
+        return { success: false, message: "Server configuration error: SMS service is not set up." };
+    }
+
+    try {
+        const response = await axios.post('https://api.textbee.dev/api/v1/messaging/sms', {
+            message: message,
+            phone_number: phone,
+        }, {
+            headers: {
+                'x-api-key': apiKey,
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (response.data && (response.status === 200 || response.status === 201)) {
+            console.log("SMS sent successfully:", response.data);
+            return { success: true };
+        } else {
+            console.error("Failed to send SMS, unexpected response:", response.data);
+            return { success: false, message: response.data.message || "An unknown error occurred with the SMS service." };
+        }
+    } catch (error: any) {
+        console.error("Axios error sending SMS:", error);
+        const errorMessage = error.response?.data?.message || error.message || "A server error occurred while trying to send the SMS.";
+        return { success: false, message: `Raw API Error: ${errorMessage}` };
+    }
 }
+
 
 // --- PART ACTIONS ---
 
@@ -142,7 +168,7 @@ export async function registerUser(userData: UserRegistration) {
 
     // Send welcome SMS
     if(createdUser.phone) {
-      await sendSms(process.env.TEXTBEE_API_KEY, createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
+      await sendSms(process.env.TEXTBEE_API_KEY as string, createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
     }
 
     revalidatePath('/admin/users');
@@ -225,9 +251,10 @@ export async function sendPasswordResetCode(identifier: string): Promise<{ succe
     MOCK_USERS[userIndex].verificationCode = code;
     
     // Send the code via SMS
-    const smsResult = await sendSms(process.env.TEXTBEE_API_KEY, user.phone, `Your GulfCarX password reset code is: ${code}`);
+    const smsResult = await sendSms(process.env.TEXTBEE_API_KEY as string, user.phone, `Your GulfCarX password reset code is: ${code}`);
 
     if (smsResult.success) {
+      // In a real app, you wouldn't return the code here. It's returned for simulation purposes.
       return { success: true, message: "Verification code sent.", code: code };
     } else {
       return { success: false, message: smsResult.message || "Failed to send verification code. Please try again later." };

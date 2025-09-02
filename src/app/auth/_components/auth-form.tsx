@@ -84,12 +84,14 @@ export function AuthForm({ userType }: AuthFormProps) {
             return;
         }
         
-        setShowWelcomeAlert(true);
+        toast({
+          title: "Welcome!",
+          description: "Your account has been created. A confirmation message was sent to your mobile.",
+        });
+
         // Defer redirection to allow user to see welcome message.
-        setTimeout(() => {
-            setLoggedInUserContext(result.user);
-            router.push('/');
-        }, 3000);
+        setLoggedInUserContext(result.user);
+        router.push('/');
 
 
     } catch (error) {
@@ -100,17 +102,6 @@ export function AuthForm({ userType }: AuthFormProps) {
         });
         setLoading(false);
     }
-  }
-
-  if (showWelcomeAlert) {
-    return (
-        <Alert>
-            <AlertTitle className="text-xl font-bold">Welcome to GulfCarX!</AlertTitle>
-            <AlertDescription className="mt-2">
-                Your account has been created successfully. A confirmation message has been sent to your mobile number. You will be redirected shortly.
-            </AlertDescription>
-        </Alert>
-    )
   }
 
   return (
