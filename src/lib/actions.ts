@@ -628,3 +628,5 @@ export async function getAiInteractionStats(): Promise<{suggestions: number, cli
     const orders = MOCK_AI_INTERACTIONS.filter(i => i.ordered).length;
     return { suggestions, clicks, orders };
 }
+
+    
