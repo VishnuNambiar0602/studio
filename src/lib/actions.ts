@@ -10,7 +10,6 @@ import axios from 'axios';
 
 async function sendSms(phone: string, message: string) {
     if (!process.env.TEXTBEE_API_KEY) {
-        console.warn("TEXTBEE_API_KEY is not set. Skipping SMS.");
         return { success: false, message: "SMS service not configured." };
     }
     
