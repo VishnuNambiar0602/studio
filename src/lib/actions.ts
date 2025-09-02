@@ -11,10 +11,12 @@ import { config } from 'dotenv';
 
 config();
 
-async function sendSms(apiKey: string | undefined, phone: string, message: string) {
+async function sendSms(apiKey: string | undefined, phone: string, message: string): Promise<{ success: boolean; message?: string }> {
     if (!apiKey) {
-        console.log("SMS simulation: Not sent. TEXTBEE_API_KEY not configured.");
-        console.log(`To: ${phone}\nMessage: ${message}`);
+        const simulatedMessage = `SMS simulation (no API key): To: ${phone}, Message: "${message}"`;
+        console.log(simulatedMessage);
+        // To make the flow testable without an API key, we will treat this as a success.
+        // In a real production environment, you might want this to be an error.
         return { success: true };
     }
     
@@ -30,15 +32,30 @@ async function sendSms(apiKey: string | undefined, phone: string, message: strin
         });
 
         if (response.data && response.data.success) {
-            console.log("SMS sent successfully:", response.data);
+            console.log("SMS sent successfully via Textbee:", response.data);
             return { success: true };
         } else {
-            console.error("SMS sending failed:", response.data);
-            return { success: false, message: "Failed to send SMS." };
+            // Textbee API returned a non-success response
+            const errorMessage = `Textbee API Error: ${JSON.stringify(response.data)}`;
+            console.error(errorMessage);
+            return { success: false, message: errorMessage };
         }
-    } catch (error) {
-        console.error("Error sending SMS:", error);
-        return { success: false, message: "An error occurred while sending SMS." };
+    } catch (error: any) {
+        // Axios or network error
+        let detailedError = "An unknown error occurred while sending SMS.";
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          detailedError = `Textbee API Request Failed: ${error.message} - Response: ${JSON.stringify(error.response.data)}`;
+        } else if (error.request) {
+          // The request was made but no response was received
+          detailedError = `Textbee API No Response: ${error.message}`;
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          detailedError = `SMS Client Error: ${error.message}`;
+        }
+        console.error("Detailed SMS Error:", detailedError);
+        return { success: false, message: detailedError };
     }
 }
 
@@ -259,7 +276,7 @@ export async function sendPasswordResetCode(identifier: string, isAdminCheck: bo
     if (smsResult.success) {
       return { success: true, message: "Verification code sent.", email: user.email };
     } else {
-      return { success: false, message: "Failed to send verification code. Please try again later." };
+      return { success: false, message: smsResult.message || "Failed to send verification code. Please try again later." };
     }
 }
 
