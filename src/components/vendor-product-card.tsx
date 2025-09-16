@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -73,7 +72,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
           <MapPin className="mr-2 h-4 w-4 shrink-0" />
           <span className="truncate">{part.vendorAddress}</span>
         </div>
-        <div className="text-3xl font-bold text-primary">${part.price.toFixed(2)}</div>
+        <div className="text-3xl font-bold text-primary">{part.price.toFixed(2)} OMR</div>
       </CardContent>
       <CardFooter className="p-6 pt-0 grid grid-cols-2 gap-2">
         <Button 

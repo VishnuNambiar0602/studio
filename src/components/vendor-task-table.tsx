@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -71,7 +70,7 @@ export function VendorTaskTable() {
       b.partName,
       b.userName,
       new Date(b.bookingDate).toLocaleDateString(),
-      `$${b.cost.toFixed(2)}`,
+      `OMR ${b.cost.toFixed(2)}`,
       b.status
     ]);
 
@@ -127,7 +126,7 @@ export function VendorTaskTable() {
                   </TableCell>
                   <TableCell>{booking.userName}</TableCell>
                   <TableCell>{new Date(booking.bookingDate).toLocaleDateString()}</TableCell>
-                  <TableCell>${booking.cost.toFixed(2)}</TableCell>
+                  <TableCell>{booking.cost.toFixed(2)} OMR</TableCell>
                   <TableCell>
                     <Badge className={taskBadgeVariants({ status: booking.status })}>
                         {booking.status}

@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -287,18 +286,18 @@ export function CheckoutForm() {
                                         <p className="font-medium text-sm">{item.name}</p>
                                         <p className="text-muted-foreground text-sm">Qty: {item.purchaseQuantity}</p>
                                     </div>
-                                    <p className="text-sm font-semibold">${(item.price * item.purchaseQuantity).toFixed(2)}</p>
+                                    <p className="text-sm font-semibold">{(item.price * item.purchaseQuantity).toFixed(2)} OMR</p>
                                 </div>
                             ))}
                         </ScrollArea>
                         <Separator />
                         <div className="flex justify-between">
                             <span>Subtotal</span>
-                            <span>${subtotal.toFixed(2)}</span>
+                            <span>{subtotal.toFixed(2)} OMR</span>
                         </div>
                          <div className="flex justify-between">
                             <span>Tax</span>
-                            <span>${taxAmount.toFixed(2)}</span>
+                            <span>{taxAmount.toFixed(2)} OMR</span>
                         </div>
                         <div className="flex justify-between">
                             <span>Shipping</span>
@@ -307,7 +306,7 @@ export function CheckoutForm() {
                         <Separator />
                         <div className="flex justify-between font-bold text-lg">
                             <span>Total</span>
-                            <span>${grandTotal.toFixed(2)}</span>
+                            <span>{grandTotal.toFixed(2)} OMR</span>
                         </div>
                     </CardContent>
                 </Card>

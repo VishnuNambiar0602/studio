@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -126,7 +125,7 @@ export function OrderHistory() {
                             </div>
                              <div>
                                 <p className="text-xs text-muted-foreground">TOTAL</p>
-                                <p className="text-sm font-medium">${order.total.toFixed(2)}</p>
+                                <p className="text-sm font-medium">{order.total.toFixed(2)} OMR</p>
                             </div>
                             <div className="w-full sm:w-auto">
                                <p className="text-xs text-muted-foreground">ORDER # {order.id.split("-")[0]}</p>

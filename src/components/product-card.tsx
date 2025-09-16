@@ -92,7 +92,7 @@ export function ProductCard({ part }: ProductCardProps) {
                         <span className="truncate">{part.vendorAddress}</span>
                     </div>
                 </div>
-                <div className="text-xl sm:text-3xl font-bold text-primary">${part.price.toFixed(2)}</div>
+                <div className="text-xl sm:text-3xl font-bold text-primary">{part.price.toFixed(2)} OMR</div>
             </CardContent>
         </Link>
       <CardFooter className="p-4 sm:p-6 pt-0 mt-auto hidden sm:flex justify-between items-center">

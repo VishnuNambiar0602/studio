@@ -250,7 +250,7 @@ export function AddPartForm() {
           name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Price ($)</FormLabel>
+              <FormLabel>Price (OMR)</FormLabel>
               <FormControl>
                 <Input type="number" placeholder="e.g., 75.00" {...field} />
               </FormControl>

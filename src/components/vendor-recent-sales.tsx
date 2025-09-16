@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -54,7 +53,7 @@ export function VendorRecentSales() {
                   {sale.partName}
                 </p>
               </div>
-              <div className="ml-auto font-medium">+${sale.cost.toFixed(2)}</div>
+              <div className="ml-auto font-medium">+ {sale.cost.toFixed(2)} OMR</div>
             </div>
           ))
         ) : (

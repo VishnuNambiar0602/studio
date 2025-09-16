@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -113,7 +112,7 @@ export function AdminVendorPerformance() {
                                                     <TrendingUp className="h-4 w-4"/>
                                                     <span>Sales (Last 30 Days)</span>
                                                 </div>
-                                                <p className="text-2xl font-bold">${vendor.monthlySales.toFixed(2)}</p>
+                                                <p className="text-2xl font-bold">{vendor.monthlySales.toFixed(2)} OMR</p>
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -125,7 +124,7 @@ export function AdminVendorPerformance() {
                                                         {vendor.recentItems.map((item, index) => (
                                                             <li key={index} className="flex justify-between items-center bg-muted/50 p-2 rounded-md">
                                                                 <span className="truncate pr-2">{item.partName}</span>
-                                                                <Badge variant="secondary">${item.cost.toFixed(2)}</Badge>
+                                                                <Badge variant="secondary">{item.cost.toFixed(2)} OMR</Badge>
                                                             </li>
                                                         ))}
                                                     </ul>

@@ -1,4 +1,3 @@
-// Edited
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building, Percent, ImageIcon, Sparkles } from "lucide-react";
@@ -44,7 +43,7 @@ export default async function AdminDashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{stats.totalRevenue.toFixed(2)} OMR</div>
               <p className="text-xs text-muted-foreground">
                 From all completed sales
               </p>

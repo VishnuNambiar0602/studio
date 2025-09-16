@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -69,7 +68,7 @@ export function CartView() {
                         </div>
                     </div>
                      <div className="flex flex-col items-end justify-between h-full ml-4">
-                        <p className="text-lg font-bold text-primary">${(item.price * item.purchaseQuantity).toFixed(2)}</p>
+                        <p className="text-lg font-bold text-primary">{(item.price * item.purchaseQuantity).toFixed(2)} OMR</p>
                         <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
                             <Trash2 className="h-5 w-5" />
                             <span className="sr-only">Remove item</span>
@@ -88,7 +87,7 @@ export function CartView() {
                 <CardContent className="space-y-4">
                     <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>${subtotal.toFixed(2)}</span>
+                        <span>{subtotal.toFixed(2)} OMR</span>
                     </div>
                      <div className="flex justify-between">
                         <span>Shipping</span>
@@ -96,12 +95,12 @@ export function CartView() {
                     </div>
                      <div className="flex justify-between">
                         <span>Tax</span>
-                        <span>${taxAmount.toFixed(2)}</span>
+                        <span>{taxAmount.toFixed(2)} OMR</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
-                        <span>${grandTotal.toFixed(2)}</span>
+                        <span>{grandTotal.toFixed(2)} OMR</span>
                     </div>
                 </CardContent>
                 <CardFooter>

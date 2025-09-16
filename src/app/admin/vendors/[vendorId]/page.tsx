@@ -1,4 +1,3 @@
-// Edited
 
 import { getVendorDetailsForAdmin } from "@/lib/actions";
 import { notFound } from "next/navigation";
@@ -63,7 +62,7 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+                    <div className="text-2xl font-bold">{stats.totalRevenue.toFixed(2)} OMR</div>
                     <p className="text-xs text-muted-foreground">From all completed sales</p>
                 </CardContent>
             </Card>
@@ -113,10 +112,10 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
                         {parts.map(part => (
                             <TableRow key={part.id}>
                                 <TableCell className="font-medium">{part.name}</TableCell>
-                                <TableCell>${part.price.toFixed(2)}</TableCell>
+                                <TableCell>{part.price.toFixed(2)} OMR</TableCell>
                                 <TableCell>{part.quantity}</TableCell>
                                 <TableCell>{part.unitsSold}</TableCell>
-                                <TableCell>${part.revenue.toFixed(2)}</TableCell>
+                                <TableCell>{part.revenue.toFixed(2)} OMR</TableCell>
                                 <TableCell>
                                     <Badge variant={part.isVisibleForSale ? 'secondary' : 'outline'}>
                                         {part.isVisibleForSale ? 'For Sale' : 'On Hold'}

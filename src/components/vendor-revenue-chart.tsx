@@ -1,4 +1,3 @@
-// Edited
 
 "use client"
 
@@ -51,7 +50,7 @@ export function VendorRevenueChart() {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => `OMR ${value}`}
             />
             <Bar
                 dataKey="total"

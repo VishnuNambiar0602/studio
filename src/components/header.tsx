@@ -1,23 +1,24 @@
-// Edited
 
 "use client";
 
-import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle, Car, Menu } from "lucide-react";
+import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle, Car, Menu, Languages } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
 import { Badge } from "./ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuRadioGroup, DropdownMenuRadioItem } from "./ui/dropdown-menu";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet";
 import { useState } from "react";
+import type { Language } from "@/lib/types";
+
 
 export function Header() {
   const { cart } = useCart();
-  const { language, isLoggedIn, loggedInUser, logoutUser } = useSettings();
+  const { language, setLanguage, isLoggedIn, loggedInUser, logoutUser } = useSettings();
   const t = getDictionary(language);
   const itemCount = cart.length;
   const router = useRouter();
@@ -65,6 +66,24 @@ export function Header() {
         </nav>
 
         <div className="flex flex-1 md:flex-none items-center justify-end space-x-2">
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Languages className="h-5 w-5" />
+                <span className="sr-only">Change language</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Select Language</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={language} onValueChange={(value) => setLanguage(value as Language)}>
+                  <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="ar">العربية (Arabic)</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button asChild variant="outline" size="icon" aria-label={t.header.cart} className="relative">
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />

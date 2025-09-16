@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -81,7 +80,7 @@ export default function VendorAccountPage() {
                         <DollarSign className="h-6 w-6 text-primary" />
                         <div>
                             <p className="text-sm text-muted-foreground">Total Revenue</p>
-                            <p className="font-semibold">${stats.totalRevenue.toFixed(2)}</p>
+                            <p className="font-semibold">{stats.totalRevenue.toFixed(2)} OMR</p>
                         </div>
                     </div>
                      <div className="flex items-center space-x-3 p-4 bg-background rounded-lg border">

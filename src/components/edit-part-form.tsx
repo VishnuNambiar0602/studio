@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -264,7 +263,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
           name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Price ($)</FormLabel>
+              <FormLabel>Price (OMR)</FormLabel>
                 <div className="relative">
                   <FormControl>
                     <Input type="number" placeholder="e.g., 75.00" {...field} className={cn(isPriceOptimizationEnabled && "pr-10")} />

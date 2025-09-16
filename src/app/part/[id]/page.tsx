@@ -1,3 +1,4 @@
+
 // Edited
 
 import { getPart } from "@/lib/actions";
@@ -71,7 +72,7 @@ export default async function PartDetailPage({ params: { id } }: { params: { id:
                     </div>
               </div>
 
-               <div className="text-5xl font-bold text-primary">${part.price.toFixed(2)}</div>
+               <div className="text-5xl font-bold text-primary">{part.price.toFixed(2)} OMR</div>
 
               <Separator />
 
