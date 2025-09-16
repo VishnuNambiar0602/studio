@@ -4,7 +4,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
-import { Footer } from '@/components/footer';
 import { Providers } from '@/components/providers';
 import { ClientOnly } from '@/components/client-only';
 
@@ -30,10 +29,9 @@ export default function RootLayout({
       <body className={cn('min-h-screen bg-background font-sans antialiased flex flex-col', fontSans.variable)} suppressHydrationWarning>
         <ClientOnly>
           <Providers>
-            <div className="flex-grow">
+            <div className="flex-grow flex flex-col">
                 {children}
             </div>
-            <Footer />
             <Toaster />
           </Providers>
         </ClientOnly>

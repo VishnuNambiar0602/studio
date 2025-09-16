@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -7,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { ShieldCheck } from "lucide-react";
+import { Footer } from "@/components/footer";
 
 export default function PrivacyPage() {
   const { language } = useSettings();
@@ -40,6 +40,7 @@ export default function PrivacyPage() {
           </Card>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

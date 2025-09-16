@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, CornerDownLeft, Sparkles, AlertCircle, ArrowRight, Mic, Send } from "lucide-react";
+import { Bot, User, Sparkles, AlertCircle, ArrowRight, Mic, Send } from "lucide-react";
 import { useParts } from "@/context/part-context";
 import { suggestParts, SuggestPartsOutput } from "@/ai/flows/suggest-parts-from-request";
 import Link from "next/link";
@@ -104,7 +104,7 @@ export function GeminiChat() {
 
   const handleExamplePrompt = (prompt: string) => {
     form.setValue("prompt", prompt);
-    handleSubmit({ prompt });
+    form.handleSubmit(handleSubmit)();
   };
   
   const handleToggleRecording = () => {
@@ -142,7 +142,7 @@ export function GeminiChat() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pt-16">
       <ScrollArea className="flex-grow" ref={scrollAreaRef}>
         <div className="py-6 px-4">
           {messages.length === 0 && !loading && (
@@ -196,7 +196,7 @@ export function GeminiChat() {
                 {message.followUpQuestions && message.followUpQuestions.length > 0 && !loading && index === messages.length - 1 && (
                   <div className="flex flex-wrap gap-2 pt-3">
                     {message.followUpQuestions.map((question, qIndex) => (
-                      <button key={qIndex} onClick={() => handleSubmit({prompt: question})}>
+                      <button key={qIndex} onClick={() => form.handleSubmit(handleSubmit)({ prompt: question })}>
                         <Badge variant="outline" className="text-sm py-1 px-3 hover:bg-muted cursor-pointer">
                           {question}
                         </Badge>

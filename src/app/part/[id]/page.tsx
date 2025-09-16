@@ -1,6 +1,4 @@
 
-// Edited
-
 import { getPart } from "@/lib/actions";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/header";
@@ -12,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { AddToCartButton } from "./_components/add-to-cart-button";
 import { BookViewingDialog } from "@/components/book-viewing-dialog";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/footer";
 
 export default async function PartDetailPage({ params: { id } }: { params: { id: string } }) {
   const part = await getPart(id);
@@ -89,6 +88,7 @@ export default async function PartDetailPage({ params: { id } }: { params: { id:
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

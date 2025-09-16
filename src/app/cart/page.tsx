@@ -1,6 +1,7 @@
-// Edited
+
 import { CartView } from "@/components/cart-view";
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
 export default function CartPage() {
   return (
@@ -13,6 +14,7 @@ export default function CartPage() {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }

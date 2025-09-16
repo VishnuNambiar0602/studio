@@ -1,7 +1,7 @@
-// Edited
 
 import { CheckoutForm } from "@/components/checkout-form";
 import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 
 export default function CheckoutPage() {
   return (
@@ -12,6 +12,7 @@ export default function CheckoutPage() {
            <CheckoutForm />
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -8,6 +7,7 @@ import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { Suspense } from "react";
+import { Footer } from "@/components/footer";
 
 export default function NewPartsPage() {
   const { language } = useSettings();
@@ -33,6 +33,7 @@ export default function NewPartsPage() {
           </div>
         </section>
       </main>
+      <Footer />
     </div>
   );
 }

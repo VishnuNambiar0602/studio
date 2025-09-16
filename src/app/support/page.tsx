@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { LifeBuoy, Mail, Phone } from "lucide-react";
+import { Footer } from "@/components/footer";
 
 export default function SupportPage() {
   const { language } = useSettings();
@@ -60,6 +60,7 @@ export default function SupportPage() {
             </Card>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

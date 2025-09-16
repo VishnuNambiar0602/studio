@@ -1,8 +1,8 @@
-// Edited
 
 import { Header } from "@/components/header";
 import { OrderHistory } from "@/components/order-history";
 import { Suspense } from "react";
+import { Footer } from "@/components/footer";
 
 export default function MyOrdersPage() {
     return (
@@ -18,6 +18,7 @@ export default function MyOrdersPage() {
                     </div>
                 </section>
             </main>
+            <Footer />
         </div>
     );
 }

@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -7,6 +6,7 @@ import { SettingsForm } from "./_components/settings-form";
 import { UserProfile } from "./_components/user-profile";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
+import { Footer } from "@/components/footer";
 
 export default function SettingsPage() {
   const { language } = useSettings();
@@ -24,6 +24,7 @@ export default function SettingsPage() {
             <SettingsForm />
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

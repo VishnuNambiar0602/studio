@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -7,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 import { Building2 } from "lucide-react";
+import { Footer } from "@/components/footer";
 
 export default function AboutPage() {
   const { language } = useSettings();
@@ -36,6 +36,7 @@ export default function AboutPage() {
           </Card>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

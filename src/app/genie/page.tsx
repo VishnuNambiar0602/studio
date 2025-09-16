@@ -1,13 +1,22 @@
-// Edited
-import { Header } from "@/components/header";
+
 import { GeminiChat } from "@/components/gemini-chat";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function GeniePage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
-      <Header />
-      <main className="flex-1 flex flex-col p-4 overflow-hidden">
-        <div className="w-full max-w-4xl mx-auto flex-grow h-full">
+      <header className="absolute top-0 left-0 z-10 p-4">
+        <Button asChild variant="outline">
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Exit Zen Mode
+          </Link>
+        </Button>
+      </header>
+      <main className="flex-1 flex flex-col h-screen">
+        <div className="w-full h-full max-w-4xl mx-auto flex-grow">
           <GeminiChat />
         </div>
       </main>

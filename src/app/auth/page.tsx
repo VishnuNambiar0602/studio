@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -10,6 +9,7 @@ import { VendorAuthForm } from "./_components/vendor-auth-form";
 import { LoginForm } from "./_components/login-form";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
+import { Footer } from "@/components/footer";
 
 export default function AuthPage() {
   const { language } = useSettings();
@@ -62,6 +62,7 @@ export default function AuthPage() {
 
         </Tabs>
       </main>
+      <Footer />
     </div>
   );
 }

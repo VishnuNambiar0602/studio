@@ -1,4 +1,3 @@
-// Edited
 
 import { Header } from "@/components/header";
 import { HeroSection } from "@/components/hero-section";
@@ -6,6 +5,7 @@ import { ProductSection } from "@/components/product-section";
 import { Chatbot } from "@/components/chatbot";
 import { Suspense } from "react";
 import { ProductGridSkeleton } from "@/components/product-grid-skeleton";
+import { Footer } from "@/components/footer";
 
 export default async function Home() {
   
@@ -19,6 +19,7 @@ export default async function Home() {
         </Suspense>
         <Chatbot />
       </main>
+      <Footer />
     </div>
   );
 }

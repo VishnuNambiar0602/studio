@@ -1,4 +1,3 @@
-// Edited
 
 import { getOrderById } from "@/lib/actions";
 import { notFound } from "next/navigation";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle, Circle, Loader, Package, Store, Check } from "lucide-react";
 import type { OrderStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Footer } from "@/components/footer";
 
 const timelineSteps: { status: OrderStatus; title: string; description: string; icon: React.ElementType }[] = [
     { status: 'Placed', title: 'Order Placed', description: 'We have received your order and are preparing it.', icon: CheckCircle },
@@ -81,6 +81,7 @@ export default async function TrackOrderPage({ params }: { params: { orderId: st
                     </Card>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 }
