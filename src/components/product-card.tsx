@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -57,44 +56,46 @@ export function ProductCard({ part }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl group">
-      <CardHeader className="p-0">
-        <Link href={`/part/${part.id}`} className="block relative aspect-video w-full overflow-hidden">
-          {part.imageUrls && part.imageUrls.length > 0 ? (
-              <Image 
-                  src={part.imageUrls[0]} 
-                  alt={part.name} 
-                  fill 
-                  className="object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-105" 
-                  data-ai-hint="car part" 
-              />
-          ) : (
-              <div className="bg-muted h-full w-full flex items-center justify-center">
-                  <span className="text-sm text-muted-foreground">No Image</span>
-              </div>
-          )}
+        <Link href={`/part/${part.id}`} className="block">
+            <CardHeader className="p-0">
+                <div className="relative aspect-video w-full overflow-hidden">
+                {part.imageUrls && part.imageUrls.length > 0 ? (
+                    <Image 
+                        src={part.imageUrls[0]} 
+                        alt={part.name} 
+                        fill 
+                        className="object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-105" 
+                        data-ai-hint="car part" 
+                    />
+                ) : (
+                    <div className="bg-muted h-full w-full flex items-center justify-center">
+                        <span className="text-sm text-muted-foreground">No Image</span>
+                    </div>
+                )}
+                </div>
+                <div className="p-4 sm:p-6 pb-2">
+                <div className="flex justify-between items-start">
+                    <CardTitle className="pr-2 text-base sm:text-lg">
+                        {part.name}
+                    </CardTitle>
+                    <Badge variant={part.quantity > 0 ? "secondary" : "destructive"} className="shrink-0 mt-1 hidden sm:flex">
+                    {part.quantity > 0 ? "In Stock" : "Out of Stock"}
+                    </Badge>
+                </div>
+                <CardDescription className="pt-2 text-sm line-clamp-2 hidden sm:block">{part.description}</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow space-y-4 p-4 sm:p-6 pt-0 sm:pt-2">
+                <div className="items-center text-sm text-muted-foreground hidden sm:flex">
+                    <div className="flex items-center">
+                        <MapPin className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="truncate">{part.vendorAddress}</span>
+                    </div>
+                </div>
+                <div className="text-xl sm:text-3xl font-bold text-primary">${part.price.toFixed(2)}</div>
+            </CardContent>
         </Link>
-        <div className="p-6 pb-2">
-          <div className="flex justify-between items-start">
-            <CardTitle className="pr-2 text-lg">
-                <Link href={`/part/${part.id}`} className="hover:underline">{part.name}</Link>
-            </CardTitle>
-            <Badge variant={part.quantity > 0 ? "secondary" : "destructive"} className="shrink-0 mt-1">
-              {part.quantity > 0 ? "In Stock" : "Out of Stock"}
-            </Badge>
-          </div>
-          <CardDescription className="pt-2 text-sm line-clamp-2">{part.description}</CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow space-y-4 p-6 pt-2">
-        <div className="flex items-center text-sm text-muted-foreground">
-            <div className="flex items-center">
-                <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                <span className="truncate">{part.vendorAddress}</span>
-            </div>
-        </div>
-         <div className="text-3xl font-bold text-primary">${part.price.toFixed(2)}</div>
-      </CardContent>
-      <CardFooter className="p-6 pt-0 mt-auto flex justify-between items-center">
+      <CardFooter className="p-4 sm:p-6 pt-0 mt-auto hidden sm:flex justify-between items-center">
           <Link href={`/part/${part.id}`} className="text-sm font-medium text-primary flex items-center">
               View Details <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
