@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle, Car, Menu, Languages, Wrench, Sprout, Truck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
