@@ -20,6 +20,7 @@ import { useSettings } from "@/context/settings-context";
 import { Badge } from "./ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { ImageCaptureDialog } from "./image-capture-dialog";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -200,9 +201,15 @@ export function GeminiChat() {
                     <Image src={message.imagePreview} alt="User upload" layout="fill" objectFit="cover" />
                   </div>
                 )}
-                <div className={cn("prose prose-sm max-w-none text-foreground", { "text-muted-foreground": message.role === "user" })}>
-                  {message.content}
-                </div>
+                {message.role === 'assistant' ? (
+                  <div className="prose prose-sm max-w-none text-foreground dark:prose-invert">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground">
+                    {message.content}
+                  </div>
+                )}
                 {message.suggestions && message.suggestions.length > 0 && (
                   <div className="space-y-3 pt-2">
                     {message.suggestions.map((part) => (
