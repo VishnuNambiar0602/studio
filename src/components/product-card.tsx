@@ -56,7 +56,7 @@ export function ProductCard({ part }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl group">
-        <Link href={`/part/${part.id}`} className="block">
+        <Link href={`/part/${part.id}`} className="flex flex-col h-full">
             <CardHeader className="p-0">
                 <div className="relative aspect-video w-full overflow-hidden">
                 {part.imageUrls && part.imageUrls.length > 0 ? (
@@ -94,15 +94,15 @@ export function ProductCard({ part }: ProductCardProps) {
                 </div>
                 <div className="text-xl sm:text-3xl font-bold text-primary">{part.price.toFixed(2)} OMR</div>
             </CardContent>
+            <CardFooter className="p-4 sm:p-6 pt-0 mt-auto hidden sm:flex justify-between items-center">
+                <span className="text-sm font-medium text-primary flex items-center">
+                    View Details <ArrowRight className="ml-2 h-4 w-4" />
+                </span>
+                <Button variant="secondary" size="sm" onClick={handleAddToCart} disabled={part.quantity === 0}>
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                </Button>
+            </CardFooter>
         </Link>
-      <CardFooter className="p-4 sm:p-6 pt-0 mt-auto hidden sm:flex justify-between items-center">
-          <Link href={`/part/${part.id}`} className="text-sm font-medium text-primary flex items-center">
-              View Details <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-          <Button variant="secondary" size="sm" onClick={handleAddToCart} disabled={part.quantity === 0}>
-              <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
-          </Button>
-      </CardFooter>
     </Card>
   );
 }

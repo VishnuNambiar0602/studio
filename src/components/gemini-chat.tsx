@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, CornerDownLeft, Sparkles, AlertCircle, ArrowRight } from "lucide-react";
+import { Bot, User, CornerDownLeft, Sparkles, AlertCircle, ArrowRight, Mic, Send } from "lucide-react";
 import { useParts } from "@/context/part-context";
 import { suggestParts, SuggestPartsOutput } from "@/ai/flows/suggest-parts-from-request";
 import Link from "next/link";
@@ -40,13 +40,17 @@ export function GeminiChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { parts } = useParts();
-  const { setLanguage } = useSettings();
+  const { language, setLanguage } = useSettings();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { prompt: "" },
   });
+
+  const promptValue = form.watch("prompt");
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -59,6 +63,8 @@ export function GeminiChat() {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     const userInput = values.prompt;
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content;
+
     setMessages((prev) => [...prev, { role: "user", content: userInput }]);
     setLoading(true);
     setError(null);
@@ -68,7 +74,11 @@ export function GeminiChat() {
       const availableParts = JSON.stringify(
         parts.map(({ id, name, description, price }) => ({ id, name, description, price }))
       );
-      const response = await suggestParts({ partDescription: userInput, availableParts });
+      const response = await suggestParts({
+        partDescription: userInput,
+        previousUserQuery: lastUserMessage,
+        availableParts,
+      });
 
       if (response.detectedLanguage) {
           setLanguage(response.detectedLanguage);
@@ -93,9 +103,43 @@ export function GeminiChat() {
     form.setValue("prompt", prompt);
     handleSubmit({ prompt });
   };
+  
+  const handleToggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+    } else {
+      startRecording();
+    }
+  };
+
+  const startRecording = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = language === 'ar' ? 'ar-SA' : 'en-US';
+
+    recognitionRef.current.onstart = () => setIsRecording(true);
+    recognitionRef.current.onend = () => setIsRecording(false);
+    recognitionRef.current.onerror = (event: any) => {
+      setError(`Speech recognition error: ${event.error}`);
+      setIsRecording(false);
+    };
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      form.setValue("prompt", transcript, { shouldValidate: true });
+    };
+
+    recognitionRef.current.start();
+  };
 
   return (
-    <div className="flex flex-col h-full max-h-[calc(100vh-120px)]">
+    <div className="flex flex-col h-full">
       <ScrollArea className="flex-grow" ref={scrollAreaRef}>
         <div className="py-6 px-4">
           {messages.length === 0 && !loading && (
@@ -104,8 +148,8 @@ export function GeminiChat() {
                 <div className="absolute -inset-2 bg-primary/10 rounded-full blur-2xl"></div>
                 <Image src="https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080" width={96} height={96} alt="Genie Avatar" className="relative rounded-full border" />
               </div>
-              <h1 className="text-4xl font-bold">Hello!</h1>
-              <p className="text-xl text-muted-foreground mt-2">How can I help you today?</p>
+              <h1 className="text-4xl font-bold">Hello! I'm the Genie.</h1>
+              <p className="text-xl text-muted-foreground mt-2">How can I help you find the perfect part?</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12 w-full">
                 {examplePrompts.map((prompt) => (
                   <Card key={prompt.title} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => handleExamplePrompt(prompt.description)}>
@@ -164,7 +208,7 @@ export function GeminiChat() {
           )}
         </div>
       </ScrollArea>
-      <div className="px-4 pb-4 mt-auto">
+      <div className="px-4 pb-4 mt-auto pt-4">
         {error && (
             <div className="mb-4 flex items-center gap-2 text-sm text-destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -180,13 +224,19 @@ export function GeminiChat() {
               disabled={loading}
               autoComplete="off"
             />
-            <Button type="submit" size="icon" disabled={loading} className="rounded-xl h-10 w-10">
-              {loading ? (
-                <div className="h-4 w-4 border-2 border-background/50 border-t-background rounded-full animate-spin"></div>
-              ) : (
-                <CornerDownLeft className="h-5 w-5" />
-              )}
-            </Button>
+            {promptValue ? (
+              <Button type="submit" size="icon" disabled={loading} className="rounded-xl h-10 w-10 shrink-0">
+                {loading ? (
+                  <div className="h-4 w-4 border-2 border-background/50 border-t-background rounded-full animate-spin"></div>
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            ) : (
+              <Button type="button" size="icon" variant="ghost" onClick={handleToggleRecording} disabled={loading} className={cn("rounded-xl h-10 w-10 shrink-0", isRecording && "text-destructive")}>
+                <Mic className="h-5 w-5" />
+              </Button>
+            )}
           </form>
         </Card>
       </div>

@@ -80,7 +80,7 @@ export function HeroSection() {
                         <DialogTrigger asChild>
                             <Button size="lg" variant="secondary">
                                 <Camera className="mr-2 h-5 w-5" />
-                                Take a Snap
+                                {t.hero.takeSnap}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
@@ -133,13 +133,7 @@ export function HeroSection() {
                     <Button size="lg" asChild>
                         <Link href="/genie">
                             <Bot className="mr-2 h-5 w-5" />
-                            Ask the Genie
-                        </Link>
-                    </Button>
-                     <Button size="lg" asChild>
-                        <Link href="/voice-genie">
-                            <Volume2 className="mr-2 h-5 w-5" />
-                            Talk to the Genie
+                            {t.hero.askGenie}
                         </Link>
                     </Button>
                 </div>
