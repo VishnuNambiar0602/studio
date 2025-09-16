@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 
-export function ClientOnly({ children }: { children: React.ReactNode }) {
+export function ClientOnly({ children }: { children: React.Node }) {
     const [hasMounted, setHasMounted] = useState(false);
 
     useEffect(() => {
