@@ -25,13 +25,15 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Sparkles } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { updatePart } from "@/lib/actions";
 import type { Part } from "@/lib/types";
 import { useParts } from "@/context/part-context";
+import { useSettings } from "@/context/settings-context";
+import { suggestPrice } from "@/ai/flows/price-optimizer-flow";
 
 const categories = ["new", "used", "oem"] as const;
 
@@ -64,8 +66,10 @@ interface EditPartFormProps {
 
 export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
   const [loading, setLoading] = useState(false);
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
   const { toast } = useToast();
   const { updatePartInContext } = useParts();
+  const { isPriceOptimizationEnabled } = useSettings();
 
   const form = useForm<EditPartFormValues>({
     resolver: zodResolver(editPartFormSchema),
@@ -93,6 +97,32 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
         dateOfManufacture: new Date(), // Mocking date
     });
   }, [part, form]);
+
+  const handlePriceSuggestion = async () => {
+    setSuggestionLoading(true);
+    const formData = form.getValues();
+    try {
+      const result = await suggestPrice({
+        partName: formData.name,
+        partDescription: formData.description,
+        category: formData.category,
+        manufacturer: formData.manufacturer,
+      });
+      form.setValue('price', result.suggestedPrice);
+      toast({
+        title: "AI Price Suggestion",
+        description: result.justification,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not get a price suggestion.",
+      });
+    } finally {
+      setSuggestionLoading(false);
+    }
+  };
 
   async function onSubmit(data: EditPartFormValues) {
     setLoading(true);
@@ -235,9 +265,24 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Price ($)</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="e.g., 75.00" {...field} />
-              </FormControl>
+                <div className="relative">
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 75.00" {...field} className={cn(isPriceOptimizationEnabled && "pr-10")} />
+                  </FormControl>
+                  {isPriceOptimizationEnabled && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      onClick={handlePriceSuggestion}
+                      disabled={suggestionLoading}
+                    >
+                      {suggestionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                      <span className="sr-only">Suggest Price</span>
+                    </Button>
+                  )}
+                </div>
               <FormMessage />
             </FormItem>
           )}

@@ -106,3 +106,8 @@ export interface AiInteraction {
     clicked: boolean;
     ordered: boolean;
 }
+
+export interface PriceOptimizationSuggestion {
+    suggestedPrice: number;
+    justification: string;
+}

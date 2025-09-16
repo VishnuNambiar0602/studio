@@ -22,6 +22,8 @@ interface SettingsContextType {
   setTaxRate: (rate: number) => void;
   heroImageUrl: string;
   setHeroImageUrl: (url: string) => void;
+  isPriceOptimizationEnabled: boolean;
+  setIsPriceOptimizationEnabled: (enabled: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -35,6 +37,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<PublicUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPriceOptimizationEnabled, setIsPriceOptimizationEnabled] = useState(false);
 
   useEffect(() => {
     try {
@@ -59,6 +62,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         
         const storedHeroImage = localStorage.getItem("heroImageUrl");
         if (storedHeroImage) setHeroImageUrl(storedHeroImage);
+        
+        const storedPriceOpt = localStorage.getItem("isPriceOptimizationEnabled");
+        if (storedPriceOpt) setIsPriceOptimizationEnabled(JSON.parse(storedPriceOpt));
 
 
     } catch (error) {
@@ -93,6 +99,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setHeroImageUrl(url);
     localStorage.setItem("heroImageUrl", url);
   }
+  
+  const handleSetIsPriceOptimizationEnabled = (enabled: boolean) => {
+    setIsPriceOptimizationEnabled(enabled);
+    localStorage.setItem("isPriceOptimizationEnabled", JSON.stringify(enabled));
+  }
 
   const loginUser = (user: PublicUser) => {
     setLoggedInUser(user);
@@ -118,7 +129,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       taxRate, setTaxRate: handleSetTaxRate,
       heroImageUrl, setHeroImageUrl: handleSetHeroImageUrl,
       isLoggedIn, setIsLoggedIn,
-      loggedInUser, loginUser, logoutUser
+      loggedInUser, loginUser, logoutUser,
+      isPriceOptimizationEnabled, setIsPriceOptimizationEnabled: handleSetIsPriceOptimizationEnabled
     }}>
       {children}
     </SettingsContext.Provider>
