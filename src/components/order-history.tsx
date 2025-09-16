@@ -146,7 +146,7 @@ export function OrderHistory() {
                                     alt={item.name} 
                                     width={100} height={100} 
                                     className="rounded-md object-cover border"
-                                    data-ai-hint="car part"
+                                    data-ai-hint="car parts"
                                 />
                                 <div className="flex-grow">
                                     <p className="font-semibold text-primary">{item.name}</p>

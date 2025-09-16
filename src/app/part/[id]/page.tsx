@@ -39,7 +39,7 @@ export default async function PartDetailPage({ params: { id } }: { params: { id:
                           alt={`${part.name} image ${index + 1}`}
                           fill
                           className="object-cover rounded-lg"
-                          data-ai-hint="car part"
+                          data-ai-hint="car parts"
                         />
                       </div>
                     </CarouselItem>

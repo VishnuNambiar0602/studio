@@ -45,7 +45,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
       <CardHeader className="p-0">
         <div className="relative aspect-video w-full overflow-hidden">
           {part.imageUrls && part.imageUrls.length > 0 ? (
-            <Image src={part.imageUrls[0]} alt={part.name} fill className="object-cover rounded-t-lg" data-ai-hint="car part" />
+            <Image src={part.imageUrls[0]} alt={part.name} fill className="object-cover rounded-t-lg" data-ai-hint="car parts" />
           ) : (
             <div className="bg-muted h-full w-full flex items-center justify-center">
                 <span className="text-sm text-muted-foreground">No Image</span>

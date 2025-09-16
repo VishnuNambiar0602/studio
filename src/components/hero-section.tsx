@@ -67,7 +67,7 @@ export function HeroSection() {
               priority
               data-ai-hint="desert car"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-black/30 to-black/70" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-black/50 to-black/80" />
             <div className="relative z-10 p-4 text-white">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold drop-shadow-lg">{t.hero.title}</h1>
                 {t.hero.subtitle && (

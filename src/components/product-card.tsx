@@ -65,7 +65,7 @@ export function ProductCard({ part }: ProductCardProps) {
                         alt={part.name} 
                         fill 
                         className="object-cover rounded-t-lg transition-transform duration-500 group-hover:scale-105" 
-                        data-ai-hint="car part" 
+                        data-ai-hint="car parts" 
                     />
                 ) : (
                     <div className="bg-muted h-full w-full flex items-center justify-center">
