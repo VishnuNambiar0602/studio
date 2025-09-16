@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, User, Sparkles, AlertCircle, ArrowRight, Mic, Send, Plus, Camera, Image as ImageIcon, X } from "lucide-react";
+import { Bot, User, Sparkles, AlertCircle, ArrowRight, Mic, Send, Paperclip, Camera, Upload, X } from "lucide-react";
 import { useParts } from "@/context/part-context";
 import { suggestParts, SuggestPartsOutput } from "@/ai/flows/suggest-parts-from-request";
 import Link from "next/link";
@@ -19,29 +19,19 @@ import Image from "next/image";
 import { useSettings } from "@/context/settings-context";
 import { Badge } from "./ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { ChatCamera } from "./chat-camera";
+import { ImageCaptureDialog } from "./image-capture-dialog";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
-  image?: string;
+  imagePreview?: string;
   suggestions?: SuggestPartsOutput['suggestions'];
   followUpQuestions?: SuggestPartsOutput['followUpQuestions'];
 }
 
 const formSchema = z.object({
-  prompt: z.string(), // Prompt is now optional if an image is provided
+  prompt: z.string(), // Prompt is now optional
 });
-
-const fileToDataUrl = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
 
 const examplePrompts = [
   { title: "Find a part", description: "Brake pads for a 2021 Toyota Land Cruiser" },
@@ -59,7 +49,7 @@ export function GeminiChat() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
@@ -81,25 +71,26 @@ export function GeminiChat() {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     const userInput = values.prompt;
-    if (!userInput && !imagePreview) return; // Prevent empty submission
+    if (!userInput && !imageUri) return; // Prevent submission if both are empty
 
     const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content;
 
-    setMessages((prev) => [...prev, { role: "user", content: userInput, image: imagePreview || undefined }]);
+    setMessages((prev) => [...prev, { role: "user", content: userInput, imagePreview: imageUri || undefined }]);
     setLoading(true);
     setError(null);
     form.reset();
-    setImagePreview(null);
+    const submittedImageUri = imageUri;
+    setImageUri(null);
 
     try {
       const availableParts = JSON.stringify(
         parts.map(({ id, name, description, price }) => ({ id, name, description, price }))
       );
       const response = await suggestParts({
-        partDescription: userInput || "The user has provided an image, please identify the part.",
+        partDescription: userInput,
         previousUserQuery: lastUserMessage,
         availableParts,
-        photoDataUri: imagePreview || undefined,
+        photoDataUri: submittedImageUri || undefined,
       });
 
       if (response.detectedLanguage) {
@@ -161,17 +152,15 @@ export function GeminiChat() {
     recognitionRef.current.start();
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
-      const dataUrl = await fileToDataUrl(file);
-      setImagePreview(dataUrl);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImageUri(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  };
-
-  const handlePhotoTaken = (dataUri: string) => {
-    setImagePreview(dataUri);
-    setIsCameraOpen(false);
   };
 
   return (
@@ -206,9 +195,9 @@ export function GeminiChat() {
               </Avatar>
               <div className="flex-1 space-y-2">
                 <p className="font-semibold">{message.role === "user" ? "You" : "Genie"}</p>
-                 {message.image && (
-                  <div className="relative w-40 h-40 rounded-lg overflow-hidden border">
-                    <Image src={message.image} alt="User upload" layout="fill" objectFit="cover" />
+                {message.imagePreview && (
+                  <div className="relative w-48 h-48 rounded-lg overflow-hidden border">
+                    <Image src={message.imagePreview} alt="User upload" layout="fill" objectFit="cover" />
                   </div>
                 )}
                 <div className={cn("prose prose-sm max-w-none text-foreground", { "text-muted-foreground": message.role === "user" })}>
@@ -268,51 +257,34 @@ export function GeminiChat() {
             </div>
         )}
         <Card className="p-2 rounded-2xl shadow-lg">
-          {imagePreview && (
+          {imageUri && (
             <div className="relative p-2">
-              <Image src={imagePreview} alt="Image preview" width={80} height={80} className="rounded-lg" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-0 right-0 h-6 w-6 rounded-full bg-black/50 text-white hover:bg-black/70"
-                onClick={() => setImagePreview(null)}
-              >
+              <div className="relative w-20 h-20 rounded-md overflow-hidden border">
+                  <Image src={imageUri} alt="Image preview" layout="fill" objectFit="cover" />
+              </div>
+              <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-6 w-6 rounded-full bg-background/50" onClick={() => setImageUri(null)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           )}
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex items-center gap-1">
-             <Popover>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex items-center gap-2">
+            <Popover>
               <PopoverTrigger asChild>
                 <Button type="button" size="icon" variant="ghost" className="rounded-xl h-10 w-10 shrink-0">
-                  <Plus className="h-5 w-5" />
+                  <Paperclip className="h-5 w-5" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-1" align="start">
-                <div className="flex flex-col gap-1">
-                    <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" className="justify-start gap-2 px-2">
-                                <Camera className="h-4 w-4" /> Take Photo
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <ChatCamera onPhotoTaken={handlePhotoTaken} />
-                        </DialogContent>
-                    </Dialog>
-                  <Button variant="ghost" className="justify-start gap-2 px-2" onClick={() => fileInputRef.current?.click()}>
-                    <ImageIcon className="h-4 w-4" /> Upload Image
+              <PopoverContent className="w-auto p-1">
+                <div className="flex flex-col">
+                  <Button variant="ghost" className="justify-start gap-2" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="h-4 w-4"/> Upload Image
+                  </Button>
+                  <Button variant="ghost" className="justify-start gap-2" onClick={() => setIsCameraOpen(true)}>
+                    <Camera className="h-4 w-4"/> Take Photo
                   </Button>
                 </div>
               </PopoverContent>
             </Popover>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/png, image/jpeg, image/webp"
-              onChange={handleFileSelect}
-            />
             <Input
               {...form.register("prompt")}
               placeholder="Message the Genie..."
@@ -320,7 +292,7 @@ export function GeminiChat() {
               disabled={loading}
               autoComplete="off"
             />
-            {promptValue || imagePreview ? (
+            {promptValue || imageUri ? (
               <Button type="submit" size="icon" disabled={loading} className="rounded-xl h-10 w-10 shrink-0">
                 {loading ? (
                   <div className="h-4 w-4 border-2 border-background/50 border-t-background rounded-full animate-spin"></div>
@@ -335,6 +307,21 @@ export function GeminiChat() {
             )}
           </form>
         </Card>
+        <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/png, image/jpeg, image/webp"
+            className="hidden"
+        />
+        <ImageCaptureDialog
+          open={isCameraOpen}
+          onOpenChange={setIsCameraOpen}
+          onImageCapture={(uri) => {
+            setImageUri(uri);
+            setIsCameraOpen(false);
+          }}
+        />
       </div>
     </div>
   );

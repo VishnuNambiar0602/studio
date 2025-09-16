@@ -55,7 +55,7 @@ Your primary goal is to provide a helpful, comprehensive 'answer' to the user's 
 Consider the user's previous query to maintain conversational context. For example, if they just asked about a "Land Cruiser" and now say "what about for a Patrol?", you know they are still asking about the same type of part.
 
 Here is your process:
-1.  **Analyze the User's Query:** Understand what the user is asking for, whether it's identifying a part, asking for its purpose, or seeking advice. Use the 'Previous User Query' for context if provided.
+1.  **Analyze the User's Query & Image:** Understand what the user is asking for, whether it's identifying a part from text, an image, or both. Use the 'Previous User Query' for context if provided. If an image is provided, it is the primary source of truth for identifying the part.
 2.  **Formulate a General Answer:** Using your broad automotive expertise, write a helpful and informative 'answer' to the user's query with a witty and clever flair. For example, if they ask about "brake pads for a Tesla", you might start with "Ah, looking to stop a silent speedster? For Teslas, you're looking at regenerative braking doing most of the work, but when you do need them, the physical pads..." This 'answer' should be provided regardless of whether the part is in the inventory.
 3.  **Check Inventory & Find Suggestions:** After formulating the general answer, search the "Available Auto Parts" JSON list for items that match the user's request.
     -   If you find one or more relevant parts, populate the 'suggestions' array.
@@ -63,12 +63,12 @@ Here is your process:
     -   If no matching parts are found in the inventory, return an empty 'suggestions' array. The 'answer' you formulated in step 2 is still mandatory. You could even add a witty comment like, "While my magic lamp doesn't have that exact part right now..."
 4.  **Suggest Follow-up Questions:** Based on your answer and any suggestions, generate 2-3 short, relevant follow-up questions a user might have. Populate these in the 'followUpQuestions' array. Examples: "How do I install this?", "What's the warranty?", "Do you have a cheaper alternative?".
 
+{{#if photoDataUri}}
+User's Photo: {{media url=photoDataUri}}
+{{/if}}
 User's Current Query: {{{partDescription}}}
 {{#if previousUserQuery}}
 Previous User Query: {{{previousUserQuery}}}
-{{/if}}
-{{#if photoDataUri}}
-User's Photo: {{media url=photoDataUri}}
 {{/if}}
 Available Auto Parts (JSON format): {{{availableParts}}}
 
@@ -82,6 +82,11 @@ const suggestPartsFlow = ai.defineFlow(
     outputSchema: SuggestPartsOutputSchema,
   },
   async input => {
+    // If there's a photo but no text, provide a default description.
+    if (input.photoDataUri && !input.partDescription) {
+        input.partDescription = "Please identify the part in the image and tell me about it.";
+    }
+
     const {output} = await prompt(input);
     if (!output) {
       throw new Error("The AI model did not return a valid output.");
