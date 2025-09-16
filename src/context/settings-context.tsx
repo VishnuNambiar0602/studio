@@ -6,6 +6,11 @@ import type { FontSize, Language, PublicUser, User, Theme } from "@/lib/types";
 
 const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080";
 
+interface SocialLink {
+  url: string;
+  isEnabled: boolean;
+}
+
 interface SettingsContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -24,11 +29,17 @@ interface SettingsContextType {
   setHeroImageUrl: (url: string) => void;
   isPriceOptimizationEnabled: boolean;
   setIsPriceOptimizationEnabled: (enabled: boolean) => void;
+  socialLinks: {
+    instagram: SocialLink;
+    facebook: SocialLink;
+    twitter: SocialLink;
+  };
+  setSocialLink: (platform: 'instagram' | 'facebook' | 'twitter', value: SocialLink) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
+export function SettingsProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light');
   const [fontSize, setFontSize] = useState<FontSize>('md');
   const [language, setLanguage] = useState<Language>('en');
@@ -38,6 +49,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [loggedInUser, setLoggedInUser] = useState<PublicUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPriceOptimizationEnabled, setIsPriceOptimizationEnabled] = useState(false);
+  const [socialLinks, setSocialLinks] = useState({
+    instagram: { url: "", isEnabled: true },
+    facebook: { url: "", isEnabled: true },
+    twitter: { url: "", isEnabled: true },
+  });
 
   useEffect(() => {
     try {
@@ -65,6 +81,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         
         const storedPriceOpt = localStorage.getItem("isPriceOptimizationEnabled");
         if (storedPriceOpt) setIsPriceOptimizationEnabled(JSON.parse(storedPriceOpt));
+
+        const storedSocialLinks = localStorage.getItem("socialLinks");
+        if (storedSocialLinks) setSocialLinks(JSON.parse(storedSocialLinks));
 
 
     } catch (error) {
@@ -105,6 +124,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("isPriceOptimizationEnabled", JSON.stringify(enabled));
   }
 
+  const handleSetSocialLink = (platform: 'instagram' | 'facebook' | 'twitter', value: SocialLink) => {
+    const newSocialLinks = { ...socialLinks, [platform]: value };
+    setSocialLinks(newSocialLinks);
+    localStorage.setItem("socialLinks", JSON.stringify(newSocialLinks));
+  }
+
   const loginUser = (user: PublicUser) => {
     setLoggedInUser(user);
     setIsLoggedIn(true);
@@ -130,7 +155,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       heroImageUrl, setHeroImageUrl: handleSetHeroImageUrl,
       isLoggedIn, setIsLoggedIn,
       loggedInUser, loginUser, logoutUser,
-      isPriceOptimizationEnabled, setIsPriceOptimizationEnabled: handleSetIsPriceOptimizationEnabled
+      isPriceOptimizationEnabled, setIsPriceOptimizationEnabled: handleSetIsPriceOptimizationEnabled,
+      socialLinks, setSocialLink: handleSetSocialLink,
     }}>
       {children}
     </SettingsContext.Provider>

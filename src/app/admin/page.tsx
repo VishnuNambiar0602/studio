@@ -1,6 +1,7 @@
 
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building, Percent, ImageIcon, Sparkles } from "lucide-react";
+import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building, Percent, ImageIcon, Sparkles, Share2 } from "lucide-react";
 import { AdminAdToggle } from "./_components/admin-ad-toggle";
 import { AdminTrafficChart } from "./_components/admin-traffic-chart";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdminTaxSettings } from "./_components/admin-tax-settings";
 import { AdminHeroImageUploader } from "./_components/admin-hero-image-uploader";
 import { AdminPriceOptimizationToggle } from "./_components/admin-price-optimization-toggle";
+import { AdminSocialMediaSettings } from "./_components/admin-social-media-settings";
 
 function ChartSkeleton() {
   return (
@@ -105,6 +107,7 @@ export default async function AdminDashboard() {
           </Card>
           <div className="space-y-4">
               <AdminHeroImageUploader />
+              <AdminSocialMediaSettings />
               <Card>
                   <CardHeader>
                       <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5" /> Vendor AI Tools</CardTitle>

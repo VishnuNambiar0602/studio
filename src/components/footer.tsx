@@ -1,14 +1,33 @@
-// Edited
 
 "use client";
 
 import Link from "next/link";
-import { Instagram, Facebook, Twitter } from "lucide-react";
+import { Instagram, Facebook } from "lucide-react";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
 
+function XIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
 export function Footer() {
-  const { language } = useSettings();
+  const { language, socialLinks } = useSettings();
   const t = getDictionary(language);
 
   return (
@@ -42,18 +61,24 @@ export function Footer() {
           <div>
             <h3 className="font-semibold text-foreground">{t.footer.connect}</h3>
             <div className="flex mt-4 space-x-4">
-              <Link href="#" className="text-muted-foreground hover:text-primary">
-                <Instagram className="h-6 w-6" />
-                <span className="sr-only">Instagram</span>
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary">
-                <Facebook className="h-6 w-6" />
-                <span className="sr-only">Facebook</span>
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-primary">
-                <Twitter className="h-6 w-6" />
-                <span className="sr-only">Twitter / X</span>
-              </Link>
+              {socialLinks.instagram.isEnabled && socialLinks.instagram.url && (
+                <Link href={socialLinks.instagram.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                  <Instagram className="h-6 w-6" />
+                  <span className="sr-only">Instagram</span>
+                </Link>
+              )}
+              {socialLinks.facebook.isEnabled && socialLinks.facebook.url && (
+                <Link href={socialLinks.facebook.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                  <Facebook className="h-6 w-6" />
+                  <span className="sr-only">Facebook</span>
+                </Link>
+              )}
+              {socialLinks.twitter.isEnabled && socialLinks.twitter.url && (
+                <Link href={socialLinks.twitter.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                  <XIcon className="h-6 w-6" />
+                  <span className="sr-only">X / Twitter</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
