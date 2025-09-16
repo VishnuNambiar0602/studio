@@ -1,7 +1,6 @@
-
 "use client";
 
-import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle, Car, Menu, Languages } from "lucide-react";
+import { LogOut, Settings, ShoppingCart, User, ListOrdered, LayoutDashboard, HelpCircle, Car, Menu, Languages, Wrench, Sprout, Truck } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { useCart } from "@/context/cart-context";
@@ -14,6 +13,42 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet";
 import { useState } from "react";
 import type { Language } from "@/lib/types";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+import { cn } from "@/lib/utils";
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  )
+})
+ListItem.displayName = "ListItem"
 
 
 export function Header() {
@@ -32,7 +67,7 @@ export function Header() {
   const getDashboardLink = () => {
     if (!loggedInUser) return "/";
     switch (loggedInUser.role) {
-      case 'admin': return "/admin/dashboard";
+      case 'admin': return "/admin";
       case 'vendor': return "/vendor/dashboard";
       default: return "/my-orders";
     }
@@ -42,6 +77,40 @@ export function Header() {
     if (!loggedInUser) return <User />;
     return loggedInUser.role === 'vendor' ? <Car /> : <User />;
   }
+
+  const partsComponents: { title: string; href: string; description: string }[] = [
+    {
+      title: t.header.newParts,
+      href: "/new-parts",
+      description:
+        "Brand new, factory-sealed parts for optimal performance and reliability.",
+    },
+    {
+      title: t.header.usedParts,
+      href: "/used-parts",
+      description:
+        "Cost-effective, inspected used parts to get you back on the road.",
+    },
+    {
+      title: t.header.oemParts,
+      href: "/oem-parts",
+      description:
+        "Original Equipment Manufacturer parts for a guaranteed perfect fit.",
+    },
+  ]
+  
+  const servicesComponents: { title: string; href: string; description: string }[] = [
+    {
+        title: "Book an Appointment",
+        href: "/support",
+        description: "Schedule a time to meet with a vendor or get professional advice."
+    },
+    {
+        title: "Next Service",
+        href: "/support",
+        description: "Plan and get reminders for your vehicle's next scheduled service."
+    }
+  ]
   
   const navLinks = [
       { href: "/new-parts", label: t.header.newParts },
@@ -59,11 +128,42 @@ export function Header() {
         </Link>
         
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex flex-1 items-center space-x-2">
-           {navLinks.map(link => (
-              <Button key={link.href} variant="ghost" asChild><Link href={link.href}>{link.label}</Link></Button>
-           ))}
-        </nav>
+        <NavigationMenu className="hidden md:flex flex-1">
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Parts</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                  {partsComponents.map((component) => (
+                    <ListItem
+                      key={component.title}
+                      title={component.title}
+                      href={component.href}
+                    >
+                      {component.description}
+                    </ListItem>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Services</NavigationMenuTrigger>
+               <NavigationMenuContent>
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                  {servicesComponents.map((component) => (
+                    <ListItem
+                      key={component.title}
+                      title={component.title}
+                      href={component.href}
+                    >
+                      {component.description}
+                    </ListItem>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
 
         <div className="flex flex-1 md:flex-none items-center justify-end space-x-2">
           
@@ -155,8 +255,13 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="left">
                 <nav className="grid gap-6 text-lg font-medium pt-8">
-                  {navLinks.map(link => (
-                    <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">{link.label}</Link>
+                  <Link href="#" className="font-semibold">Parts</Link>
+                  {partsComponents.map(link => (
+                    <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">{link.title}</Link>
+                  ))}
+                  <Link href="#" className="font-semibold pt-4 border-t">Services</Link>
+                  {servicesComponents.map(link => (
+                    <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">{link.title}</Link>
                   ))}
                   <div className="border-t pt-6">
                     {!isLoggedIn && (
