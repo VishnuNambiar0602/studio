@@ -35,6 +35,7 @@ const SuggestPartsOutputSchema = z.object({
   suggestions: z.array(SuggestedPartSchema).optional().describe("A list of suggested parts from the store's inventory that match the user's query. If no matches are found in the inventory, this should be an empty array."),
   answer: z.string().describe("A helpful, friendly, and conversational answer to the user's query. This should always be populated. If the user asks a question, this field contains the direct answer. If you find relevant suggestions, this field should still contain helpful information about the part in general, before mentioning the suggestions."),
   detectedLanguage: z.enum(['en', 'ar']).optional().describe("The detected language of the user's query, either 'en' for English or 'ar' for Arabic. This should be set based on the predominant language in the user's query."),
+  followUpQuestions: z.array(z.string()).optional().describe("A list of 2-3 relevant follow-up questions the user might have, based on the context of the answer provided. For example, 'What tools do I need to install this?' or 'Is there a warranty?'"),
 });
 export type SuggestPartsOutput = z.infer<typeof SuggestPartsOutputSchema>;
 
@@ -60,6 +61,7 @@ Here is your process:
     -   If you find one or more relevant parts, populate the 'suggestions' array.
     -   For each suggestion, include its 'id', 'name', and a friendly 'reason' explaining why it's a good match from the inventory.
     -   If no matching parts are found in the inventory, return an empty 'suggestions' array. The 'answer' you formulated in step 2 is still mandatory. You could even add a witty comment like, "While my magic lamp doesn't have that exact part right now..."
+4.  **Suggest Follow-up Questions:** Based on your answer and any suggestions, generate 2-3 short, relevant follow-up questions a user might have. Populate these in the 'followUpQuestions' array. Examples: "How do I install this?", "What's the warranty?", "Do you have a cheaper alternative?".
 
 User's Current Query: {{{partDescription}}}
 {{#if previousUserQuery}}

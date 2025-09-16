@@ -17,11 +17,13 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useSettings } from "@/context/settings-context";
+import { Badge } from "./ui/badge";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   suggestions?: SuggestPartsOutput['suggestions'];
+  followUpQuestions?: SuggestPartsOutput['followUpQuestions'];
 }
 
 const formSchema = z.object({
@@ -88,6 +90,7 @@ export function GeminiChat() {
         role: "assistant",
         content: response.answer || "Here's what I found based on your request:",
         suggestions: response.suggestions,
+        followUpQuestions: response.followUpQuestions,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -187,6 +190,17 @@ export function GeminiChat() {
                           </CardContent>
                         </Card>
                       </Link>
+                    ))}
+                  </div>
+                )}
+                {message.followUpQuestions && message.followUpQuestions.length > 0 && !loading && index === messages.length - 1 && (
+                  <div className="flex flex-wrap gap-2 pt-3">
+                    {message.followUpQuestions.map((question, qIndex) => (
+                      <button key={qIndex} onClick={() => handleSubmit({prompt: question})}>
+                        <Badge variant="outline" className="text-sm py-1 px-3 hover:bg-muted cursor-pointer">
+                          {question}
+                        </Badge>
+                      </button>
                     ))}
                   </div>
                 )}
