@@ -72,8 +72,9 @@ export function GeminiChat() {
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     const userInput = values.prompt;
-    if (!userInput && !imageUri) return; // Prevent submission if both are empty
+    if (!userInput && !imageUri) return;
 
+    // Get the actual last user message from the state *before* adding the new one.
     const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content;
 
     setMessages((prev) => [...prev, { role: "user", content: userInput, imagePreview: imageUri || undefined }]);
@@ -89,7 +90,7 @@ export function GeminiChat() {
       );
       const response = await suggestParts({
         partDescription: userInput,
-        previousUserQuery: lastUserMessage,
+        previousUserQuery: lastUserMessage, // Pass the correct previous query
         availableParts,
         photoDataUri: submittedImageUri || undefined,
       });
@@ -333,3 +334,5 @@ export function GeminiChat() {
     </div>
   );
 }
+
+    
