@@ -176,54 +176,52 @@ export function TaxManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="w-full overflow-x-auto">
-            <Table>
-                <TableHeader>
-                <TableRow>
-                    <TableHead className="w-[50px]">
-                    <Checkbox
-                        checked={selectedRows.size === mainSheet.length && mainSheet.length > 0}
-                        onCheckedChange={(checked) => {
-                        const newSelectedRows = new Set<string>();
-                        if (checked) {
-                            mainSheet.forEach(row => newSelectedRows.add(row.id));
-                        }
-                        setSelectedRows(newSelectedRows);
-                        }}
-                    />
-                    </TableHead>
-                    <TableHead><button onClick={() => requestSort('date')} className="flex items-center">Date {getSortIcon('date')}</button></TableHead>
-                    <TableHead><button onClick={() => requestSort('type')} className="flex items-center">Type {getSortIcon('type')}</button></TableHead>
-                    <TableHead><button onClick={() => requestSort('subtype')} className="flex items-center">Subtype {getSortIcon('subtype')}</button></TableHead>
-                    <TableHead className="text-right"><button onClick={() => requestSort('amount')} className="flex items-center w-full justify-end">Amount (OMR) {getSortIcon('amount')}</button></TableHead>
-                </TableRow>
-                </TableHeader>
-                <TableBody>
-                {sortedMainSheet.map(txn => (
-                    <TableRow key={txn.id}>
-                    <TableCell>
-                        <Checkbox
-                        checked={selectedRows.has(txn.id)}
-                        onCheckedChange={(checked) => {
-                            const newSelectedRows = new Set(selectedRows);
-                            if (checked) {
-                            newSelectedRows.add(txn.id);
-                            } else {
-                            newSelectedRows.delete(txn.id);
-                            }
-                            setSelectedRows(newSelectedRows);
-                        }}
-                        />
-                    </TableCell>
-                    <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
-                    <TableCell><Badge variant={txn.type === 'Sale' ? 'secondary' : 'outline'}>{txn.type}</Badge></TableCell>
-                    <TableCell className="break-words max-w-xs">{txn.subtype}</TableCell>
-                    <TableCell className={`text-right font-mono ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount.toFixed(2)}</TableCell>
-                    </TableRow>
-                ))}
-                </TableBody>
-            </Table>
-          </div>
+          <Table>
+              <TableHeader>
+              <TableRow>
+                  <TableHead className="w-[50px]">
+                  <Checkbox
+                      checked={selectedRows.size === mainSheet.length && mainSheet.length > 0}
+                      onCheckedChange={(checked) => {
+                      const newSelectedRows = new Set<string>();
+                      if (checked) {
+                          mainSheet.forEach(row => newSelectedRows.add(row.id));
+                      }
+                      setSelectedRows(newSelectedRows);
+                      }}
+                  />
+                  </TableHead>
+                  <TableHead><button onClick={() => requestSort('date')} className="flex items-center">Date {getSortIcon('date')}</button></TableHead>
+                  <TableHead><button onClick={() => requestSort('type')} className="flex items-center">Type {getSortIcon('type')}</button></TableHead>
+                  <TableHead><button onClick={() => requestSort('subtype')} className="flex items-center">Subtype {getSortIcon('subtype')}</button></TableHead>
+                  <TableHead className="text-right"><button onClick={() => requestSort('amount')} className="flex items-center w-full justify-end">Amount (OMR) {getSortIcon('amount')}</button></TableHead>
+              </TableRow>
+              </TableHeader>
+              <TableBody>
+              {sortedMainSheet.map(txn => (
+                  <TableRow key={txn.id}>
+                  <TableCell>
+                      <Checkbox
+                      checked={selectedRows.has(txn.id)}
+                      onCheckedChange={(checked) => {
+                          const newSelectedRows = new Set(selectedRows);
+                          if (checked) {
+                          newSelectedRows.add(txn.id);
+                          } else {
+                          newSelectedRows.delete(txn.id);
+                          }
+                          setSelectedRows(newSelectedRows);
+                      }}
+                      />
+                  </TableCell>
+                  <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
+                  <TableCell><Badge variant={txn.type === 'Sale' ? 'secondary' : 'outline'}>{txn.type}</Badge></TableCell>
+                  <TableCell className="break-words max-w-xs">{txn.subtype}</TableCell>
+                  <TableCell className={`text-right font-mono ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount.toFixed(2)}</TableCell>
+                  </TableRow>
+              ))}
+              </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
