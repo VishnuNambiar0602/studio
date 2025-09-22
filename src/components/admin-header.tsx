@@ -30,6 +30,8 @@ export function AdminHeader() {
         { href: "/admin/taxes", label: "Tax Center", icon: Landmark },
         { href: "/admin/ai-analytics", label: "AI Analytics", icon: Sparkles },
     ];
+    
+    const currentPageLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
 
 
   return (
@@ -49,7 +51,7 @@ export function AdminHeader() {
                     href={item.href}
                     className={cn(
                         "transition-colors hover:text-foreground",
-                        pathname === item.href ? "text-foreground font-semibold" : "text-muted-foreground"
+                        pathname.startsWith(item.href) ? "text-foreground font-semibold" : "text-muted-foreground"
                     )}
                 >
                     {item.label}
@@ -77,7 +79,7 @@ export function AdminHeader() {
                                 href={item.href}
                                 className={cn(
                                     "flex items-center gap-4 text-muted-foreground hover:text-foreground",
-                                    pathname === item.href && "text-foreground"
+                                    pathname.startsWith(item.href) && "text-foreground"
                                 )}
                                 onClick={() => setIsSheetOpen(false)}
                             >
@@ -90,9 +92,9 @@ export function AdminHeader() {
             </Sheet>
         </div>
 
-      <div className="flex w-full items-center justify-between md:justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
+      <div className="flex w-full items-center justify-end md:justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
           <h1 className="text-lg font-semibold md:hidden">
-              {navItems.find(item => item.href === pathname)?.label || 'Dashboard'}
+              {currentPageLabel}
           </h1>
       </div>
     </header>

@@ -82,8 +82,8 @@ export function AdminSocialMediaSettings() {
       </CardHeader>
       <CardContent className="space-y-6">
         {socialConfig.map(({ platform, Icon, isEnabled }) => (
-          <div key={platform} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4">
-            <div className="flex items-center gap-4 mb-4 sm:mb-0">
+          <div key={platform} className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 space-y-4 sm:space-y-0">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
                 <Icon className="h-6 w-6 text-muted-foreground"/>
                 <div className="relative flex-grow">
                      <LinkIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

@@ -35,9 +35,6 @@ export default async function AdminDashboard() {
   return (
     <>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        <div className="flex items-center">
-            <h1 className="text-lg font-semibold md:text-2xl">Master Control Panel</h1>
-          </div>
         <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -20,9 +20,6 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold md:text-2xl">Vendor Profile</h1>
-      </div>
       
       <div className="grid gap-4 md:gap-8 lg:grid-cols-3">
         {/* Vendor Details Card */}
@@ -111,7 +108,7 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
                     <TableBody>
                         {parts.map(part => (
                             <TableRow key={part.id}>
-                                <TableCell className="font-medium break-words">{part.name}</TableCell>
+                                <TableCell className="font-medium break-words max-w-xs">{part.name}</TableCell>
                                 <TableCell>{part.price.toFixed(2)}</TableCell>
                                 <TableCell>{part.quantity}</TableCell>
                                 <TableCell>{part.unitsSold}</TableCell>

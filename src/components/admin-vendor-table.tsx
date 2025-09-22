@@ -66,11 +66,9 @@ export function AdminVendorTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Vendor Name</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Address</TableHead>
+                  <TableHead>Vendor</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>
+                  <TableHead className="text-right">
                     <span className="sr-only">Actions</span>
                   </TableHead>
                 </TableRow>
@@ -84,14 +82,12 @@ export function AdminVendorTable() {
                             <Avatar className="w-8 h-8 border">
                                 <AvatarFallback>{vendor.name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <span className="font-semibold break-words">{vendor.name}</span>
+                            <div className="flex flex-col">
+                                <span className="font-semibold break-words">{vendor.name}</span>
+                                <span className="text-muted-foreground text-xs break-words">{vendor.shopAddress}</span>
+                            </div>
                         </div>
                       </TableCell>
-                       <TableCell className="break-words">
-                        <div>{vendor.email}</div>
-                        <div className="text-muted-foreground text-xs">{vendor.phone}</div>
-                       </TableCell>
-                      <TableCell className="break-words">{vendor.shopAddress}</TableCell>
                        <TableCell>
                         <Badge variant="outline" className={statusBadgeVariants({ status: vendor.isBlocked ? 'blocked' : 'active' })}>
                            {vendor.isBlocked ? (
@@ -105,7 +101,7 @@ export function AdminVendorTable() {
                       <TableCell className="text-right">
                         <Button asChild variant="outline" size="sm">
                             <Link href={`/admin/vendors/${vendor.id}`}>
-                                View Profile <ExternalLink className="ml-2 h-4 w-4"/>
+                                View <ExternalLink className="ml-2 h-4 w-4"/>
                             </Link>
                         </Button>
                       </TableCell>

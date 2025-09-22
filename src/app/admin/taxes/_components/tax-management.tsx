@@ -153,7 +153,7 @@ export function TaxManagement() {
   return (
     <div className="space-y-8">
       {/* Financial Summary */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Net Profit" value={financials.netProfit} isProfit />
         <StatCard title="Gross Sales" value={financials.grossSales} />
         <StatCard title="Total Expenses" value={financials.expenses} />
@@ -217,7 +217,7 @@ export function TaxManagement() {
                     </TableCell>
                     <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
                     <TableCell><Badge variant={txn.type === 'Sale' ? 'secondary' : 'outline'}>{txn.type}</Badge></TableCell>
-                    <TableCell className="break-words">{txn.subtype}</TableCell>
+                    <TableCell className="break-words max-w-xs">{txn.subtype}</TableCell>
                     <TableCell className={`text-right font-mono ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount.toFixed(2)}</TableCell>
                     </TableRow>
                 ))}
@@ -236,7 +236,7 @@ const StatCard = ({ title, value, isProfit = false }: { title: string; value: nu
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-            <div className={`text-2xl font-bold font-mono ${isProfit ? (value >= 0 ? 'text-green-600' : 'text-red-600') : ''}`}>
+            <div className={`text-xl md:text-2xl font-bold font-mono ${isProfit ? (value >= 0 ? 'text-green-600' : 'text-red-600') : ''}`}>
                 {Math.abs(value).toFixed(2)} OMR
             </div>
         </CardContent>

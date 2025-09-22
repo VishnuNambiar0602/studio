@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -91,13 +90,13 @@ export function AdminVendorPerformance() {
                 <Carousel
                     opts={{
                         align: "start",
-                        loop: performanceData.length > 3,
+                        loop: performanceData.length > 2,
                     }}
                     className="w-full"
                 >
                     <CarouselContent>
                         {performanceData.map((vendor) => (
-                            <CarouselItem key={vendor.id} className="md:basis-1/2 lg:basis-1/3">
+                            <CarouselItem key={vendor.id} className="basis-full md:basis-1/2 lg:basis-1/3">
                                 <div className="p-1">
                                     <Card className="flex flex-col h-full">
                                         <CardHeader>
@@ -124,7 +123,7 @@ export function AdminVendorPerformance() {
                                                     <ul className="space-y-1 text-sm">
                                                         {vendor.recentItems.map((item, index) => (
                                                             <li key={index} className="flex items-center gap-2 bg-muted/50 p-2 rounded-md">
-                                                                <span className="flex-grow truncate pr-2">{item.partName}</span>
+                                                                <span className="truncate pr-2">{item.partName}</span>
                                                                 <Badge variant="secondary">${item.cost.toFixed(2)}</Badge>
                                                             </li>
                                                         ))}

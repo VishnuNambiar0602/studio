@@ -128,11 +128,10 @@ export function AdminUserTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="w-[40%]">Name</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>
+                  <TableHead className="text-right">
                     <span className="sr-only">Actions</span>
                   </TableHead>
                 </TableRow>
@@ -141,8 +140,12 @@ export function AdminUserTable() {
                 {users.length > 0 ? (
                   users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium break-words">{user.name}</TableCell>
-                      <TableCell className="break-words">{user.email}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex flex-col">
+                          <span className="break-words">{user.name}</span>
+                          <span className="text-muted-foreground text-xs break-words">{user.email}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge className={roleBadgeVariants({ role: user.role })}>
                           {user.role}
