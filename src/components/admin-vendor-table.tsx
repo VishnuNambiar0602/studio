@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -57,7 +58,7 @@ export function AdminVendorTable() {
         <CardHeader>
           <CardTitle>Vendors</CardTitle>
           <CardDescription>
-            A list of all vendors on the platform. On small screens, the table is scrollable.
+            A list of all vendors on the platform.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -78,19 +79,19 @@ export function AdminVendorTable() {
                 {vendors.length > 0 ? (
                   vendors.map((vendor) => (
                     <TableRow key={vendor.id}>
-                      <TableCell className="font-medium whitespace-nowrap">
+                      <TableCell className="font-medium">
                         <div className="flex items-center gap-3">
                             <Avatar className="w-8 h-8 border">
                                 <AvatarFallback>{vendor.name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <span className="font-semibold">{vendor.name}</span>
+                            <span className="font-semibold break-words">{vendor.name}</span>
                         </div>
                       </TableCell>
-                       <TableCell className="whitespace-nowrap">
+                       <TableCell className="break-words">
                         <div>{vendor.email}</div>
                         <div className="text-muted-foreground text-xs">{vendor.phone}</div>
                        </TableCell>
-                      <TableCell className="whitespace-nowrap">{vendor.shopAddress}</TableCell>
+                      <TableCell className="break-words">{vendor.shopAddress}</TableCell>
                        <TableCell>
                         <Badge variant="outline" className={statusBadgeVariants({ status: vendor.isBlocked ? 'blocked' : 'active' })}>
                            {vendor.isBlocked ? (

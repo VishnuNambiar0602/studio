@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -121,7 +120,7 @@ export function AdminUserTable() {
         <CardHeader>
           <CardTitle>Users</CardTitle>
           <CardDescription>
-            A list of all users in the system. On small screens, the table is scrollable.
+            A list of all users in the system.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -142,8 +141,8 @@ export function AdminUserTable() {
                 {users.length > 0 ? (
                   users.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell className="font-medium whitespace-nowrap">{user.name}</TableCell>
-                      <TableCell className="whitespace-nowrap">{user.email}</TableCell>
+                      <TableCell className="font-medium break-words">{user.name}</TableCell>
+                      <TableCell className="break-words">{user.email}</TableCell>
                       <TableCell>
                         <Badge className={roleBadgeVariants({ role: user.role })}>
                           {user.role}

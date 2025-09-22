@@ -101,21 +101,21 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
                     <TableHeader>
                         <TableRow>
                             <TableHead>Part Name</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>Quantity Left</TableHead>
-                            <TableHead>Total Sold</TableHead>
-                            <TableHead>Revenue</TableHead>
+                            <TableHead>Price (OMR)</TableHead>
+                            <TableHead>Qty Left</TableHead>
+                            <TableHead>Sold</TableHead>
+                            <TableHead>Revenue (OMR)</TableHead>
                             <TableHead>Status</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {parts.map(part => (
                             <TableRow key={part.id}>
-                                <TableCell className="font-medium">{part.name}</TableCell>
-                                <TableCell>{part.price.toFixed(2)} OMR</TableCell>
+                                <TableCell className="font-medium break-words">{part.name}</TableCell>
+                                <TableCell>{part.price.toFixed(2)}</TableCell>
                                 <TableCell>{part.quantity}</TableCell>
                                 <TableCell>{part.unitsSold}</TableCell>
-                                <TableCell>{part.revenue.toFixed(2)} OMR</TableCell>
+                                <TableCell>{part.revenue.toFixed(2)}</TableCell>
                                 <TableCell>
                                     <Badge variant={part.isVisibleForSale ? 'secondary' : 'outline'}>
                                         {part.isVisibleForSale ? 'For Sale' : 'On Hold'}

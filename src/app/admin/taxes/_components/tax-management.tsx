@@ -217,7 +217,7 @@ export function TaxManagement() {
                     </TableCell>
                     <TableCell>{new Date(txn.date).toLocaleDateString()}</TableCell>
                     <TableCell><Badge variant={txn.type === 'Sale' ? 'secondary' : 'outline'}>{txn.type}</Badge></TableCell>
-                    <TableCell>{txn.subtype}</TableCell>
+                    <TableCell className="break-words">{txn.subtype}</TableCell>
                     <TableCell className={`text-right font-mono ${txn.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>{txn.amount.toFixed(2)}</TableCell>
                     </TableRow>
                 ))}
