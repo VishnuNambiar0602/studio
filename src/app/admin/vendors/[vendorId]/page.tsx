@@ -38,7 +38,7 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
           <CardContent className="space-y-4 text-sm pt-4">
              <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-3 text-muted-foreground" />
-                <span>{user.email}</span>
+                <span className="break-all">{user.email}</span>
             </div>
              <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-3 text-muted-foreground" />
