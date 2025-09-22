@@ -123,8 +123,8 @@ export function AdminVendorPerformance() {
                                                 {vendor.recentItems.length > 0 ? (
                                                     <ul className="space-y-1 text-sm">
                                                         {vendor.recentItems.map((item, index) => (
-                                                            <li key={index} className="flex justify-between items-center bg-muted/50 p-2 rounded-md">
-                                                                <span className="truncate pr-2">{item.partName}</span>
+                                                            <li key={index} className="flex items-center gap-2 bg-muted/50 p-2 rounded-md">
+                                                                <span className="flex-grow truncate pr-2">{item.partName}</span>
                                                                 <Badge variant="secondary">${item.cost.toFixed(2)}</Badge>
                                                             </li>
                                                         ))}
