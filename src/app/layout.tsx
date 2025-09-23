@@ -5,7 +5,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { Inter as FontSans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { Providers } from '@/components/providers';
-import { ClientOnly } from '@/components/client-only';
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -27,14 +26,12 @@ export default function RootLayout({
     // The RootLayout is a Server Component and MUST return <html> and <body>
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased flex flex-col', fontSans.variable)} suppressHydrationWarning>
-        <ClientOnly>
           <Providers>
             <div className="flex-grow flex flex-col">
                 {children}
             </div>
             <Toaster />
           </Providers>
-        </ClientOnly>
       </body>
     </html>
   );
