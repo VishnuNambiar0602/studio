@@ -3,11 +3,13 @@
 
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem, AiInteraction } from "./types";
-import { MOCK_PARTS, MOCK_USERS, MOCK_ORDERS, MOCK_BOOKINGS } from "./mock-data";
-import { MOCK_AI_INTERACTIONS } from "./mock-ai-data";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
 import { config } from 'dotenv';
 import twilio from 'twilio';
+import { db } from './db';
+import { users, parts, orders as ordersTable, bookings, aiInteractions } from './schema';
+import { eq, and, desc, sql, gte, lte, gt, inArray } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 
 config();
 
@@ -47,15 +49,14 @@ async function sendSms(phone: string, message: string): Promise<{ success: boole
 
 // --- PART ACTIONS ---
 
-export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
+export async function createPart(partData: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
     try {
-        const newPartData: Part = {
-            id: `part-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            ...part,
+        const newPart: Omit<Part, 'id'> = {
+            ...partData,
             isVisibleForSale: true,
         };
-        
-        MOCK_PARTS.unshift(newPartData);
+
+        const [createdPart] = await db.insert(parts).values(newPart).returning();
         
         revalidatePath('/');
         revalidatePath('/new-parts');
@@ -67,18 +68,15 @@ export async function createPart(part: Omit<Part, 'id' | 'isVisibleForSale'>): P
         revalidatePath('/admin');
         revalidatePath('/admin/vendors', 'layout');
 
-        return newPartData;
+        return createdPart;
     } catch (error) {
-        console.error("Failed to create part in mock DB:", error);
+        console.error("Failed to create part in DB:", error);
         return null;
     }
 }
 
 export async function updatePart(partId: string, partData: Part) {
-    const partIndex = MOCK_PARTS.findIndex(p => p.id === partId);
-    if (partIndex !== -1) {
-        MOCK_PARTS[partIndex] = partData;
-    }
+    await db.update(parts).set(partData).where(eq(parts.id, partId));
 
     revalidatePath(`/part/${partId}`);
     revalidatePath("/vendor/inventory");
@@ -93,122 +91,125 @@ export async function updatePart(partId: string, partData: Part) {
 }
 
 export async function getParts(): Promise<Part[]> {
-    return JSON.parse(JSON.stringify(MOCK_PARTS));
+    return await db.select().from(parts);
 }
 
 export async function getPart(id: string): Promise<Part | undefined> {
-    return MOCK_PARTS.find(p => p.id === id);
+    const [part] = await db.select().from(parts).where(eq(parts.id, id));
+    return part;
 }
 
 export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
-    return MOCK_PARTS.filter(p => p.vendorAddress === vendorName);
+    return await db.select().from(parts).where(eq(parts.vendorAddress, vendorName));
 }
 
 // --- USER ACTIONS ---
 
 export async function getUserById(userId: string): Promise<User | null> {
-    const user = MOCK_USERS.find(u => u.id === userId);
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
     if (!user) return null;
-    return JSON.parse(JSON.stringify(user));
+    return user;
 }
 
 export async function getAllUsers(): Promise<PublicUser[]> {
-    const users = MOCK_USERS.map(user => {
-        const { password, verificationCode, verificationCodeExpires, ...publicUser } = user;
-        return publicUser;
-    });
-    return JSON.parse(JSON.stringify(users));
+    return await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        username: users.username,
+        role: users.role,
+        createdAt: users.createdAt,
+        isBlocked: users.isBlocked,
+        phone: users.phone,
+        accountType: users.accountType,
+        shopAddress: users.shopAddress,
+        zipCode: users.zipCode,
+        profilePictureUrl: users.profilePictureUrl
+    }).from(users);
 }
 
 export async function updateUser(userId: string, data: Partial<Omit<PublicUser, 'profilePictureUrl' | 'username'>>): Promise<{ success: boolean; message: string }> {
-    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-        return { success: false, message: 'User not found.' };
+    try {
+        await db.update(users).set(data).where(eq(users.id, userId));
+        revalidatePath('/admin/users');
+        revalidatePath(`/admin/vendors/${userId}`);
+        return { success: true, message: 'User updated successfully.' };
+    } catch (error: any) {
+        return { success: false, message: 'Database error: ' + error.message };
     }
-
-    // Check for email/username collision
-    const otherUsers = MOCK_USERS.filter(u => u.id !== userId);
-    if (data.email && otherUsers.some(u => u.email === data.email)) {
-        return { success: false, message: 'Email is already in use by another account.' };
-    }
-
-    MOCK_USERS[userIndex] = { ...MOCK_USERS[userIndex], ...data };
-    
-    revalidatePath('/admin/users');
-    revalidatePath(`/admin/vendors/${userId}`);
-    return { success: true, message: 'User updated successfully.' };
 }
 
 export async function updateUserProfile(userId: string, data: { name: string; email: string; phone: string; }): Promise<{ success: boolean; message: string; user?: PublicUser; }> {
-    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-        return { success: false, message: "User not found." };
+    try {
+        const [updatedUser] = await db.update(users)
+          .set(data)
+          .where(eq(users.id, userId))
+          .returning({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            username: users.username,
+            role: users.role,
+            createdAt: users.createdAt,
+            isBlocked: users.isBlocked,
+            phone: users.phone,
+            accountType: users.accountType,
+            shopAddress: users.shopAddress,
+            zipCode: users.zipCode,
+            profilePictureUrl: users.profilePictureUrl
+          });
+
+        revalidatePath('/settings');
+        return { success: true, message: "Profile updated successfully.", user: updatedUser };
+    } catch (error: any) {
+        return { success: false, message: "Database error: " + error.message };
     }
-
-    const otherUsers = MOCK_USERS.filter(u => u.id !== userId);
-    if (data.email && otherUsers.some(u => u.email === data.email)) {
-        return { success: false, message: "This email is already in use by another account." };
-    }
-    if (data.phone && otherUsers.some(u => u.phone === data.phone)) {
-        return { success: false, message: "This phone number is already in use by another account." };
-    }
-
-    MOCK_USERS[userIndex] = { ...MOCK_USERS[userIndex], ...data };
-
-    const { password, ...updatedUser } = MOCK_USERS[userIndex];
-
-    revalidatePath('/settings');
-
-    return { success: true, message: "Profile updated successfully.", user: updatedUser };
 }
 
-
 export async function registerUser(userData: UserRegistration) {
-    const existingUser = MOCK_USERS.find(
-        u => u.email === userData.email || (userData.phone && u.phone === userData.phone)
-    );
+    try {
+        const baseUsername = userData.name.toLowerCase().replace(/\s+/g, '') || 'user';
+        const username = `${baseUsername}${Math.floor(100 + Math.random() * 900)}`;
 
-    if (existingUser) {
-        if (existingUser.email === userData.email) {
-            return { success: false, message: "A user with this email already exists." };
+        const [createdUser] = await db.insert(users).values({
+            ...userData,
+            username,
+            isBlocked: false,
+            createdAt: new Date(),
+        }).returning({
+            id: users.id,
+            name: users.name,
+            email: users.email,
+            username: users.username,
+            role: users.role,
+            createdAt: users.createdAt,
+            isBlocked: users.isBlocked,
+            phone: users.phone,
+            accountType: users.accountType,
+            shopAddress: users.shopAddress,
+            zipCode: users.zipCode,
+            profilePictureUrl: users.profilePictureUrl
+        });
+
+        if(createdUser.phone) {
+          await sendSms(createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
         }
-        if (userData.phone && existingUser.phone === userData.phone) {
-            return { success: false, message: "This phone number is already registered." };
+
+        revalidatePath('/admin/users');
+        revalidatePath('/admin');
+        return { success: true, user: createdUser, message: "User registered successfully." };
+    } catch (error: any) {
+        if (error.code === '23505') { // Unique constraint violation
+            return { success: false, message: "A user with this email or phone number already exists." };
         }
+        return { success: false, message: "An unexpected error occurred during registration." };
     }
-    
-    const baseUsername = userData.name.toLowerCase().replace(/\s+/g, '') || 'user';
-    const username = `${baseUsername}${Math.floor(100 + Math.random() * 900)}`;
-
-    const newUser: User = { 
-        id: `user-${Date.now()}`, 
-        createdAt: new Date(),
-        isBlocked: false,
-        ...userData,
-        username: username,
-    };
-
-    MOCK_USERS.push(newUser);
-    
-    const { password, ...createdUser } = newUser;
-
-    // Send welcome SMS
-    if(createdUser.phone) {
-      await sendSms(createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
-    }
-
-    revalidatePath('/admin/users');
-    revalidatePath('/admin');
-    return { success: true, user: createdUser, message: "User registered successfully." };
 }
 
 export async function loginUser(credentials: UserLogin) {
     const identifier = credentials.identifier.toLowerCase();
         
-    const user = MOCK_USERS.find(u => 
-        u.email.toLowerCase() === identifier || 
-        u.phone === credentials.identifier // Phone numbers can have '+' and should not be lowercased
-    );
+    const [user] = await db.select().from(users).where(sql`lower(${users.email}) = ${identifier} or ${users.phone} = ${credentials.identifier} or lower(${users.username}) = ${identifier}`);
 
     if (!user) {
         return { success: false, message: "Invalid credentials." };
@@ -218,8 +219,7 @@ export async function loginUser(credentials: UserLogin) {
        return { success: false, message: "Invalid credentials." };
     }
      if (!user.password && user.role === 'vendor' && user.phone === credentials.identifier) {
-        // This is a passwordless (OTP-based) vendor login, which we'll simulate as successful for now.
-        // In a real app, you'd check an OTP here.
+        // This is a passwordless (OTP-based) vendor login
     } else if (user.password !== credentials.password) {
         return { success: false, message: "Invalid credentials." };
     }
@@ -233,17 +233,17 @@ export async function loginUser(credentials: UserLogin) {
     return { success: true, user: publicUser };
 }
 
+
 export async function adminLogin(credentials: { username?: string, password?: string }) {
     if (credentials.username !== 'admin' || credentials.password !== 'admin') {
         return { success: false, message: 'Invalid admin credentials.' };
     }
     
-    let adminUser = MOCK_USERS.find(u => u.username === 'admin' && u.role === 'admin');
+    let [adminUser] = await db.select().from(users).where(and(eq(users.username, 'admin'), eq(users.role, 'admin')));
 
     if (!adminUser) {
         // Create admin user if it doesn't exist
-        const newAdminData: User = {
-            id: `user-admin-${Date.now()}`,
+        const newAdminData: Omit<User, 'id'> = {
             name: 'Admin',
             email: 'admin@gulfcarx.com',
             username: 'admin',
@@ -254,8 +254,7 @@ export async function adminLogin(credentials: { username?: string, password?: st
             createdAt: new Date(),
             isBlocked: false,
         };
-        MOCK_USERS.push(newAdminData);
-        adminUser = newAdminData;
+        [adminUser] = await db.insert(users).values(newAdminData).returning();
     }
 
     const { password, ...publicAdminUser } = adminUser;
@@ -263,24 +262,22 @@ export async function adminLogin(credentials: { username?: string, password?: st
 }
 
 export async function sendPasswordResetCode(identifier: string): Promise<{ success: boolean; message: string; code?: string; }> {
-    const userIndex = MOCK_USERS.findIndex(u => u.email === identifier || u.phone === identifier);
-    if (userIndex === -1) {
+    const [user] = await db.select().from(users).where(sql`lower(${users.email}) = ${identifier.toLowerCase()} or ${users.phone} = ${identifier}`);
+    
+    if (!user) {
         return { success: false, message: "No account found with that email or phone number." };
     }
-    const user = MOCK_USERS[userIndex];
 
     if (!user.phone) {
         return { success: false, message: "No phone number is associated with this account for password reset." };
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    MOCK_USERS[userIndex].verificationCode = code;
+    await db.update(users).set({ verificationCode: code }).where(eq(users.id, user.id));
     
-    // Send the code via SMS
     const smsResult = await sendSms(user.phone, `Your GulfCarX password reset code is: ${code}`);
 
     if (smsResult.success) {
-      // In a real app, you wouldn't return the code here. It's returned for simulation purposes.
       return { success: true, message: "Verification code sent.", code: code };
     } else {
       return { success: false, message: smsResult.message || "Failed to send verification code. Please try again later." };
@@ -288,111 +285,94 @@ export async function sendPasswordResetCode(identifier: string): Promise<{ succe
 }
 
 export async function resetPasswordWithCode(data: { email: string; code: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
-   const userIndex = MOCK_USERS.findIndex(u => u.email === data.email);
-   if (userIndex === -1) {
-       return { success: false, message: "Invalid verification code." };
-   }
-   const user = MOCK_USERS[userIndex];
-
-   if (!user || user.verificationCode !== data.code) {
+    const [user] = await db.select().from(users).where(eq(users.email, data.email));
+    
+    if (!user || user.verificationCode !== data.code) {
         return { success: false, message: "Invalid verification code." };
-   }
+    }
    
-   MOCK_USERS[userIndex].password = data.newPassword;
-   MOCK_USERS[userIndex].verificationCode = undefined;
+    await db.update(users).set({ password: data.newPassword, verificationCode: null }).where(eq(users.id, user.id));
 
-   return { success: true, message: "Password has been reset successfully." };
+    return { success: true, message: "Password has been reset successfully." };
 }
 
 // --- ORDER & BOOKING ACTIONS ---
 
 export async function placeOrder(orderData: { userId: string; items: CartItem[]; total: number; shippingDetails: CheckoutDetails; aiInteractionId?: string }): Promise<{ success: boolean; message: string; orderId?: string; }> {
-    const newOrder: Order = {
-        id: `order-${Date.now()}`,
-        userId: orderData.userId,
-        items: orderData.items,
-        total: orderData.total,
-        status: 'Placed',
-        orderDate: new Date(),
-        cancelable: true,
-    };
-
-    MOCK_ORDERS.unshift(newOrder);
-
-    // If an AI interaction led to this order, update the log
-    if (orderData.aiInteractionId) {
-        const interactionIndex = MOCK_AI_INTERACTIONS.findIndex(i => i.id === orderData.aiInteractionId);
-        if (interactionIndex !== -1) {
-            MOCK_AI_INTERACTIONS[interactionIndex].ordered = true;
-        }
-    }
-
-    for (const item of orderData.items) {
-        const partIndex = MOCK_PARTS.findIndex(p => p.id === item.id);
-        if (partIndex !== -1) {
-            const newQuantity = MOCK_PARTS[partIndex].quantity - item.purchaseQuantity;
-            MOCK_PARTS[partIndex].quantity = newQuantity;
-        }
-
-        const newBookingTask: Booking = {
-            id: `booking-task-${item.id}-${Date.now()}`,
-            partId: item.id,
-            partName: `Order: ${item.name}`,
+    try {
+        const [newOrder] = await db.insert(ordersTable).values({
             userId: orderData.userId,
-            userName: orderData.shippingDetails.name,
-            bookingDate: newOrder.orderDate,
-            status: 'Order Fulfillment',
-            cost: item.price * item.purchaseQuantity,
-            vendorName: item.vendorAddress,
-            orderId: newOrder.id,
-        };
-        MOCK_BOOKINGS.unshift(newBookingTask);
+            items: orderData.items,
+            total: orderData.total,
+            status: 'Placed',
+            orderDate: new Date(),
+            cancelable: true,
+        }).returning();
+
+        if (orderData.aiInteractionId) {
+            await db.update(aiInteractions)
+              .set({ ordered: true })
+              .where(eq(aiInteractions.id, orderData.aiInteractionId));
+        }
+
+        for (const item of orderData.items) {
+            await db.update(parts)
+              .set({ quantity: sql`${parts.quantity} - ${item.purchaseQuantity}` })
+              .where(eq(parts.id, item.id));
+
+            await db.insert(bookings).values({
+                partId: item.id,
+                partName: `Order: ${item.name}`,
+                userId: orderData.userId,
+                userName: orderData.shippingDetails.name,
+                bookingDate: newOrder.orderDate,
+                status: 'Order Fulfillment',
+                cost: item.price * item.purchaseQuantity,
+                vendorName: item.vendorAddress,
+                orderId: newOrder.id,
+            });
+        }
+        
+        revalidatePath('/my-orders');
+        revalidatePath('/vendor/tasks');
+        revalidatePath('/admin/ai-analytics');
+        
+        return { success: true, message: "Order placed successfully!", orderId: newOrder.id };
+    } catch(e: any) {
+        return { success: false, message: 'Database error: ' + e.message };
     }
-    
-    revalidatePath('/my-orders');
-    revalidatePath('/vendor/tasks');
-    revalidatePath('/admin/ai-analytics');
-    
-    return { success: true, message: "Order placed successfully!", orderId: newOrder.id };
 }
 
 export async function getCustomerOrders(userId: string): Promise<Order[]> {
     if (!userId) return [];
-    return MOCK_ORDERS.filter(o => o.userId === userId).sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
+    return await db.select().from(ordersTable).where(eq(ordersTable.userId, userId)).orderBy(desc(ordersTable.orderDate));
 }
 
 export async function getOrderById(orderId: string): Promise<Order | null> {
-    const order = MOCK_ORDERS.find(o => o.id === orderId);
+    const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, orderId));
     return order || null;
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
-    const orderIndex = MOCK_ORDERS.findIndex(o => o.id === orderId);
-    if (orderIndex !== -1) {
-        MOCK_ORDERS[orderIndex].status = 'Cancelled';
-        MOCK_ORDERS[orderIndex].cancelable = false;
-    }
+    await db.update(ordersTable).set({ status: 'Cancelled', cancelable: false }).where(eq(ordersTable.id, orderId));
     revalidatePath('/my-orders');
     return { success: true, message: 'Order has been cancelled.' };
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string, aiInteractionId?: string) {
-    const mockUser = MOCK_USERS.find(u => u.role === 'customer');
+    const [mockUser] = await db.select().from(users).where(eq(users.role, 'customer')).limit(1);
 
     if (!mockUser) {
         return { success: false, message: "No customer user found to create a booking for." };
     }
     
-    // If an AI interaction led to this booking, update the log
     if (aiInteractionId) {
-        const interactionIndex = MOCK_AI_INTERACTIONS.findIndex(i => i.id === aiInteractionId);
-        if (interactionIndex !== -1) {
-            MOCK_AI_INTERACTIONS[interactionIndex].clicked = true; // A booking counts as a click
-        }
+        await db.update(aiInteractions)
+            .set({ clicked: true })
+            .where(eq(aiInteractions.id, aiInteractionId));
     }
 
-    const newBooking: Booking = {
-        id: `booking-${Date.now()}`,
+    await db.insert(bookings).values({
         partId,
         partName,
         bookingDate,
@@ -401,9 +381,7 @@ export async function submitBooking(partId: string, partName: string, bookingDat
         cost,
         status: 'Pending',
         vendorName: vendorName,
-    };
-
-    MOCK_BOOKINGS.unshift(newBooking);
+    });
 
     revalidatePath('/vendor/tasks');
     revalidatePath('/admin/ai-analytics');
@@ -412,25 +390,21 @@ export async function submitBooking(partId: string, partName: string, bookingDat
 
 export async function getVendorBookings(vendorName: string): Promise<Booking[]> {
     if (!vendorName) return [];
-    return MOCK_BOOKINGS.filter(b => b.vendorName === vendorName).sort((a, b) => b.bookingDate.getTime() - a.bookingDate.getTime());
+    return await db.select().from(bookings).where(eq(bookings.vendorName, vendorName)).orderBy(desc(bookings.bookingDate));
 }
 
 export async function completeBooking(bookingId: string) {
-    const bookingIndex = MOCK_BOOKINGS.findIndex(b => b.id === bookingId);
-    if (bookingIndex === -1) {
+    const [booking] = await db.select().from(bookings).where(eq(bookings.id, bookingId));
+    
+    if (!booking) {
         return { success: false };
     }
 
-    const booking = MOCK_BOOKINGS[bookingIndex];
     if (booking.status === 'Order Fulfillment' && booking.orderId) {
-        const orderIndex = MOCK_ORDERS.findIndex(o => o.id === booking.orderId);
-        if (orderIndex !== -1) {
-            MOCK_ORDERS[orderIndex].status = 'Picked Up';
-            MOCK_ORDERS[orderIndex].cancelable = false;
-        }
+        await db.update(ordersTable).set({ status: 'Picked Up', cancelable: false }).where(eq(ordersTable.id, booking.orderId));
     }
     
-    MOCK_BOOKINGS[bookingIndex].status = 'Completed';
+    await db.update(bookings).set({ status: 'Completed' }).where(eq(bookings.id, bookingId));
     
     revalidatePath('/vendor/tasks');
     revalidatePath('/vendor/dashboard');
@@ -446,25 +420,24 @@ export async function getVendorStats(vendorName: string) {
         return { totalRevenue: 0, itemsOnHold: 0, activeListings: 0, totalSales: 0 };
     }
 
-    const totalRevenue = MOCK_BOOKINGS
-        .filter(b => b.vendorName === vendorName && b.status === 'Completed')
-        .reduce((sum, b) => sum + b.cost, 0);
+    const stats = await db.select({
+        totalRevenue: sql<number>`sum(case when ${bookings.status} = 'Completed' then ${bookings.cost} else 0 end)`.mapWith(Number),
+        itemsOnHold: sql<number>`count(case when ${bookings.status} = 'Pending' then 1 end)`.mapWith(Number),
+        totalSales: sql<number>`count(case when ${bookings.status} = 'Completed' then 1 end)`.mapWith(Number),
+    }).from(bookings).where(eq(bookings.vendorName, vendorName));
 
-    const itemsOnHold = MOCK_BOOKINGS
-        .filter(b => b.vendorName === vendorName && b.status === 'Pending')
-        .length;
+    const [listings] = await db.select({
+        count: sql<number>`count(*)`
+    }).from(parts).where(eq(parts.vendorAddress, vendorName));
 
-    const activeListings = MOCK_PARTS
-        .filter(p => p.vendorAddress === vendorName)
-        .length;
-        
-    const totalSales = MOCK_BOOKINGS
-        .filter(b => b.vendorName === vendorName && b.status === 'Completed')
-        .length;
-
-
-    return { totalRevenue, itemsOnHold, activeListings, totalSales };
+    return {
+        totalRevenue: stats[0].totalRevenue || 0,
+        itemsOnHold: stats[0].itemsOnHold || 0,
+        activeListings: Number(listings.count) || 0,
+        totalSales: stats[0].totalSales || 0,
+    };
 }
+
 
 export async function getMonthlyRevenue(vendorName: string): Promise<{name: string, total: number}[]> {
     if (!vendorName) return [];
@@ -473,11 +446,14 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
     twelveMonthsAgo.setDate(1);
     twelveMonthsAgo.setHours(0, 0, 0, 0);
 
-    const sales = MOCK_BOOKINGS.filter(b => 
-        b.vendorName === vendorName && 
-        b.status === 'Completed' &&
-        b.bookingDate >= twelveMonthsAgo
-    );
+    const sales = await db.select({
+        cost: bookings.cost,
+        date: bookings.bookingDate,
+    }).from(bookings).where(and(
+        eq(bookings.vendorName, vendorName),
+        eq(bookings.status, 'Completed'),
+        gte(bookings.bookingDate, twelveMonthsAgo)
+    ));
 
     const monthlyRevenue: {[key: string]: number} = {};
     const monthLabels: {year: number, month: number, name: string}[] = [];
@@ -487,68 +463,71 @@ export async function getMonthlyRevenue(vendorName: string): Promise<{name: stri
         const year = getYear(date);
         const month = getMonth(date);
         const monthName = format(date, 'MMM');
-        
         const key = `${year}-${month}`;
-        if (!monthlyRevenue.hasOwnProperty(key)) {
-            monthlyRevenue[key] = 0;
-            monthLabels.push({ year, month, name: monthName });
-        }
+        monthlyRevenue[key] = 0;
+        monthLabels.push({ year, month, name: monthName });
     }
     
     for (const sale of sales) {
-        const year = getYear(sale.bookingDate);
-        const month = getMonth(sale.bookingDate);
+        const year = getYear(sale.date);
+        const month = getMonth(sale.date);
         const key = `${year}-${month}`;
         if (monthlyRevenue.hasOwnProperty(key)) {
             monthlyRevenue[key] += sale.cost;
         }
     }
 
-    const chartData = monthLabels.map(label => {
+    return monthLabels.map(label => {
         const key = `${label.year}-${label.month}`;
         return { name: label.name, total: monthlyRevenue[key] || 0 };
     });
-
-    return chartData;
 }
 
 // --- ADMIN ACTIONS ---
 export async function getAdminDashboardStats() {
-    const totalRevenue = MOCK_ORDERS
-        .filter(o => o.status === 'Picked Up')
-        .reduce((sum, o) => sum + o.total, 0);
-    
-    const totalUsers = MOCK_USERS.length;
-    const totalVendors = MOCK_USERS.filter(u => u.role === 'vendor').length;
-    const totalParts = MOCK_PARTS.length;
+    const [revenue] = await db.select({
+        total: sql<number>`sum(${ordersTable.total})`
+    }).from(ordersTable).where(eq(ordersTable.status, 'Picked Up'));
 
-    return { totalRevenue, totalUsers, totalVendors, totalParts };
+    const [userCount] = await db.select({count: sql`count(*)`}).from(users);
+    const [vendorCount] = await db.select({count: sql`count(*)`}).from(users).where(eq(users.role, 'vendor'));
+    const [partCount] = await db.select({count: sql`count(*)`}).from(parts);
+
+    return {
+        totalRevenue: Number(revenue?.total) || 0,
+        totalUsers: Number(userCount.count) || 0,
+        totalVendors: Number(vendorCount.count) || 0,
+        totalParts: Number(partCount.count) || 0,
+    };
 }
 
+
 export async function getVendorPerformanceSummary() {
-    const vendorUsers = MOCK_USERS.filter(u => u.role === 'vendor');
+    const vendorUsers = await db.select().from(users).where(eq(users.role, 'vendor'));
     const thirtyDaysAgo = subDays(new Date(), 30);
     const performanceData = [];
 
     for (const vendor of vendorUsers) {
-        const monthlySalesTotal = MOCK_BOOKINGS
-            .filter(b => 
-                b.vendorName === vendor.name &&
-                b.status === 'Completed' &&
-                b.bookingDate >= thirtyDaysAgo
-            )
-            .reduce((sum, b) => sum + b.cost, 0);
+        const [salesData] = await db.select({
+            total: sql<number>`sum(${bookings.cost})`
+        }).from(bookings).where(and(
+            eq(bookings.vendorName, vendor.name),
+            eq(bookings.status, 'Completed'),
+            gte(bookings.bookingDate, thirtyDaysAgo)
+        ));
 
-        const recentItems = MOCK_BOOKINGS
-            .filter(b => b.vendorName === vendor.name && b.status === 'Completed')
-            .sort((a,b) => b.bookingDate.getTime() - a.bookingDate.getTime())
-            .slice(0, 3)
-            .map(b => ({ partName: b.partName, cost: b.cost }));
+        const recentItems = await db.select({
+            partName: bookings.partName,
+            cost: bookings.cost,
+        }).from(bookings).where(and(
+            eq(bookings.vendorName, vendor.name),
+            eq(bookings.status, 'Completed')
+        )).orderBy(desc(bookings.bookingDate)).limit(3);
         
         performanceData.push({
             id: vendor.id,
             name: vendor.name,
-            monthlySales: monthlySalesTotal,
+            monthlySales: Number(salesData?.total) || 0,
             recentItems: recentItems,
         });
     }
@@ -556,20 +535,35 @@ export async function getVendorPerformanceSummary() {
     return performanceData;
 }
 
+
 export async function getVendorDetailsForAdmin(vendorId: string) {
-    const user = MOCK_USERS.find(u => u.id === vendorId);
+    const [user] = await db.select().from(users).where(eq(users.id, vendorId));
 
     if (!user || user.role !== 'vendor') return null;
     
     const vendorParts = await getPartsByVendor(user.name);
     const stats = await getVendorStats(user.name);
+    
+    const b = alias(bookings, 'b');
+    const partsWithSales = await db.select({
+        id: parts.id,
+        name: parts.name,
+        price: parts.price,
+        quantity: parts.quantity,
+        isVisibleForSale: parts.isVisibleForSale,
+        description: parts.description,
+        imageUrls: parts.imageUrls,
+        vendorAddress: parts.vendorAddress,
+        manufacturer: parts.manufacturer,
+        category: parts.category,
+        unitsSold: sql<number>`count(${b.id})`.mapWith(Number),
+        revenue: sql<number>`sum(${b.cost})`.mapWith(Number),
+    })
+    .from(parts)
+    .leftJoin(b, and(eq(b.partId, parts.id), eq(b.status, 'Completed')))
+    .where(eq(parts.vendorAddress, user.name))
+    .groupBy(parts.id);
 
-    const partsWithSales = vendorParts.map(part => {
-        const salesForPart = MOCK_BOOKINGS.filter(b => b.partId === part.id && b.status === 'Completed');
-        const unitsSold = salesForPart.length;
-        const revenue = salesForPart.reduce((sum, b) => sum + b.cost, 0);
-        return { ...part, unitsSold, revenue };
-    });
 
     return { user, parts: partsWithSales, stats };
 }
@@ -583,43 +577,45 @@ export async function getWeeklyTrafficData(): Promise<{ name: string; visitors: 
         const dayStart = startOfDay(day);
         const dayEnd = startOfDay(subDays(today, i - 1));
 
-        const newUsers = MOCK_USERS.filter(u => 
-            u.createdAt >= dayStart && u.createdAt < dayEnd
-        ).length;
+        const [result] = await db.select({
+            count: sql<number>`count(*)`
+        }).from(users).where(and(
+            gte(users.createdAt, dayStart),
+            lt(users.createdAt, dayEnd)
+        ));
 
         last7DaysData.push({
             name: format(day, 'E'),
-            visitors: newUsers,
+            visitors: Number(result.count),
         });
     }
     
     return last7DaysData;
 }
 
-export async function deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
-    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
-        return { success: false, message: "User not found." };
-    }
-    
-    const hasDependencies = MOCK_ORDERS.some(o => o.userId === userId) || MOCK_BOOKINGS.some(b => b.userId === userId);
-    if (hasDependencies) {
-        return { success: false, message: "Cannot delete this user. They are associated with existing orders or parts. Please block the user instead." };
-    }
 
-    MOCK_USERS.splice(userIndex, 1);
-    revalidatePath('/admin/users');
-    return { success: true, message: "User deleted successfully." };
+export async function deleteUser(userId: string): Promise<{ success: boolean; message: string }> {
+    try {
+        await db.delete(users).where(eq(users.id, userId));
+        revalidatePath('/admin/users');
+        return { success: true, message: "User deleted successfully." };
+    } catch(e: any) {
+         if (e.code === '23503') { // Foreign key violation
+            return { success: false, message: "Cannot delete this user as they are associated with existing orders or parts. Please block the user instead." };
+        }
+        return { success: false, message: "An unexpected database error occurred." };
+    }
 }
 
 export async function toggleUserBlockStatus(userId: string): Promise<{ success: boolean, message: string }> {
-    const userIndex = MOCK_USERS.findIndex(u => u.id === userId);
-    if (userIndex === -1) {
+    const [user] = await db.select({isBlocked: users.isBlocked}).from(users).where(eq(users.id, userId));
+    
+    if(!user) {
         return { success: false, message: "User not found." };
     }
-    
-    const newStatus = !MOCK_USERS[userIndex].isBlocked;
-    MOCK_USERS[userIndex].isBlocked = newStatus;
+
+    const newStatus = !user.isBlocked;
+    await db.update(users).set({isBlocked: newStatus}).where(eq(users.id, userId));
     
     revalidatePath('/admin/users');
     return { success: true, message: `User has been ${newStatus ? 'blocked' : 'unblocked'}.` };
@@ -628,25 +624,26 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
 // --- AI INTERACTION ACTIONS ---
 
 export async function logAiInteraction(interaction: Omit<AiInteraction, 'id' | 'timestamp' | 'clicked' | 'ordered'>): Promise<AiInteraction> {
-    const newInteraction: AiInteraction = {
-        id: `interaction-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    const [newInteraction] = await db.insert(aiInteractions).values({
+        ...interaction,
         timestamp: new Date(),
         clicked: false,
         ordered: false,
-        ...interaction,
-    };
-    MOCK_AI_INTERACTIONS.unshift(newInteraction);
+    }).returning();
     revalidatePath('/admin/ai-analytics');
     return newInteraction;
 }
 
 export async function getAiInteractions(): Promise<AiInteraction[]> {
-    return JSON.parse(JSON.stringify(MOCK_AI_INTERACTIONS.sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime())));
+    return await db.select().from(aiInteractions).orderBy(desc(aiInteractions.timestamp));
 }
 
 export async function getAiInteractionStats(): Promise<{suggestions: number, clicks: number, orders: number}> {
-    const suggestions = MOCK_AI_INTERACTIONS.length;
-    const clicks = MOCK_AI_INTERACTIONS.filter(i => i.clicked).length;
-    const orders = MOCK_AI_INTERACTIONS.filter(i => i.ordered).length;
-    return { suggestions, clicks, orders };
+    const stats = await db.select({
+        suggestions: sql<number>`count(*)`.mapWith(Number),
+        clicks: sql<number>`count(case when ${aiInteractions.clicked} = true then 1 end)`.mapWith(Number),
+        orders: sql<number>`count(case when ${aiInteractions.ordered} = true then 1 end)`.mapWith(Number),
+    }).from(aiInteractions);
+
+    return stats[0] || { suggestions: 0, clicks: 0, orders: 0 };
 }

@@ -15,7 +15,7 @@ import {
   pgEnum,
   jsonb,
 } from 'drizzle-orm/pg-core';
-import type { Part, User, Order, Booking, CartItem } from './types';
+import type { Part, User, Order, Booking, CartItem, AiInteraction } from './types';
 
 export const userRoleEnum = pgEnum('user_role', ['customer', 'vendor', 'admin']);
 export const accountTypeEnum = pgEnum('account_type', ['individual', 'business']);
@@ -78,4 +78,14 @@ export const bookings = pgTable('bookings', {
     cost: real('cost').notNull(),
     vendorName: varchar('vendor_name').notNull(),
     orderId: varchar('order_id'), // No foreign key
+});
+
+export const aiInteractions = pgTable('ai_interactions', {
+    id: varchar('id').primaryKey(),
+    partId: varchar('part_id').notNull(),
+    partName: varchar('part_name').notNull(),
+    userQuery: text('user_query').notNull(),
+    timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
+    clicked: boolean('clicked').notNull(),
+    ordered: boolean('ordered').notNull(),
 });
