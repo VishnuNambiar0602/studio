@@ -1,4 +1,3 @@
-<!-- Edited -->
 # Scaling Your Application to Millions of Users
 
 This document provides a high-level roadmap for scaling your GulfCarX application from its current setup to one capable of handling millions of concurrent users. Scaling is an iterative process that involves evolving your architecture to remove bottlenecks as your traffic grows.
@@ -10,7 +9,7 @@ Your application is built on a modern, scalable stack (Next.js, PostgreSQL) and 
 ### 1. Stateless Application & Horizontal Scaling
 
 -   **What it is:** Your application should be "stateless," meaning any server instance can handle any user's request. This allows you to simply add more servers (instances) to handle more traffic. This is called **horizontal scaling**.
--   **Your Next Step:** The `maxInstances: 100` setting is a great start. As you grow, you'll monitor your application's performance and increase this number. Cloud providers can automatically add or remove instances based on traffic, which is called **auto-scaling**.
+-   **Your Next Step:** The `maxInstances: 1000` setting is a great start. As you grow, you'll monitor your application's performance and increase this number. Cloud providers can automatically add or remove instances based on traffic, which is called **auto-scaling**.
 
 ---
 

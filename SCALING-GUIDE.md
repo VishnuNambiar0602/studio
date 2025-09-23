@@ -1,4 +1,3 @@
-<!-- Edited -->
 # How to Read the SCALING.md File: A Simple Guide
 
 Hello! This guide is designed to help you understand the `SCALING.md` file, even if you don't have a technical background. Scaling an application to handle millions of users can seem intimidating, but the core concepts are quite logical.
@@ -23,7 +22,7 @@ Let's go through each section of `SCALING.md` using our restaurant analogy.
 
 *   **The Problem:** Your restaurant has one very talented chef who can cook 100 meals an hour. But what happens when 1,000 customers walk in at the same time? The chef gets overwhelmed, and orders get slow.
 *   **The Solution:** You hire more chefs! Instead of one chef, you now have ten, each with their own cooking station. They all use the same recipes (your application code). This is **horizontal scaling**.
-*   **In Tech Terms:** The `maxInstances: 100` setting we made in the `apphosting.yaml` file is like telling your restaurant manager, "You have my permission to hire up to 100 chefs if we get busy." The cloud provider automatically adds more "chefs" (server instances) as traffic increases.
+*   **In Tech Terms:** The `maxInstances: 1000` setting we made in the `apphosting.yaml` file is like telling your restaurant manager, "You have my permission to hire up to 1000 chefs if we get busy." The cloud provider automatically adds more "chefs" (server instances) as traffic increases.
 
 #### **2. Database Scaling (Managing Your Orders & Recipes)**
 
