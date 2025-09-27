@@ -354,9 +354,33 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
 }
 
 export async function cancelOrder(orderId: string): Promise<{ success: boolean; message: string }> {
-    await db.update(ordersTable).set({ status: 'Cancelled', cancelable: false }).where(eq(ordersTable.id, orderId));
+    const [order] = await db.select().from(ordersTable).where(eq(ordersTable.id, orderId));
+
+    if (!order) {
+        return { success: false, message: 'Order not found.' };
+    }
+
+    // Begin transaction
+    await db.transaction(async (tx) => {
+        // Update order status
+        await tx.update(ordersTable).set({ status: 'Cancelled', cancelable: false }).where(eq(ordersTable.id, orderId));
+        
+        // Restore inventory for each item in the order
+        for (const item of order.items) {
+            await tx.update(parts)
+              .set({ quantity: sql`${parts.quantity} + ${item.purchaseQuantity}` })
+              .where(eq(parts.id, item.id));
+        }
+        
+        // Find and remove associated "Order Fulfillment" booking
+        await tx.delete(bookings).where(eq(bookings.orderId, orderId));
+    });
+
     revalidatePath('/my-orders');
-    return { success: true, message: 'Order has been cancelled.' };
+    revalidatePath('/vendor/tasks');
+    revalidatePath('/vendor/inventory');
+    revalidatePath('/');
+    return { success: true, message: 'Order has been cancelled and inventory restored.' };
 }
 
 export async function submitBooking(partId: string, partName: string, bookingDate: Date, cost: number, vendorName: string, aiInteractionId?: string) {
@@ -647,3 +671,5 @@ export async function getAiInteractionStats(): Promise<{suggestions: number, cli
 
     return stats[0] || { suggestions: 0, clicks: 0, orders: 0 };
 }
+
+    
