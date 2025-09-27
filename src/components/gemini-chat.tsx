@@ -334,5 +334,3 @@ export function GeminiChat() {
     </div>
   );
 }
-
-    
