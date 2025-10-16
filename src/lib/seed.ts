@@ -91,7 +91,7 @@ export async function seed() {
     if (!process.env.POSTGRES_URL) {
       throw new Error('POSTGRES_URL is not set in the environment variables.');
     }
-    const db = drizzle(postgres(process.env.POSTGRES_URL, { max: 1 }));
+    const db = drizzle(postgres(process.env.POSTGRES_URL, { prepare: false, max: 1 }));
     console.log("Seeding database...");
 
     try {
