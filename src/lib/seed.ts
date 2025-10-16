@@ -4,7 +4,10 @@ import postgres from 'postgres';
 import type { User, Part, Order, Booking } from './types';
 import { config } from 'dotenv';
 
+// Load environment variables from both possible locations
 config({ path: '.env' });
+config({ path: 'src/.env' });
+
 
 const MOCK_PARTS_DATA: Omit<Part, 'id'>[] = [
   {
@@ -90,27 +93,18 @@ async function createTables(db: postgres.Sql) {
 
   await db.unsafe(`
     DO $$ BEGIN
-        CREATE TYPE user_role AS ENUM ('customer', 'vendor', 'admin');
-    EXCEPTION
-        WHEN duplicate_object THEN null;
-    END $$;
-
-    DO $$ BEGIN
-        CREATE TYPE account_type AS ENUM ('individual', 'business');
-    EXCEPTION
-        WHEN duplicate_object THEN null;
-    END $$;
-
-    DO $$ BEGIN
-        CREATE TYPE order_status AS ENUM ('Placed', 'Processing', 'Ready for Pickup', 'Picked Up', 'Cancelled');
-    EXCEPTION
-        WHEN duplicate_object THEN null;
-    END $$;
-    
-    DO $$ BEGIN
-        CREATE TYPE booking_status AS ENUM ('Pending', 'Completed', 'Order Fulfillment');
-    EXCEPTION
-        WHEN duplicate_object THEN null;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+            CREATE TYPE user_role AS ENUM ('customer', 'vendor', 'admin');
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'account_type') THEN
+            CREATE TYPE account_type AS ENUM ('individual', 'business');
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'order_status') THEN
+            CREATE TYPE order_status AS ENUM ('Placed', 'Processing', 'Ready for Pickup', 'Picked Up', 'Cancelled');
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'booking_status') THEN
+            CREATE TYPE booking_status AS ENUM ('Pending', 'Completed', 'Order Fulfillment');
+        END IF;
     END $$;
 
     CREATE TABLE IF NOT EXISTS public.users (
@@ -183,7 +177,8 @@ async function createTables(db: postgres.Sql) {
 
 export async function seed() {
     if (!process.env.POSTGRES_URL) {
-      throw new Error('POSTGRES_URL is not set in the environment variables.');
+      console.warn('POSTGRES_URL is not set, skipping database seeding.');
+      return;
     }
     const client = postgres(process.env.POSTGRES_URL, { prepare: false, max: 1 });
     const db = drizzle(client);

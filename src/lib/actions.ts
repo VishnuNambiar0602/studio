@@ -4,7 +4,6 @@
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem, AiInteraction } from "./types";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
-import { config } from 'dotenv';
 import twilio from 'twilio';
 import { db } from './db';
 import { users, parts, orders as ordersTable, bookings, aiInteractions } from './schema';
@@ -12,7 +11,6 @@ import { eq, and, desc, sql, gte, lte, gt, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { seed } from './seed';
 
-config();
 
 export async function seedDatabase() {
   await seed();
