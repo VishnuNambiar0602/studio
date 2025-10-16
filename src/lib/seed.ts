@@ -8,12 +8,6 @@ import { config } from 'dotenv';
 
 config({ path: '.env' });
 
-if (!process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL is not set in the environment variables.');
-}
-
-const db = drizzle(postgres(process.env.POSTGRES_URL, { ssl: 'require', max: 1 }));
-
 const MOCK_PARTS_DATA: Omit<Part, 'id'>[] = [
   {
     name: 'OEM Brake Pads - Toyota Camry',
@@ -93,7 +87,11 @@ const MOCK_USERS_DATA: Omit<User, 'id' | 'createdAt'>[] = [
 ];
 
 
-async function seed() {
+export async function seed() {
+    if (!process.env.POSTGRES_URL) {
+      throw new Error('POSTGRES_URL is not set in the environment variables.');
+    }
+    const db = drizzle(postgres(process.env.POSTGRES_URL, { max: 1 }));
     console.log("Seeding database...");
 
     try {
@@ -124,9 +122,5 @@ async function seed() {
         console.log("Database seeded successfully!");
     } catch (error) {
         console.error("Error seeding database:", error);
-    } finally {
-        // The script will exit automatically.
     }
 }
-
-seed();

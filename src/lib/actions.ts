@@ -10,6 +10,7 @@ import { db } from './db';
 import { users, parts, orders as ordersTable, bookings, aiInteractions } from './schema';
 import { eq, and, desc, sql, gte, lte, gt, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
+import { seed } from './seed';
 
 config();
 
@@ -91,7 +92,19 @@ export async function updatePart(partId: string, partData: Part) {
 }
 
 export async function getParts(): Promise<Part[]> {
-    return await db.select().from(parts);
+    try {
+        return await db.select().from(parts);
+    } catch (error: any) {
+        // If the table doesn't exist, seed the database and try again.
+        if (error.message.includes('relation "parts" does not exist')) {
+            console.log("Parts table not found, attempting to seed database...");
+            await seed();
+            console.log("Database seeding complete, retrying getParts...");
+            return await db.select().from(parts);
+        }
+        // If it's a different error, re-throw it.
+        throw error;
+    }
 }
 
 export async function getPart(id: string): Promise<Part | undefined> {
@@ -671,5 +684,3 @@ export async function getAiInteractionStats(): Promise<{suggestions: number, cli
 
     return stats[0] || { suggestions: 0, clicks: 0, orders: 0 };
 }
-
-    
