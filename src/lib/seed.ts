@@ -1,8 +1,6 @@
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema';
-import { users, parts, orders, bookings } from './schema';
 import type { User, Part, Order, Booking } from './types';
 import { config } from 'dotenv';
 
@@ -87,40 +85,153 @@ const MOCK_USERS_DATA: Omit<User, 'id' | 'createdAt'>[] = [
 ];
 
 
+async function createTables(db: postgres.Sql) {
+  console.log("Creating tables if they don't exist...");
+
+  await db.unsafe(`
+    DO $$ BEGIN
+        CREATE TYPE user_role AS ENUM ('customer', 'vendor', 'admin');
+    EXCEPTION
+        WHEN duplicate_object THEN null;
+    END $$;
+
+    DO $$ BEGIN
+        CREATE TYPE account_type AS ENUM ('individual', 'business');
+    EXCEPTION
+        WHEN duplicate_object THEN null;
+    END $$;
+
+    DO $$ BEGIN
+        CREATE TYPE order_status AS ENUM ('Placed', 'Processing', 'Ready for Pickup', 'Picked Up', 'Cancelled');
+    EXCEPTION
+        WHEN duplicate_object THEN null;
+    END $$;
+    
+    DO $$ BEGIN
+        CREATE TYPE booking_status AS ENUM ('Pending', 'Completed', 'Order Fulfillment');
+    EXCEPTION
+        WHEN duplicate_object THEN null;
+    END $$;
+
+    CREATE TABLE IF NOT EXISTS public.users (
+      id VARCHAR PRIMARY KEY,
+      name VARCHAR NOT NULL,
+      email VARCHAR NOT NULL UNIQUE,
+      username VARCHAR NOT NULL UNIQUE,
+      role user_role NOT NULL,
+      password TEXT,
+      shop_address VARCHAR,
+      zip_code VARCHAR,
+      verification_code VARCHAR,
+      created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+      is_blocked BOOLEAN DEFAULT false NOT NULL,
+      profile_picture_url VARCHAR,
+      phone VARCHAR NOT NULL,
+      account_type account_type
+    );
+
+    CREATE TABLE IF NOT EXISTS public.parts (
+      id VARCHAR PRIMARY KEY,
+      name VARCHAR NOT NULL,
+      description TEXT NOT NULL,
+      price REAL NOT NULL,
+      image_urls JSONB DEFAULT '[]'::jsonb NOT NULL,
+      quantity INTEGER NOT NULL,
+      vendor_address VARCHAR NOT NULL,
+      manufacturer VARCHAR NOT NULL,
+      is_visible_for_sale BOOLEAN DEFAULT true NOT NULL,
+      category JSONB DEFAULT '[]'::jsonb NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS public.orders (
+      id VARCHAR PRIMARY KEY,
+      user_id VARCHAR NOT NULL,
+      items JSONB NOT NULL,
+      total REAL NOT NULL,
+      status order_status NOT NULL,
+      order_date TIMESTAMPTZ NOT NULL,
+      completion_date TIMESTAMPTZ,
+      cancelable BOOLEAN NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS public.bookings (
+      id VARCHAR PRIMARY KEY,
+      part_id VARCHAR NOT NULL,
+      part_name VARCHAR NOT NULL,
+      user_id VARCHAR NOT NULL,
+      user_name VARCHAR NOT NULL,
+      booking_date TIMESTAMPTZ NOT NULL,
+      status booking_status NOT NULL,
+      cost REAL NOT NULL,
+      vendor_name VARCHAR NOT NULL,
+      order_id VARCHAR
+    );
+
+    CREATE TABLE IF NOT EXISTS public.ai_interactions (
+        id VARCHAR PRIMARY KEY,
+        part_id VARCHAR NOT NULL,
+        part_name VARCHAR NOT NULL,
+        user_query TEXT NOT NULL,
+        timestamp TIMESTAMPTZ NOT NULL,
+        clicked BOOLEAN NOT NULL,
+        ordered BOOLEAN NOT NULL
+    );
+  `);
+  
+  console.log("Table creation step completed.");
+}
+
 export async function seed() {
     if (!process.env.POSTGRES_URL) {
       throw new Error('POSTGRES_URL is not set in the environment variables.');
     }
-    const db = drizzle(postgres(process.env.POSTGRES_URL, { prepare: false, max: 1 }));
+    const client = postgres(process.env.POSTGRES_URL, { prepare: false, max: 1 });
+    const db = drizzle(client);
+
     console.log("Seeding database...");
 
     try {
-        // Clean up existing data
+        await createTables(client);
+
+        // Clean up existing data to ensure a fresh seed
         console.log("Clearing existing data...");
-        await db.delete(bookings);
-        await db.delete(orders);
-        await db.delete(parts);
-        await db.delete(users);
+        // Order matters due to potential foreign key constraints in a real DB
+        await client.unsafe('DELETE FROM public.bookings');
+        await client.unsafe('DELETE FROM public.orders');
+        await client.unsafe('DELETE FROM public.ai_interactions');
+        await client.unsafe('DELETE FROM public.parts');
+        await client.unsafe('DELETE FROM public.users');
 
         // Insert Users
         console.log("Inserting users...");
-        await db.insert(users).values(MOCK_USERS_DATA.map(user => ({
+        const userValues = MOCK_USERS_DATA.map(user => ({
             ...user,
             id: `user-${Math.random().toString(36).substr(2, 9)}`,
             createdAt: new Date(),
-        })));
-        console.log(`${MOCK_USERS_DATA.length} users inserted.`);
+        }));
+        await client`INSERT INTO public.users ${client(userValues, 'name', 'email', 'username', 'role', 'password', 'phone', 'shopAddress', 'zipCode', 'id', 'createdAt')}`;
+        console.log(`${userValues.length} users inserted.`);
+
 
         // Insert Parts
         console.log("Inserting parts...");
-        await db.insert(parts).values(MOCK_PARTS_DATA.map(part => ({
-            ...part,
-            id: `part-${Math.random().toString(36).substr(2, 9)}`
-        })));
-        console.log(`${MOCK_PARTS_DATA.length} parts inserted.`);
+        const partValues = MOCK_PARTS_DATA.map(part => ({
+          ...part,
+          id: `part-${Math.random().toString(36).substr(2, 9)}`
+        }));
+        await client`INSERT INTO public.parts ${client(partValues, 'name', 'description', 'price', 'imageUrls', 'quantity', 'vendorAddress', 'isVisibleForSale', 'manufacturer', 'category', 'id')}`;
+        console.log(`${partValues.length} parts inserted.`);
+
 
         console.log("Database seeded successfully!");
     } catch (error) {
         console.error("Error seeding database:", error);
+    } finally {
+        await client.end();
     }
+}
+
+// This allows the script to be run directly from the command line
+if (require.main === module) {
+  seed();
 }
