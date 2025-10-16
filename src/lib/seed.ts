@@ -208,6 +208,8 @@ export async function seed() {
             ...user,
             id: `user-${Math.random().toString(36).substr(2, 9)}`,
             createdAt: new Date(),
+            shopAddress: user.shopAddress || null,
+            zipCode: user.zipCode || null,
         }));
         await client`INSERT INTO public.users ${client(userValues, 'name', 'email', 'username', 'role', 'password', 'phone', 'shopAddress', 'zipCode', 'id', 'createdAt')}`;
         console.log(`${userValues.length} users inserted.`);
