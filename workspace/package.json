@@ -11,9 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/lib/seed.ts"
+    "db:push": "drizzle-kit push:pg",
+    "db:seed": "npm run db:push && tsx src/lib/seed.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.13.0",
