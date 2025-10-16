@@ -36,7 +36,11 @@ export default function VendorAccountPage() {
             setLoading(false);
         }
         
-        fetchStats();
+        if (loggedInUser?.name) {
+            fetchStats();
+        } else {
+            setLoading(false);
+        }
 
     }, [loggedInUser, router]);
 
