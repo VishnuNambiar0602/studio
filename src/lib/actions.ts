@@ -190,6 +190,8 @@ export async function registerUser(userData: UserRegistration): Promise<{ succes
 
         const [createdUser] = await db.insert(users).values({
             ...userData,
+            shopAddress: userData.shopAddress || null,
+            zipCode: userData.zipCode || null,
             username,
             isBlocked: false,
             createdAt: new Date(),
@@ -217,16 +219,16 @@ export async function registerUser(userData: UserRegistration): Promise<{ succes
         return { success: true, user: createdUser, message: "User registered successfully." };
     } catch (error: any) {
         if (error.code === '23505') { // Unique constraint violation
-            if (error.detail.includes('email')) {
+            if (error.detail?.includes('email')) {
                  return { success: false, message: "An account with this email address already exists." };
             }
-             if (error.detail.includes('phone')) {
+             if (error.detail?.includes('phone')) {
                  return { success: false, message: "An account with this phone number already exists." };
             }
             return { success: false, message: "A user with these details already exists." };
         }
         console.error("Registration error:", error);
-        return { success: false, message: "An unexpected server error occurred during registration." };
+        return { success: false, message: `An unexpected server error occurred: ${error.message}` };
     }
 }
 
