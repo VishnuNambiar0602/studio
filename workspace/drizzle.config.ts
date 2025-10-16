@@ -1,3 +1,4 @@
+
 import { defineConfig } from 'drizzle-kit';
 import { config } from 'dotenv';
 
