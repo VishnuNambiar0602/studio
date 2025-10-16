@@ -61,7 +61,10 @@ export async function createPart(partData: Omit<Part, 'id' | 'isVisibleForSale'>
             isVisibleForSale: true,
         };
 
-        const [createdPart] = await db.insert(parts).values(newPart).returning();
+        const [createdPart] = await db.insert(parts).values({
+          ...newPart,
+          id: `part-${Math.random().toString(36).substr(2, 9)}`,
+        }).returning();
         
         revalidatePath('/');
         revalidatePath('/new-parts');
@@ -102,7 +105,7 @@ export async function getParts(): Promise<Part[]> {
         // If the table doesn't exist, seed the database and try again.
         if (error.message.includes('relation "parts" does not exist')) {
             console.log("Parts table not found, attempting to seed database...");
-            await seed();
+            await seedDatabase();
             console.log("Database seeding complete, retrying getParts...");
             return await db.select().from(parts);
         }
@@ -190,6 +193,7 @@ export async function registerUser(userData: UserRegistration): Promise<{ succes
 
         const [createdUser] = await db.insert(users).values({
             ...userData,
+            id: `user-${Math.random().toString(36).substr(2, 9)}`,
             shopAddress: userData.shopAddress || null,
             zipCode: userData.zipCode || null,
             username,
@@ -280,7 +284,10 @@ export async function adminLogin(credentials: { username?: string, password?: st
             createdAt: new Date(),
             isBlocked: false,
         };
-        [adminUser] = await db.insert(users).values(newAdminData).returning();
+        [adminUser] = await db.insert(users).values({
+          ...newAdminData,
+          id: `user-${Math.random().toString(36).substr(2, 9)}`,
+        }).returning();
     }
 
     const { password, ...publicAdminUser } = adminUser;
@@ -327,6 +334,7 @@ export async function resetPasswordWithCode(data: { email: string; code: string;
 export async function placeOrder(orderData: { userId: string; items: CartItem[]; total: number; shippingDetails: CheckoutDetails; aiInteractionId?: string }): Promise<{ success: boolean; message: string; orderId?: string; }> {
     try {
         const [newOrder] = await db.insert(ordersTable).values({
+            id: `order-${Math.random().toString(36).substr(2, 9)}`,
             userId: orderData.userId,
             items: orderData.items,
             total: orderData.total,
@@ -347,6 +355,7 @@ export async function placeOrder(orderData: { userId: string; items: CartItem[];
               .where(eq(parts.id, item.id));
 
             await db.insert(bookings).values({
+                id: `booking-${Math.random().toString(36).substr(2, 9)}`,
                 partId: item.id,
                 partName: `Order: ${item.name}`,
                 userId: orderData.userId,
@@ -423,6 +432,7 @@ export async function submitBooking(partId: string, partName: string, bookingDat
     }
 
     await db.insert(bookings).values({
+        id: `booking-${Math.random().toString(36).substr(2, 9)}`,
         partId,
         partName,
         bookingDate,
@@ -675,6 +685,7 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
 
 export async function logAiInteraction(interaction: Omit<AiInteraction, 'id' | 'timestamp' | 'clicked' | 'ordered'>): Promise<AiInteraction> {
     const [newInteraction] = await db.insert(aiInteractions).values({
+        id: `ai-interaction-${Math.random().toString(36).substr(2, 9)}`,
         ...interaction,
         timestamp: new Date(),
         clicked: false,
