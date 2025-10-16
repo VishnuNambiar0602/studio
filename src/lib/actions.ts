@@ -183,7 +183,7 @@ export async function updateUserProfile(userId: string, data: { name: string; em
     }
 }
 
-export async function registerUser(userData: UserRegistration) {
+export async function registerUser(userData: UserRegistration): Promise<{ success: boolean, message: string, user?: PublicUser }> {
     try {
         const baseUsername = userData.name.toLowerCase().replace(/\s+/g, '') || 'user';
         const username = `${baseUsername}${Math.floor(100 + Math.random() * 900)}`;
@@ -217,9 +217,16 @@ export async function registerUser(userData: UserRegistration) {
         return { success: true, user: createdUser, message: "User registered successfully." };
     } catch (error: any) {
         if (error.code === '23505') { // Unique constraint violation
-            return { success: false, message: "A user with this email or phone number already exists." };
+            if (error.detail.includes('email')) {
+                 return { success: false, message: "An account with this email address already exists." };
+            }
+             if (error.detail.includes('phone')) {
+                 return { success: false, message: "An account with this phone number already exists." };
+            }
+            return { success: false, message: "A user with these details already exists." };
         }
-        return { success: false, message: "An unexpected error occurred during registration." };
+        console.error("Registration error:", error);
+        return { success: false, message: "An unexpected server error occurred during registration." };
     }
 }
 
