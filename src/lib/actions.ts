@@ -14,6 +14,10 @@ import { seed } from './seed';
 
 config();
 
+export async function seedDatabase() {
+  await seed();
+}
+
 async function sendSms(phone: string, message: string): Promise<{ success: boolean; message?: string }> {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;

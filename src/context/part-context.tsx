@@ -1,10 +1,9 @@
-// Edited
 
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import type { Part } from "@/lib/types";
-import { getParts } from "@/lib/actions";
+import { getParts, seedDatabase } from "@/lib/actions";
 
 interface PartContextType {
   parts: Part[];
@@ -24,8 +23,19 @@ export function PartProvider({ children }: { children: ReactNode }) {
       try {
         const initialParts = await getParts();
         setParts(initialParts);
-      } catch (error) {
-        console.error("Failed to fetch initial parts:", error);
+      } catch (error: any) {
+        // This is the self-healing mechanism. If the parts table doesn't exist,
+        // it's a sign that the database is empty. We then seed it and retry.
+        if (error.message.includes('relation "parts" does not exist')) {
+            console.log("Tables not found, attempting to seed database via server action...");
+            await seedDatabase();
+            console.log("Database seeding complete. Retrying to fetch parts...");
+            // Retry fetching parts after seeding
+            const initialParts = await getParts();
+            setParts(initialParts);
+        } else {
+            console.error("Failed to fetch initial parts:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -44,8 +54,6 @@ export function PartProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  // While loading parts from the database, show a full-screen spinner.
-  // This is the primary data loading step for the application.
   if (loading) {
       return (
         <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
