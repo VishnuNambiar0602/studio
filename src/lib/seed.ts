@@ -3,6 +3,9 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import type { User, Part, Order, Booking } from './types';
 import { config } from 'dotenv';
+import { db } from './db';
+import { users, parts, orders as ordersTable, bookings, aiInteractions } from './schema';
+
 
 // Load environment variables from both possible locations
 config({ path: '.env' });
@@ -181,7 +184,7 @@ export async function seed() {
       return;
     }
     const client = postgres(process.env.POSTGRES_URL, { prepare: false, max: 1 });
-    const db = drizzle(client);
+    const localDb = drizzle(client);
 
     console.log("Seeding database...");
 
@@ -191,11 +194,11 @@ export async function seed() {
         // Clean up existing data to ensure a fresh seed
         console.log("Clearing existing data...");
         // Order matters due to potential foreign key constraints in a real DB
-        await client.unsafe('DELETE FROM public.bookings');
-        await client.unsafe('DELETE FROM public.orders');
-        await client.unsafe('DELETE FROM public.ai_interactions');
-        await client.unsafe('DELETE FROM public.parts');
-        await client.unsafe('DELETE FROM public.users');
+        await localDb.delete(bookings);
+        await localDb.delete(ordersTable);
+        await localDb.delete(aiInteractions);
+        await localDb.delete(parts);
+        await localDb.delete(users);
 
         // Insert Users
         console.log("Inserting users...");
@@ -206,7 +209,7 @@ export async function seed() {
             shopAddress: user.shopAddress || null,
             zipCode: user.zipCode || null,
         }));
-        await client`INSERT INTO public.users ${client(userValues, 'name', 'email', 'username', 'role', 'password', 'phone', 'shopAddress', 'zipCode', 'id', 'createdAt')}`;
+        await localDb.insert(users).values(userValues);
         console.log(`${userValues.length} users inserted.`);
 
 
@@ -216,7 +219,7 @@ export async function seed() {
           ...part,
           id: `part-${Math.random().toString(36).substr(2, 9)}`
         }));
-        await client`INSERT INTO public.parts ${client(partValues, 'name', 'description', 'price', 'imageUrls', 'quantity', 'vendorAddress', 'isVisibleForSale', 'manufacturer', 'category', 'id')}`;
+        await localDb.insert(parts).values(partValues);
         console.log(`${partValues.length} parts inserted.`);
 
 
