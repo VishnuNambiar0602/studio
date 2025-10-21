@@ -177,7 +177,7 @@ async function createTables(db: postgres.Sql) {
 
 export async function seed() {
     if (!process.env.POSTGRES_URL) {
-      console.warn('POSTGRES_URL is not set, skipping database seeding.');
+      console.warn('POSTGRES_URL is not set, skipping database seeding. Please set it in your .env file.');
       return;
     }
     const client = postgres(process.env.POSTGRES_URL, { prepare: false, max: 1 });

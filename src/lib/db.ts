@@ -10,7 +10,7 @@ config({ path: 'src/.env' });
 
 
 if (!process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL is not set in the environment variables.');
+  throw new Error('POSTGRES_URL is not set in the environment variables. Please ensure it is defined in your .env file.');
 }
 
 // Disable prefetch as it is not supported for "Transaction" pool mode
