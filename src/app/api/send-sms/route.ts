@@ -1,5 +1,5 @@
 
-import { sendSms } from "@/lib/actions";
+import { sendSms } from "@/lib/sms";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {

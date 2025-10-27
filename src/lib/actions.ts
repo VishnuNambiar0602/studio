@@ -4,51 +4,17 @@
 import { revalidatePath } from "next/cache";
 import type { Part, UserRegistration, UserLogin, Order, Booking, PublicUser, User, CheckoutDetails, CartItem, AiInteraction } from "./types";
 import { subMonths, format, getYear, getMonth, subDays, startOfDay } from 'date-fns';
-import twilio from 'twilio';
 import { db } from './db';
 import { users, parts, orders as ordersTable, bookings, aiInteractions } from './schema';
 import { eq, and, desc, sql, gte, lte, gt, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { seed } from './seed';
+import { sendSms } from "./sms";
 
 
 export async function seedDatabase() {
   await seed();
 }
-
-export async function sendSms(phone: string, message: string): Promise<{ success: boolean; message?: string }> {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-
-    if (!accountSid || !authToken || !fromNumber) {
-        const missingVars = [
-            !accountSid && "TWILIO_ACCOUNT_SID",
-            !authToken && "TWILIO_AUTH_TOKEN",
-            !fromNumber && "TWILIO_PHONE_NUMBER"
-        ].filter(Boolean).join(', ');
-        
-        const errorMsg = `Server configuration error: The following environment variables are not set: ${missingVars}. Please check your .env file.`;
-        console.error(errorMsg);
-        return { success: false, message: errorMsg };
-    }
-
-    try {
-        const client = twilio(accountSid, authToken);
-        const response = await client.messages.create({
-            body: message,
-            from: fromNumber,
-            to: phone,
-        });
-
-        console.log("SMS sent successfully with SID:", response.sid);
-        return { success: true };
-    } catch (error: any) {
-        console.error("Twilio error sending SMS:", error);
-        return { success: false, message: `Twilio Error: ${error.message}` };
-    }
-}
-
 
 // --- PART ACTIONS ---
 
