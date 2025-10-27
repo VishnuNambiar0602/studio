@@ -24,12 +24,11 @@ export function PartProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      // Directly get mock data from actions.
       const initialParts = await getParts();
       setParts(initialParts);
     } catch (error: any) {
       console.error("Failed to fetch initial parts:", error);
-      setError("Could not load parts data. Please refresh the page.");
+      setError(`Could not connect to the parts database. Please ensure the database is running and the connection string in your .env file is correct. Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -61,7 +60,7 @@ export function PartProvider({ children }: { children: ReactNode }) {
     return (
         <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center p-4 text-center">
             <h2 className="text-xl font-semibold text-destructive mb-4">Application Error</h2>
-            <p className="text-muted-foreground mb-6">{error}</p>
+            <p className="text-muted-foreground mb-6 max-w-lg">{error}</p>
             <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
     )
