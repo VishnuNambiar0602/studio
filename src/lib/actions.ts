@@ -672,5 +672,3 @@ export async function getAiInteractionStats(): Promise<{suggestions: number, cli
 
     return stats[0] || { suggestions: 0, clicks: 0, orders: 0 };
 }
-
-    
