@@ -16,7 +16,7 @@ export async function seedDatabase() {
   await seed();
 }
 
-async function sendSms(phone: string, message: string): Promise<{ success: boolean; message?: string }> {
+export async function sendSms(phone: string, message: string): Promise<{ success: boolean; message?: string }> {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromNumber = process.env.TWILIO_PHONE_NUMBER;
@@ -706,3 +706,5 @@ export async function getAiInteractionStats(): Promise<{suggestions: number, cli
 
     return stats[0] || { suggestions: 0, clicks: 0, orders: 0 };
 }
+
+    
