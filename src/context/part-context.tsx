@@ -4,6 +4,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import type { Part } from "@/lib/types";
 import { getParts, seedDatabase } from "@/lib/actions";
+import { Button } from "@/components/ui/button";
 
 interface PartContextType {
   parts: Part[];
@@ -17,30 +18,36 @@ const PartContext = createContext<PartContextType | undefined>(undefined);
 export function PartProvider({ children }: { children: ReactNode }) {
   const [parts, setParts] = useState<Part[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchInitialParts = async () => {
-      try {
-        const initialParts = await getParts();
-        setParts(initialParts);
-      } catch (error: any) {
-        // This is the self-healing mechanism. If the parts table doesn't exist,
-        // it's a sign that the database is empty. We then seed it and retry.
-        if (error.message.includes('relation "parts" does not exist')) {
-            console.log("Tables not found, attempting to seed database via server action...");
+  const fetchInitialParts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const initialParts = await getParts();
+      setParts(initialParts);
+    } catch (error: any) {
+      if (error.message.includes('relation "parts" does not exist')) {
+          console.log("Tables not found, attempting to seed database via server action...");
+          try {
             await seedDatabase();
             console.log("Database seeding complete. Retrying to fetch parts...");
-            // Retry fetching parts after seeding
             const initialParts = await getParts();
             setParts(initialParts);
-        } else {
-            console.error("Failed to fetch initial parts:", error);
-        }
-      } finally {
-        setLoading(false);
+          } catch (seedError: any) {
+            console.error("Failed to seed database:", seedError);
+            setError("Failed to initialize the database. Please try again.");
+          }
+      } else {
+          console.error("Failed to fetch initial parts:", error);
+          setError("Could not connect to the parts database. Please check your connection and try again.");
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchInitialParts();
   }, []);
 
@@ -60,6 +67,16 @@ export function PartProvider({ children }: { children: ReactNode }) {
             <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
         </div>
       );
+  }
+  
+  if (error) {
+    return (
+        <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center p-4 text-center">
+            <h2 className="text-xl font-semibold text-destructive mb-4">Application Error</h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Button onClick={() => window.location.reload()}>Retry Connection</Button>
+        </div>
+    )
   }
 
   return (
