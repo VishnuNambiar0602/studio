@@ -15,7 +15,7 @@ if (!connectionString) {
   throw new Error('POSTGRES_URL is not set in the environment variables. Please ensure it is defined in your .env file.');
 }
 
-// Supabase requires SSL. Using a config object is more robust for special characters.
+// Supabase requires SSL.
 const client = postgres(connectionString, {
     ssl: 'require'
 });
