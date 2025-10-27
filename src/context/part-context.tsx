@@ -3,7 +3,7 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import type { Part } from "@/lib/types";
-import { getParts, seedDatabase } from "@/lib/actions";
+import { getParts } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 
 interface PartContextType {
@@ -24,24 +24,12 @@ export function PartProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
+      // Directly get mock data from actions.
       const initialParts = await getParts();
       setParts(initialParts);
     } catch (error: any) {
-      if (error.message.includes('relation "parts" does not exist')) {
-          console.log("Tables not found, attempting to seed database via server action...");
-          try {
-            await seedDatabase();
-            console.log("Database seeding complete. Retrying to fetch parts...");
-            const initialParts = await getParts();
-            setParts(initialParts);
-          } catch (seedError: any) {
-            console.error("Failed to seed database:", seedError);
-            setError("Failed to initialize the database. Please try again.");
-          }
-      } else {
-          console.error("Failed to fetch initial parts:", error);
-          setError("Could not connect to the parts database. Please check your connection and try again.");
-      }
+      console.error("Failed to fetch initial parts:", error);
+      setError("Could not load parts data. Please refresh the page.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +62,7 @@ export function PartProvider({ children }: { children: ReactNode }) {
         <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center p-4 text-center">
             <h2 className="text-xl font-semibold text-destructive mb-4">Application Error</h2>
             <p className="text-muted-foreground mb-6">{error}</p>
-            <Button onClick={() => window.location.reload()}>Retry Connection</Button>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
     )
   }
