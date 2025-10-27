@@ -86,7 +86,7 @@ export function AuthForm({ userType }: AuthFormProps) {
         
         toast({
           title: "Welcome!",
-          description: "Your account has been created. A confirmation message was sent to your mobile.",
+          description: "Your account has been created.",
         });
 
         // Defer redirection to allow user to see welcome message.

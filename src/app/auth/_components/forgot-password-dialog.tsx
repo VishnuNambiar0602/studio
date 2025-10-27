@@ -59,7 +59,7 @@ export function ForgotPasswordDialog() {
     if (result.success && result.code) {
       toast({
         title: "Code Sent",
-        description: "A verification code has been sent to your registered mobile number."
+        description: "A verification code has been sent to your registered device (simulation)."
       });
       setUserEmail(values.identifier.includes('@') ? values.identifier : MOCK_USERS.find(u => u.phone === values.identifier)?.email || "");
       // In a real app, you wouldn't get the code back. This is a temporary measure for development.

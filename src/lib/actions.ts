@@ -9,7 +9,6 @@ import { users, parts, orders as ordersTable, bookings, aiInteractions } from '.
 import { eq, and, desc, sql, gte, lte, gt, inArray } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { seed } from './seed';
-import { sendSms } from "./sms";
 
 
 export async function seedDatabase() {
@@ -178,9 +177,9 @@ export async function registerUser(userData: UserRegistration): Promise<{ succes
             profilePictureUrl: users.profilePictureUrl
         });
 
-        if(createdUser.phone) {
-          await sendSms(createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
-        }
+        // if(createdUser.phone) {
+        //   await sendSms(createdUser.phone, `Welcome to GulfCarX, ${createdUser.name}! Your account has been created successfully.`);
+        // }
 
         revalidatePath('/admin/users');
         revalidatePath('/admin');
@@ -272,12 +271,15 @@ export async function sendPasswordResetCode(identifier: string): Promise<{ succe
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     await db.update(users).set({ verificationCode: code }).where(eq(users.id, user.id));
     
-    const smsResult = await sendSms(user.phone, `Your GulfCarX password reset code is: ${code}`);
+    // const smsResult = await sendSms(user.phone, `Your GulfCarX password reset code is: ${code}`);
+
+    // Simulating success without sending SMS
+    const smsResult = { success: true };
 
     if (smsResult.success) {
       return { success: true, message: "Verification code sent.", code: code };
     } else {
-      return { success: false, message: smsResult.message || "Failed to send verification code. Please try again later." };
+      return { success: false, message: "Failed to send verification code. Please try again later." };
     }
 }
 
