@@ -15,9 +15,9 @@ if (!connectionString) {
   throw new Error('POSTGRES_URL is not set in the environment variables. Please ensure it is defined in your .env file.');
 }
 
-// Append sslmode=require for Supabase connection.
-const connectionUrl = `${connectionString}?sslmode=require`;
+// Supabase requires SSL. Using a config object is more robust for special characters.
+const client = postgres(connectionString, {
+    ssl: 'require'
+});
 
-// Disable prefetch as it is not supported for "Transaction" pool mode
-const client = postgres(connectionUrl, { prepare: false });
 export const db = drizzle(client, { schema });
