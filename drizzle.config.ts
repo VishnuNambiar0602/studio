@@ -4,8 +4,10 @@ import { config } from 'dotenv';
 
 config({ path: '.env' });
 
-if (!process.env.POSTGRES_URL) {
-  throw new Error('POSTGRES_URL is not set in the environment variables.');
+const connectionString = "postgresql://postgres:[&WiM6L&ut6NHMKe]@db.jiipseivhisqnknlvqrk.supabase.co:5432/postgres?sslmode=require";
+
+if (!connectionString) {
+  throw new Error('Database connection string is not available.');
 }
 
 export default defineConfig({
@@ -13,6 +15,6 @@ export default defineConfig({
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.POSTGRES_URL,
+    url: connectionString,
   },
 });
