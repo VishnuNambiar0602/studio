@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -98,8 +97,8 @@ export function TakeSnap({ onGetSuggestion, setPhotoDataUri, photoDataUri, loadi
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({ variant: 'destructive', title: 'File too large', description: 'Please upload an image smaller than 5MB.' });
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+        toast({ variant: 'destructive', title: 'File too large', description: 'Please upload an image smaller than 100MB.' });
         return;
       }
       const dataUri = await fileToDataUrl(file);

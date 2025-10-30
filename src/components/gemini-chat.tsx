@@ -21,6 +21,7 @@ import { Badge } from "./ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { ImageCaptureDialog } from "./image-capture-dialog";
 import ReactMarkdown from "react-markdown";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   role: "user" | "assistant";
@@ -53,6 +54,7 @@ export function GeminiChat() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -157,6 +159,14 @@ export function GeminiChat() {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+        toast({
+          variant: "destructive",
+          title: "File is too large",
+          description: "Please upload an image under 100MB.",
+        });
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         setImageUri(e.target?.result as string);

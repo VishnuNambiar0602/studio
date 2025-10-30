@@ -31,8 +31,8 @@ export function AdminHeroImageUploader() {
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
-            if (selectedFile.size > 4 * 1024 * 1024) { // 4MB limit
-                toast({ variant: "destructive", title: "File too large", description: "Please upload an image smaller than 4MB." });
+            if (selectedFile.size > 100 * 1024 * 1024) { // 100MB limit
+                toast({ variant: "destructive", title: "File too large", description: "Please upload an image smaller than 100MB." });
                 return;
             }
              if (!["image/jpeg", "image/png", "image/webp"].includes(selectedFile.type)) {

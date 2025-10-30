@@ -52,7 +52,7 @@ const addPartFormSchema = z.object({
     .any()
     .refine((files) => files?.length > 0, "At least one image is required.")
     .refine((files) => files?.length <= 5, "You can upload a maximum of 5 images.")
-    .refine((files) => Array.from(files).every((file: any) => file?.size <= 5000000), `Max file size is 5MB per image.`)
+    .refine((files) => Array.from(files).every((file: any) => file?.size <= 100 * 1024 * 1024), `Max file size is 100MB per image.`)
     .refine(
       (files) => Array.from(files).every((file: any) => ["image/jpeg", "image/png", "image/webp"].includes(file?.type)),
       "Only .jpg, .png, and .webp formats are supported."
@@ -329,7 +329,7 @@ export function AddPartForm() {
                 <Input type="file" accept="image/png, image/jpeg, image/webp" {...fileRef} multiple />
               </FormControl>
                <FormDescription>
-                Upload up to 5 images (PNG, JPG, or WEBP, max 5MB each).
+                Upload up to 5 images (PNG, JPG, or WEBP, max 100MB each).
               </FormDescription>
               <FormMessage />
             </FormItem>

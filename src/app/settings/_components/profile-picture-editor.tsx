@@ -1,4 +1,3 @@
-// Edited
 
 "use client";
 
@@ -33,8 +32,8 @@ export function ProfilePictureEditor() {
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (selectedFile) {
-            if (selectedFile.size > 2 * 1024 * 1024) { // 2MB limit
-                toast({ variant: "destructive", title: "File too large", description: "Please upload an image smaller than 2MB." });
+            if (selectedFile.size > 100 * 1024 * 1024) { // 100MB limit
+                toast({ variant: "destructive", title: "File too large", description: "Please upload an image smaller than 100MB." });
                 return;
             }
             if (!["image/jpeg", "image/png", "image/webp"].includes(selectedFile.type)) {
