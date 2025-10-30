@@ -28,7 +28,7 @@ export function PartProvider({ children }: { children: ReactNode }) {
       setParts(initialParts);
     } catch (error: any) {
       console.error("Failed to fetch initial parts:", error);
-      setError(`An error occurred while loading parts data.`);
+      setError(`Could not connect to the parts database. Please ensure the database is running and the connection URL is correct. Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
