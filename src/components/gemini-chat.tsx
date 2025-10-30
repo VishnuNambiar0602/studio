@@ -72,11 +72,10 @@ export function GeminiChat() {
     }
   }, [messages, loading]);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: { prompt: string }) => {
     const userInput = values.prompt;
     if (!userInput && !imageUri) return;
 
-    // Get the actual last user message from the state *before* adding the new one.
     const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content;
 
     setMessages((prev) => [...prev, { role: "user", content: userInput, imagePreview: imageUri || undefined }]);
@@ -92,7 +91,7 @@ export function GeminiChat() {
       );
       const response = await suggestParts({
         partDescription: userInput,
-        previousUserQuery: lastUserMessage, // Pass the correct previous query
+        previousUserQuery: lastUserMessage,
         availableParts,
         photoDataUri: submittedImageUri || undefined,
       });
@@ -119,7 +118,7 @@ export function GeminiChat() {
 
   const handleExamplePrompt = (prompt: string) => {
     form.setValue("prompt", prompt);
-    form.handleSubmit(handleSubmit)();
+    handleSubmit({ prompt });
   };
   
   const handleToggleRecording = () => {
@@ -241,7 +240,7 @@ export function GeminiChat() {
                 {message.followUpQuestions && message.followUpQuestions.length > 0 && !loading && index === messages.length - 1 && (
                   <div className="flex flex-wrap gap-2 pt-3">
                     {message.followUpQuestions.map((question, qIndex) => (
-                      <button key={qIndex} onClick={() => form.handleSubmit(handleSubmit)({ prompt: question })}>
+                      <button key={qIndex} onClick={() => handleSubmit({ prompt: question })}>
                         <Badge variant="outline" className="text-sm py-1 px-3 hover:bg-muted cursor-pointer">
                           {question}
                         </Badge>
