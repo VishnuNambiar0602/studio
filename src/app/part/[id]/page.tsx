@@ -5,7 +5,7 @@ import { Header } from "@/components/header";
 import Image from "next/image";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, CalendarPlus } from "lucide-react";
+import { MapPin, CalendarPlus, ShieldCheck, ShieldOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { AddToCartButton } from "./_components/add-to-cart-button";
 import { BookViewingDialog } from "@/components/book-viewing-dialog";
@@ -64,10 +64,14 @@ export default async function PartDetailPage({ params: { id } }: { params: { id:
               
               <Separator />
 
-              <div className="text-muted-foreground">
+              <div className="text-muted-foreground space-y-4">
                     <div className="flex items-center text-lg">
                         <MapPin className="mr-3 h-5 w-5 shrink-0" />
                         <span className="truncate font-semibold">{part.vendorAddress}</span>
+                    </div>
+                     <div className="flex items-center text-lg">
+                        {part.hasRefundPolicy ? <ShieldCheck className="mr-3 h-5 w-5 shrink-0 text-green-600" /> : <ShieldOff className="mr-3 h-5 w-5 shrink-0 text-red-600" />}
+                        <span className="font-semibold">{part.hasRefundPolicy ? "Refunds Accepted" : "No Refunds"}</span>
                     </div>
               </div>
 

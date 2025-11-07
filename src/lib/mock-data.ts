@@ -22,6 +22,7 @@ export const MOCK_PARTS: Part[] = [
     isVisibleForSale: true,
     manufacturer: 'Toyota Genuine Parts',
     category: ['oem', 'new'],
+    hasRefundPolicy: true,
   },
   {
     id: 'part-2',
@@ -34,6 +35,7 @@ export const MOCK_PARTS: Part[] = [
     isVisibleForSale: true,
     manufacturer: 'Honda',
     category: ['used'],
+    hasRefundPolicy: false,
   },
   {
     id: 'part-3',
@@ -46,6 +48,7 @@ export const MOCK_PARTS: Part[] = [
     isVisibleForSale: true,
     manufacturer: 'K&N Engineering',
     category: ['new'],
+    hasRefundPolicy: true,
   },
   {
     id: 'part-4',
@@ -58,6 +61,7 @@ export const MOCK_PARTS: Part[] = [
     isVisibleForSale: true,
     manufacturer: 'Nissan',
     category: ['used', 'oem'],
+    hasRefundPolicy: false,
   },
   {
     id: 'part-5',
@@ -70,6 +74,7 @@ export const MOCK_PARTS: Part[] = [
     isVisibleForSale: true,
     manufacturer: 'Denso',
     category: ['new'],
+    hasRefundPolicy: true,
   },
   {
     id: 'part-6',
@@ -82,6 +87,7 @@ export const MOCK_PARTS: Part[] = [
     isVisibleForSale: false,
     manufacturer: 'Lexus',
     category: ['used', 'oem'],
+    hasRefundPolicy: false,
   },
 ];
 

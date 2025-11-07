@@ -33,6 +33,7 @@ import type { Part } from "@/lib/types";
 import { useParts } from "@/context/part-context";
 import { useSettings } from "@/context/settings-context";
 import { suggestPrice } from "@/ai/flows/price-optimizer-flow";
+import { Switch } from "./ui/switch";
 
 const categories = ["new", "used", "oem"] as const;
 
@@ -50,6 +51,7 @@ const editPartFormSchema = z.object({
   category: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one category.",
   }),
+  hasRefundPolicy: z.boolean().default(false),
   // Images are optional on update, as they might not change them
   images: z
     .any()
@@ -81,6 +83,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
       quantity: part.quantity,
       category: part.category,
       dateOfManufacture: new Date(), // Mocking date
+      hasRefundPolicy: part.hasRefundPolicy,
     }
   });
 
@@ -94,6 +97,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
         quantity: part.quantity,
         category: part.category,
         dateOfManufacture: new Date(), // Mocking date
+        hasRefundPolicy: part.hasRefundPolicy,
     });
   }, [part, form]);
 
@@ -135,6 +139,7 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
             quantity: data.quantity,
             manufacturer: data.manufacturer,
             category: data.category as ('new' | 'used' | 'oem')[],
+            hasRefundPolicy: data.hasRefundPolicy,
         };
 
         await updatePart(part.id, updatedData);
@@ -344,6 +349,28 @@ export function EditPartForm({ part, onUpdate }: EditPartFormProps) {
                 ))}
               </div>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="hasRefundPolicy"
+          render={({ field }) => (
+            <FormItem className="md:col-span-2 flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Refund Policy
+                </FormLabel>
+                <FormDescription>
+                  Check this box if this part is eligible for refunds.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />

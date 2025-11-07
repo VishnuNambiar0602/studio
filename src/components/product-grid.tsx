@@ -6,14 +6,16 @@ import type { Part } from "@/lib/types";
 import { ProductCard } from "./product-card";
 import { ProductFilters, type Filters } from "./product-filters";
 import { Button } from "./ui/button";
-import { Search, SlidersHorizontal, Package } from "lucide-react";
+import { Search, SlidersHorizontal, Package, History } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { Card } from "./ui/card";
 import { useParts } from "@/context/part-context";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from "./ui/command";
+import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList, CommandSeparator } from "./ui/command";
 import { getPopularParts } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+
+const MAX_RECENT_SEARCHES = 5;
 
 interface ProductGridProps {
     category?: 'new' | 'used' | 'oem';
@@ -36,6 +38,7 @@ export function ProductGrid({ category }: ProductGridProps) {
   const [activeFilters, setActiveFilters] = useState<Filters>(initialFilters);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   
   useEffect(() => {
     async function fetchPopular() {
@@ -43,11 +46,32 @@ export function ProductGrid({ category }: ProductGridProps) {
       setPopularParts(popular);
     }
     fetchPopular();
+    const storedSearches = localStorage.getItem("gulfcarx_recent_searches");
+    if (storedSearches) {
+      setRecentSearches(JSON.parse(storedSearches));
+    }
   }, []);
+
+  const addSearchToHistory = (query: string) => {
+    if (!query) return;
+    const lowerCaseQuery = query.toLowerCase();
+    const updatedSearches = [lowerCaseQuery, ...recentSearches.filter(s => s.toLowerCase() !== lowerCaseQuery)].slice(0, MAX_RECENT_SEARCHES);
+    setRecentSearches(updatedSearches);
+    localStorage.setItem("gulfcarx_recent_searches", JSON.stringify(updatedSearches));
+  };
+
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setActiveFilters(prev => ({ ...prev, search: value }));
+    if (!value) {
+      setActiveFilters(prev => ({ ...prev, search: '' }));
+    }
+  };
+
+  const handleSearchSubmit = () => {
+    addSearchToHistory(searchQuery);
+    setActiveFilters(prev => ({ ...prev, search: searchQuery }));
+    setIsSearchPopoverOpen(false);
   };
 
   const handleSuggestionSelect = (partId: string) => {
@@ -60,6 +84,7 @@ export function ProductGrid({ category }: ProductGridProps) {
   }, []);
 
   const applyFilters = useCallback(() => {
+    addSearchToHistory(tempFilters.search);
     setActiveFilters(tempFilters);
     setIsFilterSheetOpen(false);
   }, [tempFilters]);
@@ -81,17 +106,15 @@ export function ProductGrid({ category }: ProductGridProps) {
 
 
   const filteredAndSortedParts = useMemo(() => {
-    let processedParts: Part[] = [];
+    let processedParts: Part[] = [...allParts];
+    const searchTerm = activeFilters.search.toLowerCase();
 
-    if (activeFilters.search) {
-       const searchTerm = activeFilters.search.toLowerCase();
-       processedParts = popularParts.filter(part =>
+    if (searchTerm) {
+       processedParts = processedParts.filter(part =>
           part.name.toLowerCase().includes(searchTerm) ||
           part.description.toLowerCase().includes(searchTerm) ||
           part.manufacturer?.toLowerCase().includes(searchTerm)
        );
-    } else {
-        processedParts = [...allParts];
     }
 
 
@@ -118,7 +141,13 @@ export function ProductGrid({ category }: ProductGridProps) {
     }
 
     return processedParts;
-  }, [allParts, popularParts, activeFilters]);
+  }, [allParts, activeFilters]);
+
+  const searchSuggestions = useMemo(() => {
+     if (!searchQuery) return popularParts.slice(0,5);
+     const lowercasedQuery = searchQuery.toLowerCase();
+     return allParts.filter(part => part.name.toLowerCase().includes(lowercasedQuery)).slice(0, 10);
+  }, [searchQuery, allParts, popularParts]);
 
   const availableFilterOptions = useMemo(() => {
         const locations = new Set(allParts.map(part => part.vendorAddress));
@@ -142,6 +171,7 @@ export function ProductGrid({ category }: ProductGridProps) {
                           placeholder="Search by part name, description or manufacturer..."
                           value={searchQuery}
                           onValueChange={handleSearchChange}
+                          onKeyDown={(e) => { if(e.key === 'Enter') handleSearchSubmit() }}
                           className="pl-10 text-base h-12"
                         />
                       </Command>
@@ -150,8 +180,27 @@ export function ProductGrid({ category }: ProductGridProps) {
                   <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                     <CommandList>
                       <CommandEmpty>No results found.</CommandEmpty>
-                      <CommandGroup heading="Suggestions">
-                        {filteredAndSortedParts.slice(0, 10).map((part) => (
+                        {searchQuery.length === 0 && recentSearches.length > 0 && (
+                            <CommandGroup heading="Recent Searches">
+                                {recentSearches.map((searchTerm) => (
+                                <CommandItem
+                                    key={searchTerm}
+                                    value={searchTerm}
+                                    onSelect={() => {
+                                        setSearchQuery(searchTerm);
+                                        handleSearchSubmit();
+                                    }}
+                                    className="flex items-center gap-3 cursor-pointer"
+                                >
+                                    <History className="h-4 w-4 text-muted-foreground" />
+                                    <span>{searchTerm}</span>
+                                </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        )}
+                       <CommandSeparator />
+                      <CommandGroup heading={searchQuery ? "Suggestions" : "Recommended Products"}>
+                        {searchSuggestions.map((part) => (
                            <CommandItem
                             key={part.id}
                             value={part.name}
@@ -167,6 +216,9 @@ export function ProductGrid({ category }: ProductGridProps) {
                   </PopoverContent>
                 </Popover>
             </div>
+            <Button onClick={handleSearchSubmit} className="w-full sm:w-auto h-12">
+                <Search className="mr-2 h-4 w-4" /> Search
+            </Button>
             <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
               <SheetTrigger asChild>
                   <Button variant="outline" className="w-full sm:w-auto h-12">

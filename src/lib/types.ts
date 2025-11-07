@@ -10,6 +10,7 @@ export type Part = {
   manufacturer: string;
   isVisibleForSale: boolean;
   category: ('new' | 'used' | 'oem')[];
+  hasRefundPolicy: boolean;
 };
 
 export interface CartItem extends Part {

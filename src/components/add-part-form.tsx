@@ -32,6 +32,8 @@ import { createPart } from "@/lib/actions";
 import { useSettings } from "@/context/settings-context";
 import { useRouter } from "next/navigation";
 import { useParts } from "@/context/part-context";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
 
 const categories = ["new", "used", "oem"] as const;
 
@@ -48,6 +50,7 @@ const addPartFormSchema = z.object({
   category: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one category.",
   }),
+  hasRefundPolicy: z.boolean().default(false),
   images: z
     .any()
     .refine((files) => files?.length > 0, "At least one image is required.")
@@ -87,6 +90,7 @@ export function AddPartForm() {
       price: 0,
       quantity: 1,
       category: [],
+      hasRefundPolicy: false,
     }
   });
 
@@ -117,6 +121,7 @@ export function AddPartForm() {
             vendorAddress: loggedInUser.shopAddress,
             manufacturer: data.manufacturer,
             category: data.category as ('new' | 'used' | 'oem')[],
+            hasRefundPolicy: data.hasRefundPolicy,
         };
 
         const createdPart = await createPart(newPartData);
@@ -332,6 +337,28 @@ export function AddPartForm() {
                 Upload up to 5 images (PNG, JPG, or WEBP, max 100MB each).
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="hasRefundPolicy"
+          render={({ field }) => (
+            <FormItem className="md:col-span-2 flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Refund Policy
+                </FormLabel>
+                <FormDescription>
+                  Check this box if this part is eligible for refunds.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />
