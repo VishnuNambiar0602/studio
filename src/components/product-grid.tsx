@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList, CommandSeparator } from "./ui/command";
 import { getPopularParts } from "@/lib/actions";
 import { useRouter } from "next/navigation";
+import { Input } from "./ui/input";
 
 const MAX_RECENT_SEARCHES = 5;
 
