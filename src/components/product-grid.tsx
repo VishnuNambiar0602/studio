@@ -1,25 +1,30 @@
 
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Part } from "@/lib/types";
 import { ProductCard } from "./product-card";
 import { ProductFilters, type Filters } from "./product-filters";
 import { Button } from "./ui/button";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Package } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
-import { Input } from "./ui/input";
-import { useParts } from "@/context/part-context";
 import { Card } from "./ui/card";
+import { useParts } from "@/context/part-context";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from "./ui/command";
+import { getPopularParts } from "@/lib/actions";
+import { useRouter } from "next/navigation";
 
 interface ProductGridProps {
     category?: 'new' | 'used' | 'oem';
 }
 
 export function ProductGrid({ category }: ProductGridProps) {
-  const { parts } = useParts(); // Use the context to get parts
+  const { parts } = useParts();
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-  
+  const [popularParts, setPopularParts] = useState<Part[]>([]);
+  const router = useRouter();
+
   const initialFilters: Filters = {
     search: '',
     locations: [],
@@ -29,10 +34,25 @@ export function ProductGrid({ category }: ProductGridProps) {
 
   const [tempFilters, setTempFilters] = useState<Filters>(initialFilters);
   const [activeFilters, setActiveFilters] = useState<Filters>(initialFilters);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchPopoverOpen, setIsSearchPopoverOpen] = useState(false);
   
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // This updates the search term live for the main input
-    setActiveFilters(prev => ({ ...prev, search: event.target.value }));
+  useEffect(() => {
+    async function fetchPopular() {
+      const popular = await getPopularParts();
+      setPopularParts(popular);
+    }
+    fetchPopular();
+  }, []);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setActiveFilters(prev => ({ ...prev, search: value }));
+  };
+
+  const handleSuggestionSelect = (partId: string) => {
+    setIsSearchPopoverOpen(false);
+    router.push(`/part/${partId}`);
   };
   
   const handleTempFilterChange = useCallback((newFilters: Partial<Filters>) => {
@@ -47,6 +67,7 @@ export function ProductGrid({ category }: ProductGridProps) {
   const clearFilters = useCallback(() => {
     setTempFilters(initialFilters);
     setActiveFilters(initialFilters);
+    setSearchQuery("");
     setIsFilterSheetOpen(false);
   }, [initialFilters]);
 
@@ -60,17 +81,19 @@ export function ProductGrid({ category }: ProductGridProps) {
 
 
   const filteredAndSortedParts = useMemo(() => {
-    let processedParts = [...allParts];
+    let processedParts: Part[] = [];
 
-    // 1. Filter by search query
     if (activeFilters.search) {
-      const searchTerm = activeFilters.search.toLowerCase();
-      processedParts = processedParts.filter(part =>
-        part.name.toLowerCase().includes(searchTerm) ||
-        part.description.toLowerCase().includes(searchTerm) ||
-        part.manufacturer?.toLowerCase().includes(searchTerm)
-      );
+       const searchTerm = activeFilters.search.toLowerCase();
+       processedParts = popularParts.filter(part =>
+          part.name.toLowerCase().includes(searchTerm) ||
+          part.description.toLowerCase().includes(searchTerm) ||
+          part.manufacturer?.toLowerCase().includes(searchTerm)
+       );
+    } else {
+        processedParts = [...allParts];
     }
+
 
     // 2. Filter by locations
     if (activeFilters.locations.length > 0) {
@@ -95,7 +118,7 @@ export function ProductGrid({ category }: ProductGridProps) {
     }
 
     return processedParts;
-  }, [allParts, activeFilters]);
+  }, [allParts, popularParts, activeFilters]);
 
   const availableFilterOptions = useMemo(() => {
         const locations = new Set(allParts.map(part => part.vendorAddress));
@@ -109,13 +132,40 @@ export function ProductGrid({ category }: ProductGridProps) {
     <>
       <Card className="p-4 mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-grow flex gap-2">
-                <Input 
-                    placeholder="Search by part name, description or manufacturer..."
-                    value={activeFilters.search}
-                    onChange={handleSearchChange}
-                    className="flex-grow text-base h-12"
-                />
+            <div className="flex-grow">
+               <Popover open={isSearchPopoverOpen} onOpenChange={setIsSearchPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                      <Command>
+                        <CommandInput 
+                          placeholder="Search by part name, description or manufacturer..."
+                          value={searchQuery}
+                          onValueChange={handleSearchChange}
+                          className="pl-10 text-base h-12"
+                        />
+                      </Command>
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <CommandList>
+                      <CommandEmpty>No results found.</CommandEmpty>
+                      <CommandGroup heading="Suggestions">
+                        {filteredAndSortedParts.slice(0, 10).map((part) => (
+                           <CommandItem
+                            key={part.id}
+                            value={part.name}
+                            onSelect={() => handleSuggestionSelect(part.id)}
+                            className="flex items-center gap-3 cursor-pointer"
+                          >
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                            <span>{part.name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </PopoverContent>
+                </Popover>
             </div>
             <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
               <SheetTrigger asChild>

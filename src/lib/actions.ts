@@ -96,6 +96,31 @@ export async function getPartsByVendor(vendorName: string): Promise<Part[]> {
     return parts.filter(p => p.vendorAddress === vendorName);
 }
 
+export async function getPopularParts(): Promise<Part[]> {
+    const interactionCounts: { [partId: string]: number } = {};
+
+    // Count clicks and orders for each part
+    for (const interaction of aiInteractions) {
+        if (!interactionCounts[interaction.partId]) {
+            interactionCounts[interaction.partId] = 0;
+        }
+        if (interaction.clicked) interactionCounts[interaction.partId]++;
+        if (interaction.ordered) interactionCounts[interaction.partId] += 2; // Weight orders more
+    }
+    
+    const sortedPartIds = Object.keys(interactionCounts).sort((a, b) => interactionCounts[b] - interactionCounts[a]);
+    
+    // Get the full part objects in sorted order
+    const popularParts = sortedPartIds.map(partId => parts.find(p => p.id === partId)).filter(p => p) as Part[];
+    
+    // Get the remaining parts that are not in the popular list
+    const otherParts = parts.filter(p => !sortedPartIds.includes(p.id));
+    
+    // Concatenate popular parts with the rest
+    return [...popularParts, ...otherParts];
+}
+
+
 // --- USER ACTIONS ---
 
 export async function getUserById(userId: string): Promise<User | null> {
