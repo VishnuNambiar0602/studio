@@ -87,7 +87,7 @@ export function ProductGrid({ category }: ProductGridProps) {
     addSearchToHistory(tempFilters.search);
     setActiveFilters(tempFilters);
     setIsFilterSheetOpen(false);
-  }, [tempFilters]);
+  }, [tempFilters, addSearchToHistory]);
 
   const clearFilters = useCallback(() => {
     setTempFilters(initialFilters);
@@ -166,53 +166,60 @@ export function ProductGrid({ category }: ProductGridProps) {
                   <PopoverTrigger asChild>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                      <Command>
-                        <CommandInput 
-                          placeholder="Search by part name, description or manufacturer..."
-                          value={searchQuery}
-                          onValueChange={handleSearchChange}
-                          onKeyDown={(e) => { if(e.key === 'Enter') handleSearchSubmit() }}
-                          className="pl-10 text-base h-12"
-                        />
-                      </Command>
+                      <Input
+                        placeholder="Search by part name, description or manufacturer..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        onFocus={() => setIsSearchPopoverOpen(true)}
+                        onKeyDown={(e) => { if(e.key === 'Enter') handleSearchSubmit() }}
+                        className="pl-10 text-base h-12"
+                      />
                     </div>
                   </PopoverTrigger>
                   <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <CommandList>
-                      <CommandEmpty>No results found.</CommandEmpty>
-                        {searchQuery.length === 0 && recentSearches.length > 0 && (
-                            <CommandGroup heading="Recent Searches">
-                                {recentSearches.map((searchTerm) => (
-                                <CommandItem
-                                    key={searchTerm}
-                                    value={searchTerm}
-                                    onSelect={() => {
-                                        setSearchQuery(searchTerm);
-                                        handleSearchSubmit();
-                                    }}
-                                    className="flex items-center gap-3 cursor-pointer"
-                                >
-                                    <History className="h-4 w-4 text-muted-foreground" />
-                                    <span>{searchTerm}</span>
-                                </CommandItem>
-                                ))}
-                            </CommandGroup>
-                        )}
-                       <CommandSeparator />
-                      <CommandGroup heading={searchQuery ? "Suggestions" : "Recommended Products"}>
-                        {searchSuggestions.map((part) => (
-                           <CommandItem
-                            key={part.id}
-                            value={part.name}
-                            onSelect={() => handleSuggestionSelect(part.id)}
-                            className="flex items-center gap-3 cursor-pointer"
-                          >
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                            <span>{part.name}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
+                    <Command shouldFilter={false}>
+                      <CommandInput 
+                        placeholder="Search by part name, description or manufacturer..."
+                        value={searchQuery}
+                        onValueChange={handleSearchChange}
+                        onKeyDown={(e) => { if(e.key === 'Enter') handleSearchSubmit() }}
+                      />
+                      <CommandList>
+                        <CommandEmpty>No results found.</CommandEmpty>
+                          {searchQuery.length === 0 && recentSearches.length > 0 && (
+                              <CommandGroup heading="Recent Searches">
+                                  {recentSearches.map((searchTerm) => (
+                                  <CommandItem
+                                      key={searchTerm}
+                                      value={searchTerm}
+                                      onSelect={() => {
+                                          setSearchQuery(searchTerm);
+                                          handleSearchSubmit();
+                                      }}
+                                      className="flex items-center gap-3 cursor-pointer"
+                                  >
+                                      <History className="h-4 w-4 text-muted-foreground" />
+                                      <span>{searchTerm}</span>
+                                  </CommandItem>
+                                  ))}
+                              </CommandGroup>
+                          )}
+                        <CommandSeparator />
+                        <CommandGroup heading={searchQuery ? "Suggestions" : "Recommended Products"}>
+                          {searchSuggestions.map((part) => (
+                            <CommandItem
+                              key={part.id}
+                              value={part.name}
+                              onSelect={() => handleSuggestionSelect(part.id)}
+                              className="flex items-center gap-3 cursor-pointer"
+                            >
+                              <Package className="h-4 w-4 text-muted-foreground" />
+                              <span>{part.name}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
                   </PopoverContent>
                 </Popover>
             </div>
