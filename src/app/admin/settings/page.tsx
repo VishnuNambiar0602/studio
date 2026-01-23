@@ -1,13 +1,14 @@
-
 import { AdminAdToggle } from "../_components/admin-ad-toggle";
 import { AdminHeroImageUploader } from "../_components/admin-hero-image-uploader";
 import { AdminPriceOptimizationToggle } from "../_components/admin-price-optimization-toggle";
 import { AdminSocialMediaSettings } from "../_components/admin-social-media-settings";
 import { AdminTaxSettings } from "../_components/admin-tax-settings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageIcon, Share2, Sparkles, Percent, Settings, Bot, Languages, Palette } from "lucide-react";
+import { ImageIcon, Share2, Sparkles, Percent, Languages, Palette } from "lucide-react";
 import { AdminAudioSettings } from "./_components/audio-settings";
 import { LocalizationSettings } from "./_components/localization-settings";
+import { AdminFontSizeSettings } from "./_components/font-size-settings";
+import { AdminThemeSettings } from "./_components/theme-settings";
 
 export default function AdminSettingsPage() {
     return (
@@ -61,7 +62,9 @@ export default function AdminSettingsPage() {
                             <CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" /> UI & UX Controls</CardTitle>
                             <CardDescription>Manage global user interface and experience settings.</CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-6">
+                            <AdminThemeSettings />
+                            <AdminFontSizeSettings />
                             <AdminAudioSettings />
                         </CardContent>
                     </Card>
