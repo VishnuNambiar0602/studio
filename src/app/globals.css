@@ -68,4 +68,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  html.font-sm {
+    @apply text-[14px];
+  }
+  html.font-md {
+    @apply text-[16px];
+  }
+  html.font-lg {
+    @apply text-[18px];
+  }
 }
