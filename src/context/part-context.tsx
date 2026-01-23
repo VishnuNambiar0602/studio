@@ -1,9 +1,9 @@
-
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import type { Part } from "@/lib/types";
 import { getParts } from "@/lib/actions";
+import { Car } from "lucide-react";
 
 interface PartContextType {
   parts: Part[];
@@ -40,8 +40,9 @@ export function PartProvider({ children }: { children: ReactNode }) {
 
   if (loading) {
       return (
-        <div className="fixed inset-0 bg-background z-50 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+        <div className="fixed inset-0 bg-background z-50 flex flex-col items-center justify-center gap-4">
+          <Car className="h-24 w-24 text-primary animate-pulse" />
+          <p className="text-lg text-muted-foreground animate-pulse">Starting the engine...</p>
         </div>
       );
   }
