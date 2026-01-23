@@ -11,6 +11,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
   Card,
   CardContent,
   CardDescription,
@@ -20,14 +31,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, ExternalLink, ShieldCheck, ShieldX } from "lucide-react";
-import { getAllUsers } from "@/lib/actions";
+import { getAllUsers, toggleUserBlockStatus, deleteUser } from "@/lib/actions";
 import type { PublicUser } from "@/lib/types";
 import { cva } from "class-variance-authority";
 import Link from "next/link";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
 
 export function AdminVendorTable() {
   const [vendors, setVendors] = React.useState<PublicUser[]>([]);
+  const { toast } = useToast();
+
 
   const fetchVendors = React.useCallback(async () => {
     const allUsers = await getAllUsers();
@@ -38,6 +53,30 @@ export function AdminVendorTable() {
   React.useEffect(() => {
     fetchVendors();
   }, [fetchVendors]);
+
+  const handleToggleBlock = async (userId: string) => {
+      const result = await toggleUserBlockStatus(userId);
+      toast({
+          title: result.success ? "Success" : "Error",
+          description: result.message,
+          variant: result.success ? "default" : "destructive",
+      });
+      if (result.success) {
+          fetchVendors();
+      }
+  };
+
+  const handleDelete = async (userId: string) => {
+      const result = await deleteUser(userId);
+      toast({
+          title: result.success ? "Success" : "Error",
+          description: result.message,
+          variant: result.success ? "default" : "destructive",
+      });
+      if (result.success) {
+          fetchVendors();
+      }
+  };
 
 
   const statusBadgeVariants = cva(
@@ -99,11 +138,45 @@ export function AdminVendorTable() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={`/admin/vendors/${vendor.id}`}>
-                                View <ExternalLink className="ml-2 h-4 w-4"/>
-                            </Link>
-                        </Button>
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/vendors/${vendor.id}`}>View Profile</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleToggleBlock(vendor.id)}>
+                                {vendor.isBlocked ? 'Unblock' : 'Block'}
+                            </DropdownMenuItem>
+                             <DropdownMenuSeparator />
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                        Delete
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This may fail if the vendor has existing parts or orders. It is often safer to block a vendor.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(vendor.id)} className="bg-destructive hover:bg-destructive/90">
+                                            Yes, delete vendor
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))

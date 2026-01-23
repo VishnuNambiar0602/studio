@@ -49,11 +49,12 @@ async function sendSms(phone: string, message: string): Promise<{ success: boole
 
 // --- PART ACTIONS ---
 
-export async function createPart(partData: Omit<Part, 'id' | 'isVisibleForSale'>): Promise<Part | null> {
+export async function createPart(partData: Omit<Part, 'id' | 'isVisibleForSale' | 'hasRefundPolicy'> & { hasRefundPolicy?: boolean }): Promise<Part | null> {
     const newPart: Part = {
         ...partData,
         id: `part-${Date.now()}-${Math.random()}`,
         isVisibleForSale: true,
+        hasRefundPolicy: partData.hasRefundPolicy || false,
     };
     parts.unshift(newPart);
 
@@ -585,6 +586,7 @@ export async function deleteUser(userId: string): Promise<{ success: boolean; me
     
     users.splice(userIndex, 1);
     revalidatePath('/admin/users');
+    revalidatePath('/admin/vendors');
     return { success: true, message: "User deleted successfully." };
 }
 
@@ -597,6 +599,8 @@ export async function toggleUserBlockStatus(userId: string): Promise<{ success: 
     user.isBlocked = !user.isBlocked;
     
     revalidatePath('/admin/users');
+    revalidatePath('/admin/vendors');
+    revalidatePath(`/admin/vendors/${userId}`);
     return { success: true, message: `User has been ${user.isBlocked ? 'blocked' : 'unblocked'}.` };
 }
 
