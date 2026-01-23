@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import type { FontSize, Language, PublicUser, User, Theme } from "@/lib/types";
+import type { FontSize, Language, PublicUser, User, Theme, TtsVoice } from "@/lib/types";
 
 const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080";
 
@@ -35,6 +36,8 @@ interface SettingsContextType {
     twitter: SocialLink;
   };
   setSocialLink: (platform: 'instagram' | 'facebook' | 'twitter', value: SocialLink) => void;
+  ttsVoice: TtsVoice;
+  setTtsVoice: (voice: TtsVoice) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -54,6 +57,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     facebook: { url: "", isEnabled: true },
     twitter: { url: "", isEnabled: true },
   });
+  const [ttsVoice, setTtsVoice] = useState<TtsVoice>('male');
+
 
   useEffect(() => {
     try {
@@ -84,6 +89,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
         const storedSocialLinks = localStorage.getItem("socialLinks");
         if (storedSocialLinks) setSocialLinks(JSON.parse(storedSocialLinks));
+
+        const storedTtsVoice = localStorage.getItem("ttsVoice") as TtsVoice;
+        if (storedTtsVoice) setTtsVoice(storedTtsVoice);
 
 
     } catch (error) {
@@ -129,6 +137,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSocialLinks(newSocialLinks);
     localStorage.setItem("socialLinks", JSON.stringify(newSocialLinks));
   }
+  
+  const handleSetTtsVoice = (voice: TtsVoice) => {
+      setTtsVoice(voice);
+      localStorage.setItem("ttsVoice", voice);
+  }
 
   const loginUser = (user: PublicUser) => {
     setLoggedInUser(user);
@@ -157,6 +170,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       loggedInUser, loginUser, logoutUser,
       isPriceOptimizationEnabled, setIsPriceOptimizationEnabled: handleSetIsPriceOptimizationEnabled,
       socialLinks, setSocialLink: handleSetSocialLink,
+      ttsVoice, setTtsVoice: handleSetTtsVoice,
     }}>
       {children}
     </SettingsContext.Provider>

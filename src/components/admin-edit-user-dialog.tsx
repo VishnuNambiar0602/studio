@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,7 +17,7 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Percent } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { updateUser } from "@/lib/actions";
 import type { PublicUser, UserRole } from "@/lib/types";
@@ -25,6 +26,7 @@ const editUserSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email." }),
   role: z.enum(["customer", "vendor", "admin"]),
+  surcharge: z.coerce.number().min(0, "Surcharge cannot be negative.").optional().nullable(),
 });
 
 interface AdminEditUserDialogProps {
@@ -44,6 +46,7 @@ export function AdminEditUserDialog({ user, isOpen, onOpenChange, onUserUpdated 
       name: user.name,
       email: user.email,
       role: user.role,
+      surcharge: user.surcharge || 0,
     },
   });
 
@@ -53,9 +56,13 @@ export function AdminEditUserDialog({ user, isOpen, onOpenChange, onUserUpdated 
         name: user.name,
         email: user.email,
         role: user.role,
+        surcharge: user.surcharge || 0,
       });
     }
   }, [user, form]);
+  
+  const watchedRole = form.watch("role");
+
 
   const handleUserUpdate = async (values: z.infer<typeof editUserSchema>) => {
     setLoading(true);
@@ -136,6 +143,24 @@ export function AdminEditUserDialog({ user, isOpen, onOpenChange, onUserUpdated 
                 </FormItem>
               )}
             />
+            {watchedRole === 'vendor' && (
+               <FormField
+                control={form.control}
+                name="surcharge"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Vendor Surcharge</FormLabel>
+                     <div className="relative">
+                        <FormControl>
+                          <Input type="number" {...field} value={field.value ?? ''} className="pl-2 pr-7" />
+                        </FormControl>
+                         <Percent className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <div className="flex justify-end pt-4">
               <Button type="submit" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

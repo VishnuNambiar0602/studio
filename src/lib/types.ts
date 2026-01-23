@@ -1,4 +1,5 @@
 
+
 export type Part = {
   id: string;
   name: string;
@@ -20,6 +21,7 @@ export interface CartItem extends Part {
 export type Theme = 'light' | 'dark';
 export type FontSize = 'sm' | 'md' | 'lg';
 export type Language = 'en' | 'ar';
+export type TtsVoice = 'male' | 'female';
 
 export type UserRole = 'customer' | 'vendor' | 'admin';
 export type AccountType = 'individual' | 'business';
@@ -37,6 +39,7 @@ export interface User {
   shopAddress?: string | null; // For vendors
   zipCode?: string | null; // For vendors
   profilePictureUrl?: string | null;
+  surcharge?: number | null; // Custom surcharge for vendors
   // In a real app, you would never store the password in plain text.
   // It would be hashed and salted.
   password?: string; 

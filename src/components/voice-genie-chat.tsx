@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -35,7 +36,7 @@ export function VoiceGenieChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { parts } = useParts();
-  const { language, setLanguage } = useSettings();
+  const { language, setLanguage, ttsVoice } = useSettings();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -95,7 +96,7 @@ export function VoiceGenieChat() {
       };
       
       if (response.answer) {
-        const audioResponse = await textToSpeech({ text: response.answer, language: detectedLang });
+        const audioResponse = await textToSpeech({ text: response.answer, language: detectedLang, voice: ttsVoice });
         if (audioResponse.media) {
             assistantMessage.audioUrl = audioResponse.media;
             setAudioUrl(audioResponse.media);

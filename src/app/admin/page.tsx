@@ -1,8 +1,8 @@
 
 
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Package, Users, ExternalLink, Settings, ShieldCheck, Building, Percent, ImageIcon, Sparkles, Share2 } from "lucide-react";
-import { AdminAdToggle } from "./_components/admin-ad-toggle";
 import { AdminTrafficChart } from "./_components/admin-traffic-chart";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,6 @@ import { AdminVendorPerformance } from "./_components/admin-vendor-performance";
 import { getAdminDashboardStats } from "@/lib/actions";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AdminTaxSettings } from "./_components/admin-tax-settings";
-import { AdminHeroImageUploader } from "./_components/admin-hero-image-uploader";
-import { AdminPriceOptimizationToggle } from "./_components/admin-price-optimization-toggle";
-import { AdminSocialMediaSettings } from "./_components/admin-social-media-settings";
 
 function ChartSkeleton() {
   return (
@@ -103,35 +99,19 @@ export default async function AdminDashboard() {
             </CardContent>
           </Card>
           <div className="space-y-4">
-              <AdminHeroImageUploader />
-              <AdminSocialMediaSettings />
-              <Card>
-                  <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5" /> Vendor AI Tools</CardTitle>
-                      <CardDescription>Manage AI-powered tools available to vendors.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                      <AdminPriceOptimizationToggle />
-                  </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Percent className="h-5 w-5" /> Tax Settings</CardTitle>
-                      <CardDescription>Manage site-wide tax rates.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                      <AdminTaxSettings />
-                  </CardContent>
-              </Card>
-               <Card>
-                  <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Website Controls</CardTitle>
-                      <CardDescription>Manage global settings for the site.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                      <AdminAdToggle />
-                  </CardContent>
-              </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Settings className="h-5 w-5" /> Super Admin Settings</CardTitle>
+                    <CardDescription>Manage global settings, governance, and platform controls.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild className="w-full">
+                        <Link href="/admin/settings">
+                            Go to Governance Dashboard <ExternalLink className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </CardContent>
+            </Card>
               <Card>
                   <CardHeader>
                       <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> User & Vendor Management</CardTitle>

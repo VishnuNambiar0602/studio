@@ -1,10 +1,11 @@
 
+
 import { getVendorDetailsForAdmin } from "@/lib/actions";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays, Car } from "lucide-react";
+import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays, Car, Percent } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
 
@@ -81,6 +82,16 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
                 <CardContent>
                     <div className="text-2xl font-bold">{stats.activeListings}</div>
                      <p className="text-xs text-muted-foreground">Parts currently available for sale</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Custom Surcharge</CardTitle>
+                    <Percent className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{user.surcharge || 0}%</div>
+                     <p className="text-xs text-muted-foreground">Custom transaction fee for this vendor</p>
                 </CardContent>
             </Card>
         </div>

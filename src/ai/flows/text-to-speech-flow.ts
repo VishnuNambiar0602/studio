@@ -1,4 +1,5 @@
 
+
 // Edited
 
 // This file is machine-generated - edit with caution!
@@ -19,6 +20,7 @@ import wav from 'wav';
 const TextToSpeechInputSchema = z.object({
   text: z.string().describe('The text to convert to speech.'),
   language: z.enum(['en', 'ar']).optional().describe("The language of the text. Defaults to 'en' (English)."),
+  voice: z.enum(['male', 'female']).optional().describe("The desired voice gender. Defaults to 'male'."),
 });
 export type TextToSpeechInput = z.infer<typeof TextToSpeechInputSchema>;
 
@@ -66,12 +68,14 @@ const textToSpeechFlow = ai.defineFlow(
     inputSchema: TextToSpeechInputSchema,
     outputSchema: TextToSpeechOutputSchema,
   },
-  async ({text, language = 'en'}) => {
-    // Select a voice based on the language
-    // 'Algenib' is a good default English voice.
-    // 'ar-language-voice' is a placeholder for a suitable Arabic voice.
-    // In a real scenario, you'd pick a specific supported Arabic voice name.
-    const voiceName = language === 'ar' ? 'ar-language-voice' : 'Algenib';
+  async ({text, language = 'en', voice = 'male'}) => {
+    // Select a voice based on the language and gender
+    let voiceName = 'Algenib'; // Default English Male
+    if (language === 'en') {
+        voiceName = voice === 'male' ? 'Algenib' : 'Lyra';
+    } else if (language === 'ar') {
+        voiceName = voice === 'male' ? 'ar-XA-Standard-B' : 'ar-XA-Standard-A';
+    }
 
     const { media } = await ai.generate({
       model: googleAI.model('gemini-2.5-flash-preview-tts'),

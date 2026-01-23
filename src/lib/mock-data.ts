@@ -1,12 +1,13 @@
 
+
 import type { User, Part, Order, Booking, AiInteraction } from './types';
 
 export const MOCK_USERS: User[] = [
-    { id: 'user-cust1', name: 'Ahmed Al Farsi', email: 'ahmed@example.com', username: 'ahmed_alfarsi', role: 'customer', password: 'password123', phone: '+96898765432', accountType: 'individual', createdAt: new Date('2024-05-10'), isBlocked: false },
-    { id: 'user-vendor1', name: 'Muscat Modern Auto', email: 'mma@example.com', username: 'muscatmodern', role: 'vendor', password: 'password123', shopAddress: 'Muscat Modern Auto', zipCode: '112', phone: '+96891111111', accountType: 'business', createdAt: new Date('2024-01-15'), isBlocked: false },
-    { id: 'user-admin1', name: 'Admin', email: 'admin@gulfcarx.com', username: 'admin', role: 'admin', password: 'admin', phone: '+96899999999', accountType: 'business', createdAt: new Date('2024-01-01'), isBlocked: false },
-    { id: 'user-vendor2', name: 'Salalah Auto Spares', email: 'sas@example.com', username: 'salalahspares', role: 'vendor', password: 'password123', shopAddress: 'Salalah Auto Spares', zipCode: '211', phone: '+96892222222', accountType: 'business', createdAt: new Date('2024-03-20'), isBlocked: false },
-    { id: 'user-vendor3', name: 'Nizwa Car Parts', email: 'nizwa@example.com', username: 'nizwaparts', role: 'vendor', password: 'password123', shopAddress: 'Nizwa Car Parts', zipCode: '611', phone: '+96893333333', accountType: 'business', createdAt: new Date('2024-04-05'), isBlocked: true },
+    { id: 'user-cust1', name: 'Ahmed Al Farsi', email: 'ahmed@example.com', username: 'ahmed_alfarsi', role: 'customer', password: 'password123', phone: '+96898765432', accountType: 'individual', createdAt: new Date('2024-05-10'), isBlocked: false, surcharge: null },
+    { id: 'user-vendor1', name: 'Muscat Modern Auto', email: 'mma@example.com', username: 'muscatmodern', role: 'vendor', password: 'password123', shopAddress: 'Muscat Modern Auto', zipCode: '112', phone: '+96891111111', accountType: 'business', createdAt: new Date('2024-01-15'), isBlocked: false, surcharge: 5 },
+    { id: 'user-admin1', name: 'Admin', email: 'admin@gulfcarx.com', username: 'admin', role: 'admin', password: 'admin', phone: '+96899999999', accountType: 'business', createdAt: new Date('2024-01-01'), isBlocked: false, surcharge: null },
+    { id: 'user-vendor2', name: 'Salalah Auto Spares', email: 'sas@example.com', username: 'salalahspares', role: 'vendor', password: 'password123', shopAddress: 'Salalah Auto Spares', zipCode: '211', phone: '+96892222222', accountType: 'business', createdAt: new Date('2024-03-20'), isBlocked: false, surcharge: 7.5 },
+    { id: 'user-vendor3', name: 'Nizwa Car Parts', email: 'nizwa@example.com', username: 'nizwaparts', role: 'vendor', password: 'password123', shopAddress: 'Nizwa Car Parts', zipCode: '611', phone: '+96893333333', accountType: 'business', createdAt: new Date('2024-04-05'), isBlocked: true, surcharge: null },
 ];
 
 

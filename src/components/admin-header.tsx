@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link"
@@ -9,7 +10,8 @@ import {
   Sparkles,
   Building,
   Landmark,
-  Menu
+  Menu,
+  Settings
 } from "lucide-react"
 
 import { usePathname } from 'next/navigation'
@@ -27,8 +29,8 @@ export function AdminHeader() {
         { href: "/admin", label: "Dashboard", icon: Home },
         { href: "/admin/users", label: "Users", icon: Users },
         { href: "/admin/vendors", label: "Vendors", icon: Building },
-        { href: "/admin/taxes", label: "Tax Center", icon: Landmark },
         { href: "/admin/ai-analytics", label: "AI Analytics", icon: Sparkles },
+        { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
     
     const currentPageLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
