@@ -1,3 +1,4 @@
+
 import { AdminAdToggle } from "../_components/admin-ad-toggle";
 import { AdminHeroImageUploader } from "../_components/admin-hero-image-uploader";
 import { AdminPriceOptimizationToggle } from "../_components/admin-price-optimization-toggle";
@@ -9,6 +10,7 @@ import { AdminAudioSettings } from "./_components/audio-settings";
 import { LocalizationSettings } from "./_components/localization-settings";
 import { AdminFontSizeSettings } from "./_components/font-size-settings";
 import { AdminThemeSettings } from "./_components/theme-settings";
+import { ColorSchemeSettings } from "./_components/color-scheme-settings";
 
 export default function AdminSettingsPage() {
     return (
@@ -64,6 +66,7 @@ export default function AdminSettingsPage() {
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <AdminThemeSettings />
+                            <ColorSchemeSettings />
                             <AdminFontSizeSettings />
                             <AdminAudioSettings />
                         </CardContent>

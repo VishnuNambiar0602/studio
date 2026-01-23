@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 // This component applies settings to the <html> tag
 function SettingsApplier({ children }: { children: React.ReactNode }) {
-    const { language, fontSize, theme } = useSettings();
+    const { language, fontSize, theme, colorScheme } = useSettings();
 
     useEffect(() => {
         const html = document.documentElement;
@@ -28,6 +28,16 @@ function SettingsApplier({ children }: { children: React.ReactNode }) {
         html.classList.add(`font-${fontSize}`);
 
     }, [language, fontSize, theme]);
+
+    useEffect(() => {
+        if (colorScheme) {
+            const root = document.documentElement;
+            root.style.setProperty('--primary', `${colorScheme.primary.h} ${colorScheme.primary.s}% ${colorScheme.primary.l}%`);
+            root.style.setProperty('--background', `${colorScheme.background.h} ${colorScheme.background.s}% ${colorScheme.background.l}%`);
+            root.style.setProperty('--accent', `${colorScheme.accent.h} ${colorScheme.accent.s}% ${colorScheme.accent.l}%`);
+        }
+    }, [colorScheme]);
+
 
     return <>{children}</>;
 }

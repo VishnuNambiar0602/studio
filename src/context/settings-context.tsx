@@ -3,9 +3,16 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import type { FontSize, Language, PublicUser, User, Theme, TtsVoice } from "@/lib/types";
+import type { FontSize, Language, PublicUser, User, Theme, TtsVoice, ColorScheme } from "@/lib/types";
 
 const DEFAULT_HERO_IMAGE = "https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080";
+
+const DEFAULT_LIGHT_SCHEME: ColorScheme = {
+    primary: { h: '25', s: '55', l: '35' },
+    background: { h: '35', s: '50', l: '98' },
+    accent: { h: '30', s: '45', l: '92' },
+};
+
 
 interface SocialLink {
   url: string;
@@ -38,6 +45,8 @@ interface SettingsContextType {
   setSocialLink: (platform: 'instagram' | 'facebook' | 'twitter', value: SocialLink) => void;
   ttsVoice: TtsVoice;
   setTtsVoice: (voice: TtsVoice) => void;
+  colorScheme: ColorScheme;
+  setColorScheme: (scheme: ColorScheme) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -58,6 +67,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     twitter: { url: "", isEnabled: true },
   });
   const [ttsVoice, setTtsVoice] = useState<TtsVoice>('male');
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(DEFAULT_LIGHT_SCHEME);
 
 
   useEffect(() => {
@@ -92,6 +102,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
         const storedTtsVoice = localStorage.getItem("ttsVoice") as TtsVoice;
         if (storedTtsVoice) setTtsVoice(storedTtsVoice);
+
+        const storedColorScheme = localStorage.getItem("colorScheme");
+        if (storedColorScheme) setColorSchemeState(JSON.parse(storedColorScheme));
 
 
     } catch (error) {
@@ -143,6 +156,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("ttsVoice", voice);
   }
 
+  const handleSetColorScheme = (scheme: ColorScheme) => {
+    setColorSchemeState(scheme);
+    localStorage.setItem("colorScheme", JSON.stringify(scheme));
+  }
+
   const loginUser = (user: PublicUser) => {
     setLoggedInUser(user);
     setIsLoggedIn(true);
@@ -171,6 +189,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       isPriceOptimizationEnabled, setIsPriceOptimizationEnabled: handleSetIsPriceOptimizationEnabled,
       socialLinks, setSocialLink: handleSetSocialLink,
       ttsVoice, setTtsVoice: handleSetTtsVoice,
+      colorScheme, setColorScheme: handleSetColorScheme,
     }}>
       {children}
     </SettingsContext.Provider>

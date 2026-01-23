@@ -1,5 +1,4 @@
 
-
 export type Part = {
   id: string;
   name: string;
@@ -22,6 +21,18 @@ export type Theme = 'light' | 'dark';
 export type FontSize = 'sm' | 'md' | 'lg';
 export type Language = 'en' | 'ar';
 export type TtsVoice = 'male' | 'female';
+
+export interface ColorDefinition {
+  h: string;
+  s: string;
+  l: string;
+}
+
+export interface ColorScheme {
+  primary: ColorDefinition;
+  background: ColorDefinition;
+  accent: ColorDefinition;
+}
 
 export type UserRole = 'customer' | 'vendor' | 'admin';
 export type AccountType = 'individual' | 'business';
