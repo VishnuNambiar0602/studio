@@ -30,6 +30,7 @@ export function AdminHeader() {
         { href: "/admin/users", label: "Users", icon: Users },
         { href: "/admin/vendors", label: "Vendors", icon: Building },
         { href: "/admin/ai-analytics", label: "AI Analytics", icon: Sparkles },
+        { href: "/admin/taxes", label: "Taxes", icon: Landmark },
         { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
     

@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays, Car, Percent } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
+import { VendorPartsTable } from "./_components/vendor-parts-table";
 
 export default async function VendorProfilePage({ params }: { params: { vendorId: string } }) {
   const vendorDetails = await getVendorDetailsForAdmin(params.vendorId);
@@ -104,36 +104,7 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
           <CardDescription>A list of all parts managed by {user.name}.</CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="w-full overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Part Name</TableHead>
-                            <TableHead>Price (OMR)</TableHead>
-                            <TableHead>Qty Left</TableHead>
-                            <TableHead>Sold</TableHead>
-                            <TableHead>Revenue (OMR)</TableHead>
-                            <TableHead>Status</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {parts.map(part => (
-                            <TableRow key={part.id}>
-                                <TableCell className="font-medium break-words max-w-xs">{part.name}</TableCell>
-                                <TableCell>{part.price.toFixed(2)}</TableCell>
-                                <TableCell>{part.quantity}</TableCell>
-                                <TableCell>{part.unitsSold}</TableCell>
-                                <TableCell>{part.revenue.toFixed(2)}</TableCell>
-                                <TableCell>
-                                    <Badge variant={part.isVisibleForSale ? 'secondary' : 'outline'}>
-                                        {part.isVisibleForSale ? 'For Sale' : 'On Hold'}
-                                    </Badge>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
+          <VendorPartsTable parts={parts} />
         </CardContent>
       </Card>
 
