@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays, Car, Percent } from "lucide-react";
+import { Mail, Phone, MapPin, Package, BarChart, DollarSign, CalendarDays, Car, Percent, ShieldCheck, ShieldX } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { VendorPartsTable } from "./_components/vendor-parts-table";
 
@@ -32,8 +32,11 @@ export default async function VendorProfilePage({ params }: { params: { vendorId
               </AvatarFallback>
             </Avatar>
             <CardTitle>{user.name}</CardTitle>
-            <div className="pt-2">
-                <Badge variant="secondary">Verified Vendor</Badge>
+            <div className="pt-2 flex items-center justify-center gap-2">
+                <Badge variant={user.isBlocked ? "destructive" : "secondary"}>
+                   {user.isBlocked ? <ShieldX className="mr-2 h-4 w-4" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                   {user.isBlocked ? 'Blocked' : 'Verified Vendor'}
+                </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 text-sm pt-4">
