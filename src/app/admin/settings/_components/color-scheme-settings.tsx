@@ -2,13 +2,14 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@/context/settings-context";
 import { useToast } from "@/hooks/use-toast";
 import { RotateCcw } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import type { ColorScheme, ColorDefinition } from "@/lib/types";
+import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
 
 const DEFAULT_LIGHT_SCHEME: ColorScheme = {
     primary: { h: '25', s: '55', l: '35' },
@@ -16,29 +17,36 @@ const DEFAULT_LIGHT_SCHEME: ColorScheme = {
     accent: { h: '30', s: '45', l: '92' },
 };
 
-function ColorInputGroup({ label, color, onChange }: { label: string, color: ColorDefinition, onChange: (part: 'h' | 's' | 'l', value: string) => void }) {
+function ColorSliderGroup({ label, color, onChange }: { label: string, color: ColorDefinition, onChange: (part: 'h' | 's' | 'l', value: string) => void }) {
+    const handleSliderChange = (part: 'h' | 's' | 'l', value: number[]) => {
+        onChange(part, value[0].toString());
+    };
+
     return (
-        <div className="space-y-2">
-            <h4 className="font-medium text-sm capitalize">{label}</h4>
-            <div className="flex items-center gap-2">
-                 <div style={{ backgroundColor: `hsl(${color.h} ${color.s}% ${color.l}%)` }} className="h-10 w-10 shrink-0 rounded-md border" />
-                <div className="grid grid-cols-3 gap-2 flex-grow">
-                    <div>
-                        <Label htmlFor={`${label}-h`} className="text-xs text-muted-foreground">H</Label>
-                        <Input id={`${label}-h`} type="number" min="0" max="360" value={color.h} onChange={(e) => onChange('h', e.target.value)} />
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                <div style={{ backgroundColor: `hsl(${color.h} ${color.s}% ${color.l}%)` }} className="h-8 w-8 shrink-0 rounded-full border" />
+                <h4 className="font-medium text-md capitalize">{label}</h4>
+            </div>
+            <div className="space-y-4 pl-3">
+                {(['h', 's', 'l'] as const).map((part) => (
+                    <div key={part} className="grid grid-cols-6 items-center gap-4">
+                        <Label htmlFor={`${label}-${part}`} className="text-sm uppercase text-muted-foreground col-span-1">{part}</Label>
+                        <Slider
+                            id={`${label}-${part}`}
+                            min={0}
+                            max={part === 'h' ? 360 : 100}
+                            step={1}
+                            value={[Number(color[part])]}
+                            onValueChange={(val) => handleSliderChange(part, val)}
+                            className="col-span-4"
+                        />
+                        <span className="text-sm font-mono text-right col-span-1">{color[part]}{part !== 'h' && '%'}</span>
                     </div>
-                     <div>
-                        <Label htmlFor={`${label}-s`} className="text-xs text-muted-foreground">S%</Label>
-                        <Input id={`${label}-s`} type="number" min="0" max="100" value={color.s} onChange={(e) => onChange('s', e.target.value)} />
-                    </div>
-                     <div>
-                        <Label htmlFor={`${label}-l`} className="text-xs text-muted-foreground">L%</Label>
-                        <Input id={`${label}-l`} type="number" min="0" max="100" value={color.l} onChange={(e) => onChange('l', e.target.value)} />
-                    </div>
-                </div>
+                ))}
             </div>
         </div>
-    )
+    );
 }
 
 export function ColorSchemeSettings() {
@@ -74,26 +82,28 @@ export function ColorSchemeSettings() {
   }
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
+    <div className="space-y-6 rounded-lg border p-4">
         <div>
           <h3 className="font-semibold">Global Color Scheme</h3>
-          <p className="text-sm text-muted-foreground">
-            Customize the primary, background, and accent colors using HSL values.
+          <p className="text-sm text-muted-foreground mt-1">
+            Adjust the primary, background, and accent colors using HSL sliders.
           </p>
         </div>
 
-        <div className="space-y-3">
-             <ColorInputGroup 
+        <div className="space-y-6">
+             <ColorSliderGroup 
                 label="Primary"
                 color={localScheme.primary}
                 onChange={(part, value) => handleInputChange('primary', part, value)}
             />
-            <ColorInputGroup 
+            <Separator />
+            <ColorSliderGroup 
                 label="Background"
                 color={localScheme.background}
                 onChange={(part, value) => handleInputChange('background', part, value)}
             />
-            <ColorInputGroup 
+            <Separator />
+            <ColorSliderGroup 
                 label="Accent"
                 color={localScheme.accent}
                 onChange={(part, value) => handleInputChange('accent', part, value)}
@@ -103,7 +113,7 @@ export function ColorSchemeSettings() {
         <div className="flex justify-between items-center pt-2">
             <Button variant="ghost" onClick={handleReset} size="sm">
                 <RotateCcw className="mr-2 h-4 w-4" />
-                Reset
+                Reset to Default
             </Button>
             <Button onClick={handleSave} size="sm">Save Colors</Button>
         </div>
