@@ -32,9 +32,53 @@ function SettingsApplier({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (colorScheme) {
             const root = document.documentElement;
+            
+            const newBackground = `${colorScheme.background.h} ${colorScheme.background.s}% ${colorScheme.background.l}%`;
+
+            // --- Apply User-Defined Base Colors ---
             root.style.setProperty('--primary', `${colorScheme.primary.h} ${colorScheme.primary.s}% ${colorScheme.primary.l}%`);
-            root.style.setProperty('--background', `${colorScheme.background.h} ${colorScheme.background.s}% ${colorScheme.background.l}%`);
+            root.style.setProperty('--background', newBackground);
             root.style.setProperty('--accent', `${colorScheme.accent.h} ${colorScheme.accent.s}% ${colorScheme.accent.l}%`);
+            
+            // Also update card and popover to match the new background for consistency
+            root.style.setProperty('--card', newBackground);
+            root.style.setProperty('--popover', newBackground);
+
+            // --- Auto-adjust Foreground Colors for Readability ---
+            const bgLightness = Number(colorScheme.background.l);
+            if (bgLightness < 55) { // Threshold for dark background
+                // Use light text colors
+                root.style.setProperty('--foreground', '35 30% 90%');
+                root.style.setProperty('--card-foreground', '35 30% 90%');
+                root.style.setProperty('--popover-foreground', '35 30% 90%');
+                root.style.setProperty('--secondary-foreground', '35 30% 90%');
+                root.style.setProperty('--muted-foreground', '35 30% 70%');
+            } else {
+                // Use dark text colors
+                root.style.setProperty('--foreground', '25 35% 15%');
+                root.style.setProperty('--card-foreground', '25 35% 15%');
+                root.style.setProperty('--popover-foreground', '25 35% 15%');
+                root.style.setProperty('--secondary-foreground', '25 35% 15%');
+                root.style.setProperty('--muted-foreground', '25 30% 45%');
+            }
+
+            const primaryLightness = Number(colorScheme.primary.l);
+            if (primaryLightness < 55) { // Threshold for dark primary
+                // Use light text
+                root.style.setProperty('--primary-foreground', '35 50% 98%');
+            } else {
+                // Use dark text
+                 root.style.setProperty('--primary-foreground', '25 30% 12%');
+            }
+
+            const accentLightness = Number(colorScheme.accent.l);
+            if (accentLightness < 55) { // Threshold for dark accent
+                // Use light text
+                root.style.setProperty('--accent-foreground', '30 60% 75%');
+            } else {
+                // Use dark text
+                root.style.setProperty('--accent-foreground', '25 55% 35%');
+            }
         }
     }, [colorScheme]);
 
