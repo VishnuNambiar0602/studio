@@ -4,6 +4,25 @@
 
 This guide documents the migration from Google Gemini AI to a hybrid AI architecture using **Cloudflare Workers AI** (primary) and **Groq** (fallback) for the GulfCarX platform.
 
+## ⚠️ Important Limitations
+
+### Image Analysis
+The current implementation of Cloudflare Workers AI and Groq **does not support multimodal input** (image + text analysis). 
+
+**Impact:**
+- Users can still upload images in the chat interface
+- However, the AI will prompt them to describe what's in the image
+- Image data is not sent to the AI providers
+
+**Workarounds:**
+1. Users describe the image content in text
+2. Future: Integrate vision-capable models like GPT-4 Vision or Claude 3 for image analysis
+3. Future: Use separate image recognition service (e.g., Google Cloud Vision API) and pass results as text
+
+**Original Gemini Behavior:**
+- Supported image analysis via `{{media url=photoDataUri}}`
+- Could identify parts directly from images
+
 ## Why Migrate?
 
 ### Cost Optimization
