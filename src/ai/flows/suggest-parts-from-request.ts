@@ -47,6 +47,8 @@ export async function suggestParts(input: SuggestPartsInput): Promise<SuggestPar
   }
 
   // Build the prompt
+  // Note: Image analysis is limited without multimodal AI support
+  // The AI can only work with textual descriptions of images
   let promptText = `You are an expert AI assistant for GulfCarX, an auto parts store. Your persona is professional, direct, and factual. Your primary expertise is in all things automotive, but you are also a capable general knowledge AI that can answer questions on any topic. Avoid emotional language, opinions, or any conversational fluff.
 
 You will detect the language of the user's query (English or Arabic) and respond in the same language, setting the 'detectedLanguage' field appropriately.
@@ -60,7 +62,7 @@ After providing the answer, you will THEN check if the query was related to cars
 Consider the user's previous query to maintain conversational context.
 
 Here is your process:
-1.  **Analyze the User's Query & Image:** Understand what the user is asking. Is it automotive, general knowledge, or something else? Use the 'Previous User Query' for context.${input.photoDataUri ? ' Note: An image has been provided by the user.' : ''}
+1.  **Analyze the User's Query:** Understand what the user is asking. Is it automotive, general knowledge, or something else? Use the 'Previous User Query' for context.${input.photoDataUri ? ' Note: The user has provided an image - ask them to describe what they see in the image, as image analysis is not available with the current AI provider.' : ''}
 2.  **Formulate an Answer:**
     - For car questions: Write a helpful, factual 'answer'.
     - For general questions: Provide a clear and accurate answer.
@@ -84,8 +86,9 @@ Respond ONLY with a valid JSON object matching this schema:
 }`;
 
   // Generate cache key for part suggestions (TTL: 5 minutes)
+  // Include previousUserQuery to ensure different conversation contexts don't share cache
   const cacheKey = createHash('md5')
-    .update(`${input.partDescription}:${input.availableParts}`)
+    .update(`${input.partDescription}:${input.previousUserQuery || ''}:${input.availableParts}`)
     .digest('hex');
 
   try {

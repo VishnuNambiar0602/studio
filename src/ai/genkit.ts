@@ -61,7 +61,24 @@ class SimpleCache {
 
 const cache = new SimpleCache();
 // Run cleanup every 10 minutes
-setInterval(() => cache.cleanup(), 600000);
+let cleanupTimer: NodeJS.Timeout | null = null;
+
+// Initialize cleanup timer when caching is first used
+function ensureCleanupTimer(): void {
+  if (!cleanupTimer) {
+    cleanupTimer = setInterval(() => cache.cleanup(), 600000);
+    // Allow Node.js to exit even if timer is running
+    cleanupTimer.unref();
+  }
+}
+
+// Cleanup function for testing/graceful shutdown
+export function stopCacheCleanup(): void {
+  if (cleanupTimer) {
+    clearInterval(cleanupTimer);
+    cleanupTimer = null;
+  }
+}
 
 // Circuit breaker state
 interface CircuitBreakerState {
@@ -105,10 +122,18 @@ function recordSuccess(): void {
   circuitBreaker.isOpen = false;
 }
 
+// AI Provider options interface
+export interface AIProviderOptions {
+  temperature?: number;
+  max_tokens?: number;
+  top_p?: number;
+  stream?: boolean;
+}
+
 // Cloudflare Workers AI Provider
 async function generateWithCloudflare(
   prompt: string,
-  options?: any
+  options?: AIProviderOptions
 ): Promise<string> {
   const endpoint = `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3-8b-instruct`;
 
@@ -132,11 +157,15 @@ async function generateWithCloudflare(
   }
 
   const data = await response.json();
-  return data.result?.response || data.result?.content || '';
+  const result = data.result?.response || data.result?.content;
+  if (!result) {
+    throw new Error('Cloudflare AI returned empty response');
+  }
+  return result;
 }
 
 // Groq Provider
-async function generateWithGroq(prompt: string, options?: any): Promise<string> {
+async function generateWithGroq(prompt: string, options?: AIProviderOptions): Promise<string> {
   if (!GROQ_API_KEY) {
     throw new Error('GROQ_API_KEY is not configured');
   }
@@ -164,7 +193,11 @@ async function generateWithGroq(prompt: string, options?: any): Promise<string> 
   }
 
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || '';
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error('Groq API returned empty response');
+  }
+  return content;
 }
 
 // Exponential backoff retry
@@ -195,10 +228,12 @@ export async function generateAIResponse(
     cacheKey?: string;
     cacheTTL?: number;
     useCache?: boolean;
+    aiOptions?: AIProviderOptions;
   }
 ): Promise<string> {
   // Check cache first
   if (options?.useCache && options.cacheKey) {
+    ensureCleanupTimer(); // Start cleanup timer when caching is used
     const cached = cache.get(
       options.cacheKey,
       options.cacheTTL || 300000 // Default 5 minutes
@@ -213,7 +248,7 @@ export async function generateAIResponse(
   // Try Cloudflare Workers AI first (if circuit breaker allows)
   if (checkCircuitBreaker() && CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_AI_API_TOKEN) {
     try {
-      result = await withRetry(() => generateWithCloudflare(prompt, options));
+      result = await withRetry(() => generateWithCloudflare(prompt, options?.aiOptions));
       recordSuccess();
     } catch (error) {
       console.warn('Cloudflare AI failed, attempting fallback to Groq:', error);
@@ -222,7 +257,7 @@ export async function generateAIResponse(
       // Fallback to Groq
       if (GROQ_API_KEY) {
         try {
-          result = await withRetry(() => generateWithGroq(prompt, options));
+          result = await withRetry(() => generateWithGroq(prompt, options?.aiOptions));
         } catch (groqError) {
           console.error('Both Cloudflare and Groq failed:', groqError);
           throw new Error(
@@ -238,7 +273,7 @@ export async function generateAIResponse(
   } else if (GROQ_API_KEY) {
     // If circuit breaker is open or Cloudflare not configured, use Groq directly
     try {
-      result = await withRetry(() => generateWithGroq(prompt, options));
+      result = await withRetry(() => generateWithGroq(prompt, options?.aiOptions));
     } catch (error) {
       console.error('Groq failed:', error);
       throw new Error('AI service temporarily unavailable. Please try again later.');
