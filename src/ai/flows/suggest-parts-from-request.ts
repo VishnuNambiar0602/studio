@@ -8,9 +8,10 @@
  * - SuggestPartsOutput - The return type for the suggestParts function.
  */
 
-import {ai} from '@/ai/genkit';
+import { generateAIResponse } from '@/ai/genkit';
 import { logAiInteraction } from '@/lib/actions';
-import {z} from 'genkit';
+import { z } from 'zod';
+import crypto from 'crypto';
 
 const SuggestPartsInputSchema = z.object({
   partDescription: z.string().describe("The user's description of the auto part or their general automotive question."),
@@ -40,14 +41,13 @@ const SuggestPartsOutputSchema = z.object({
 export type SuggestPartsOutput = z.infer<typeof SuggestPartsOutputSchema>;
 
 export async function suggestParts(input: SuggestPartsInput): Promise<SuggestPartsOutput> {
-  return suggestPartsFlow(input);
-}
+  // If there's a photo but no text, provide a default description.
+  if (input.photoDataUri && !input.partDescription) {
+    input.partDescription = "Please identify the part in the image and tell me about it.";
+  }
 
-const prompt = ai.definePrompt({
-  name: 'suggestPartsPrompt',
-  input: {schema: SuggestPartsInputSchema},
-  output: {schema: SuggestPartsOutputSchema},
-  prompt: `You are an expert AI assistant for GulfCarX, an auto parts store. Your persona is professional, direct, and factual. Your primary expertise is in all things automotive, but you are also a capable general knowledge AI that can answer questions on any topic. Avoid emotional language, opinions, or any conversational fluff.
+  // Build the prompt
+  let promptText = `You are an expert AI assistant for GulfCarX, an auto parts store. Your persona is professional, direct, and factual. Your primary expertise is in all things automotive, but you are also a capable general knowledge AI that can answer questions on any topic. Avoid emotional language, opinions, or any conversational fluff.
 
 You will detect the language of the user's query (English or Arabic) and respond in the same language, setting the 'detectedLanguage' field appropriately.
 
@@ -60,7 +60,7 @@ After providing the answer, you will THEN check if the query was related to cars
 Consider the user's previous query to maintain conversational context.
 
 Here is your process:
-1.  **Analyze the User's Query & Image:** Understand what the user is asking. Is it automotive, general knowledge, or something else? Use the 'Previous User Query' for context. If an image is provided, it is the primary source of truth for identifying a part.
+1.  **Analyze the User's Query & Image:** Understand what the user is asking. Is it automotive, general knowledge, or something else? Use the 'Previous User Query' for context.${input.photoDataUri ? ' Note: An image has been provided by the user.' : ''}
 2.  **Formulate an Answer:**
     - For car questions: Write a helpful, factual 'answer'.
     - For general questions: Provide a clear and accurate answer.
@@ -71,38 +71,48 @@ Here is your process:
     - For non-automotive queries, always return an empty 'suggestions' array.
 4.  **Suggest Follow-up Questions:** Based on your response, generate 2-3 relevant follow-up questions. Populate these in the 'followUpQuestions' array.
 
-{{#if photoDataUri}}
-User's Photo: {{media url=photoDataUri}}
-{{/if}}
-User's Current Query: {{{partDescription}}}
-{{#if previousUserQuery}}
-Previous User Query: {{{previousUserQuery}}}
-{{/if}}
-Available Auto Parts (JSON format): {{{availableParts}}}
+User's Current Query: ${input.partDescription}
+${input.previousUserQuery ? `Previous User Query: ${input.previousUserQuery}` : ''}
+Available Auto Parts (JSON format): ${input.availableParts}
 
-Your structured JSON response:`,
-});
+Respond ONLY with a valid JSON object matching this schema:
+{
+  "suggestions": [{"id": "string", "name": "string", "reason": "string"}],
+  "answer": "string",
+  "detectedLanguage": "en" or "ar",
+  "followUpQuestions": ["string"]
+}`;
 
-const suggestPartsFlow = ai.defineFlow(
-  {
-    name: 'suggestPartsFlow',
-    inputSchema: SuggestPartsInputSchema,
-    outputSchema: SuggestPartsOutputSchema,
-  },
-  async input => {
-    // If there's a photo but no text, provide a default description.
-    if (input.photoDataUri && !input.partDescription) {
-        input.partDescription = "Please identify the part in the image and tell me about it.";
+  // Generate cache key for part suggestions (TTL: 5 minutes)
+  const cacheKey = crypto
+    .createHash('md5')
+    .update(`${input.partDescription}:${input.availableParts}`)
+    .digest('hex');
+
+  try {
+    const response = await generateAIResponse(promptText, {
+      cacheKey,
+      cacheTTL: 300000, // 5 minutes for part suggestions
+      useCache: true,
+    });
+
+    // Parse the JSON response
+    let output: SuggestPartsOutput;
+    try {
+      // Clean the response - remove markdown code blocks if present
+      const cleanedResponse = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      output = JSON.parse(cleanedResponse);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', response);
+      throw new Error('AI returned an invalid response format.');
     }
 
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error("The AI model did not return a valid output.");
-    }
+    // Validate the output against the schema
+    const validated = SuggestPartsOutputSchema.parse(output);
 
     // Log each suggestion as a separate interaction
-    if (output.suggestions && output.suggestions.length > 0) {
-      for (const suggestion of output.suggestions) {
+    if (validated.suggestions && validated.suggestions.length > 0) {
+      for (const suggestion of validated.suggestions) {
         await logAiInteraction({
           partId: suggestion.id,
           partName: suggestion.name,
@@ -111,6 +121,9 @@ const suggestPartsFlow = ai.defineFlow(
       }
     }
 
-    return output;
+    return validated;
+  } catch (error) {
+    console.error('Error in suggestParts:', error);
+    throw error;
   }
-);
+}
