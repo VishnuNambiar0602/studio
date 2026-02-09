@@ -12,7 +12,7 @@
 
 import { generateAIResponse } from '@/ai/genkit';
 import { z } from 'zod';
-import crypto from 'crypto';
+import { createHash } from 'crypto';
 
 const GeneralChatInputSchema = z.object({
   message: z.string().describe('The user\'s message to the chatbot.'),
@@ -33,8 +33,7 @@ User's message: ${input.message}
 Your response:`;
 
   // Generate cache key for general chat (TTL: 30 minutes)
-  const cacheKey = crypto
-    .createHash('md5')
+  const cacheKey = createHash('md5')
     .update(input.message)
     .digest('hex');
 

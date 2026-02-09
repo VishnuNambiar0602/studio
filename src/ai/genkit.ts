@@ -49,7 +49,8 @@ class SimpleCache {
   // Clean up old entries periodically
   cleanup(): void {
     const now = Date.now();
-    for (const [key, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries());
+    for (const [key, entry] of entries) {
       // Remove entries older than 1 hour
       if (now - entry.timestamp > 3600000) {
         this.cache.delete(key);

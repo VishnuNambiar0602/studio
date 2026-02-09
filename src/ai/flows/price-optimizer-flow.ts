@@ -9,7 +9,7 @@
 
 import { generateAIResponse } from '@/ai/genkit';
 import { z } from 'zod';
-import crypto from 'crypto';
+import { createHash } from 'crypto';
 
 const PriceOptimizerInputSchema = z.object({
   partName: z.string().describe("The name of the auto part."),
@@ -45,8 +45,7 @@ Respond ONLY with a valid JSON object matching this schema:
 }`;
 
   // Generate cache key for price suggestions
-  const cacheKey = crypto
-    .createHash('md5')
+  const cacheKey = createHash('md5')
     .update(`${input.partName}:${input.manufacturer}:${input.category.join(',')}`)
     .digest('hex');
 

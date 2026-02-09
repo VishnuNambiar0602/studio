@@ -11,7 +11,7 @@
 import { generateAIResponse } from '@/ai/genkit';
 import { logAiInteraction } from '@/lib/actions';
 import { z } from 'zod';
-import crypto from 'crypto';
+import { createHash } from 'crypto';
 
 const SuggestPartsInputSchema = z.object({
   partDescription: z.string().describe("The user's description of the auto part or their general automotive question."),
@@ -84,8 +84,7 @@ Respond ONLY with a valid JSON object matching this schema:
 }`;
 
   // Generate cache key for part suggestions (TTL: 5 minutes)
-  const cacheKey = crypto
-    .createHash('md5')
+  const cacheKey = createHash('md5')
     .update(`${input.partDescription}:${input.availableParts}`)
     .digest('hex');
 
