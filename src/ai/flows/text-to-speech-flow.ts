@@ -2,6 +2,11 @@
 
 // Edited
 
+// TODO: Replace with Cloudflare AI TTS when available or use alternative service
+// This flow temporarily continues to use Gemini for Text-to-Speech functionality
+// since Cloudflare Workers AI doesn't currently support TTS.
+// Alternative: Implement fallback to browser Web Speech API for TTS
+
 // This file is machine-generated - edit with caution!
 'use server';
 /**
@@ -13,9 +18,9 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { z } from 'zod';
 import {googleAI} from '@genkit-ai/googleai';
-import wav from 'wav';
+import * as wav from 'wav';
 
 const TextToSpeechInputSchema = z.object({
   text: z.string().describe('The text to convert to speech.'),

@@ -10,8 +10,9 @@
  * - GeneralChatOutput - The return type for the generalChat function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { generateAIResponse } from '@/ai/genkit';
+import { z } from 'zod';
+import { createHash } from 'crypto';
 
 const GeneralChatInputSchema = z.object({
   message: z.string().describe('The user\'s message to the chatbot.'),
@@ -24,29 +25,28 @@ const GeneralChatOutputSchema = z.object({
 export type GeneralChatOutput = z.infer<typeof GeneralChatOutputSchema>;
 
 export async function generalChat(input: GeneralChatInput): Promise<GeneralChatOutput> {
-  return generalChatFlow(input);
-}
+  const promptText = `You are a helpful assistant for GulfCarX, an online marketplace for auto parts.
+Your goal is to answer user questions clearly and concisely.
+If you don't know the answer to something, it's better to say you don't know than to make something up.
 
-const prompt = ai.definePrompt({
-  name: 'generalChatPrompt',
-  input: {schema: GeneralChatInputSchema},
-  output: {schema: GeneralChatOutputSchema},
-  prompt: `You are a helpful assistant for GulfCarX, an online marketplace for auto parts.
-  Your goal is to answer user questions clearly and concisely.
-  If you don't know the answer to something, it's better to say you don't know than to make something up.
+User's message: ${input.message}
+Your response:`;
 
-  User's message: {{{message}}}
-  Your response:`,
-});
+  // Generate cache key for general chat (TTL: 30 minutes)
+  const cacheKey = createHash('md5')
+    .update(input.message)
+    .digest('hex');
 
-const generalChatFlow = ai.defineFlow(
-  {
-    name: 'generalChatFlow',
-    inputSchema: GeneralChatInputSchema,
-    outputSchema: GeneralChatOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  try {
+    const response = await generateAIResponse(promptText, {
+      cacheKey,
+      cacheTTL: 1800000, // 30 minutes for general queries
+      useCache: true,
+    });
+
+    return { response };
+  } catch (error) {
+    console.error('Error in generalChat:', error);
+    throw error;
   }
-);
+}
