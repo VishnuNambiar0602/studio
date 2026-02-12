@@ -38,13 +38,15 @@ export function VendorHeader() {
     const t = getDictionary(language);
     const pathname = usePathname();
     const router = useRouter();
-    const [companyName, setCompanyName] = useState(t.vendor.vendorPanel);
+    const [companyName, setCompanyName] = useState('');
 
     useEffect(() => {
         if (loggedInUser?.name) {
             setCompanyName(loggedInUser.name);
+        } else {
+            setCompanyName(t.vendor.vendorPanel);
         }
-    }, [loggedInUser]);
+    }, [loggedInUser, t.vendor.vendorPanel]);
 
 
     const handleLogout = () => {
