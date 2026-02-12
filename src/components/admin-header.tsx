@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link"
@@ -19,22 +18,26 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { useState } from "react";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 
 export function AdminHeader() {
     const pathname = usePathname();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const { language } = useSettings();
+    const t = getDictionary(language);
 
     const navItems = [
-        { href: "/admin", label: "Dashboard", icon: Home },
-        { href: "/admin/users", label: "Users", icon: Users },
-        { href: "/admin/vendors", label: "Vendors", icon: Building },
-        { href: "/admin/ai-analytics", label: "AI Analytics", icon: Sparkles },
-        { href: "/admin/taxes", label: "Taxes", icon: Landmark },
-        { href: "/admin/settings", label: "Settings", icon: Settings },
+        { href: "/admin", label: t.admin.dashboard, icon: Home },
+        { href: "/admin/users", label: t.admin.users, icon: Users },
+        { href: "/admin/vendors", label: t.admin.vendors, icon: Building },
+        { href: "/admin/ai-analytics", label: t.admin.aiAnalytics, icon: Sparkles },
+        { href: "/admin/taxes", label: t.admin.taxes, icon: Landmark },
+        { href: "/admin/settings", label: t.header.settings, icon: Settings },
     ];
     
-    const currentPageLabel = navItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard';
+    const currentPageLabel = navItems.find(item => pathname.startsWith(item.href))?.label || t.admin.dashboard;
 
 
   return (
@@ -46,7 +49,7 @@ export function AdminHeader() {
               className="flex items-center gap-2 text-lg font-semibold md:text-base"
             >
               <Car className="h-6 w-6" />
-              <span className="">Admin Panel</span>
+              <span className="">{t.admin.adminPanel}</span>
             </Link>
             {navItems.map((item) => (
                 <Link

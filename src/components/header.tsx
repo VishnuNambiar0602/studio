@@ -83,33 +83,30 @@ export function Header() {
     {
       title: t.header.newParts,
       href: "/new-parts",
-      description:
-        "Brand new, factory-sealed parts for optimal performance and reliability.",
+      description: t.header.newPartsDesc,
     },
     {
       title: t.header.usedParts,
       href: "/used-parts",
-      description:
-        "Cost-effective, inspected used parts to get you back on the road.",
+      description: t.header.usedPartsDesc,
     },
     {
       title: t.header.oemParts,
       href: "/oem-parts",
-      description:
-        "Original Equipment Manufacturer parts for a guaranteed perfect fit.",
+      description: t.header.oemPartsDesc,
     },
   ]
   
   const servicesComponents: { title: string; href: string; description: string }[] = [
     {
-        title: "Book an Appointment",
+        title: t.header.bookAppointment,
         href: "/support",
-        description: "Schedule a time to meet with a vendor or get professional advice."
+        description: t.header.bookAppointmentDesc,
     },
     {
-        title: "Next Service",
+        title: t.header.nextService,
         href: "/support",
-        description: "Plan and get reminders for your vehicle's next scheduled service."
+        description: t.header.nextServiceDesc,
     }
   ]
   
@@ -133,7 +130,7 @@ export function Header() {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Parts</NavigationMenuTrigger>
+                <NavigationMenuTrigger>{t.header.parts}</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                     {partsComponents.map((component) => (
@@ -149,7 +146,7 @@ export function Header() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Services</NavigationMenuTrigger>
+                <NavigationMenuTrigger>{t.header.services}</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                     {servicesComponents.map((component) => (
@@ -177,7 +174,7 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Select Language</DropdownMenuLabel>
+              <DropdownMenuLabel>{t.header.selectLanguage}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup value={language} onValueChange={(value) => setLanguage(value as Language)}>
                   <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
@@ -218,17 +215,17 @@ export function Header() {
                 <DropdownMenuSeparator />
                 {(loggedInUser.role === 'admin' || loggedInUser.role === 'vendor') && (
                   <DropdownMenuItem asChild>
-                    <Link href={getDashboardLink()}><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
+                    <Link href={getDashboardLink()}><LayoutDashboard className="mr-2 h-4 w-4" />{t.header.dashboard}</Link>
                   </DropdownMenuItem>
                 )}
                  <DropdownMenuItem asChild>
-                  <Link href="/my-orders"><ListOrdered className="mr-2 h-4 w-4" />My Orders</Link>
+                  <Link href="/my-orders"><ListOrdered className="mr-2 h-4 w-4" />{t.header.myOrders}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings"><Settings className="mr-2 h-4 w-4" />{t.header.settings}</Link>
                 </DropdownMenuItem>
                  <DropdownMenuItem asChild>
-                  <Link href="/support"><HelpCircle className="mr-2 h-4 w-4" />Support</Link>
+                  <Link href="/support"><HelpCircle className="mr-2 h-4 w-4" />{t.header.support}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
@@ -257,11 +254,11 @@ export function Header() {
               </SheetTrigger>
               <SheetContent side="left">
                 <nav className="grid gap-6 text-lg font-medium pt-8">
-                  <Link href="#" className="font-semibold">Parts</Link>
+                  <Link href="#" className="font-semibold">{t.header.parts}</Link>
                   {partsComponents.map(link => (
                     <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">{link.title}</Link>
                   ))}
-                  <Link href="#" className="font-semibold pt-4 border-t">Services</Link>
+                  <Link href="#" className="font-semibold pt-4 border-t">{t.header.services}</Link>
                   {servicesComponents.map(link => (
                     <Link key={link.href} href={link.href} onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-foreground">{link.title}</Link>
                   ))}
