@@ -18,6 +18,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cancelOrder } from '@/lib/actions';
 import { Loader2, XCircle } from 'lucide-react';
+import { useSettings } from '@/context/settings-context';
+import { getDictionary } from '@/lib/i18n';
 
 interface CancelOrderDialogProps {
   orderId: string;
@@ -28,20 +30,22 @@ interface CancelOrderDialogProps {
 export function CancelOrderDialog({ orderId, disabled, onOrderCancelled }: CancelOrderDialogProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const { language } = useSettings();
+  const t = getDictionary(language);
 
   const handleCancel = () => {
     startTransition(async () => {
       const result = await cancelOrder(orderId);
       if (result.success) {
         toast({
-          title: 'Order Cancelled',
+          title: t.dialogs.orderCancelled,
           description: `Order #${orderId.split('-')[1]} has been successfully cancelled.`,
         });
         onOrderCancelled(orderId);
       } else {
         toast({
           variant: 'destructive',
-          title: 'Cancellation Failed',
+          title: t.dialogs.cancellationFailed,
           description: result.message,
         });
       }
@@ -53,20 +57,20 @@ export function CancelOrderDialog({ orderId, disabled, onOrderCancelled }: Cance
       <AlertDialogTrigger asChild>
         <Button variant="destructive" disabled={disabled || isPending}>
           {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <XCircle className="mr-2 h-4 w-4" />}
-          {isPending ? 'Cancelling...' : 'Cancel Order'}
+          {isPending ? t.dialogs.cancelling : t.dialogs.cancelOrder}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure you want to cancel this order?</AlertDialogTitle>
+          <AlertDialogTitle>{t.dialogs.cancelOrderQuestion}</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. You will be refunded according to our cancellation policy.
+            {t.dialogs.cancelOrderWarning}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep Order</AlertDialogCancel>
+          <AlertDialogCancel>{t.dialogs.keepOrder}</AlertDialogCancel>
           <AlertDialogAction onClick={handleCancel} disabled={isPending}>
-            Continue Cancellation
+            {t.dialogs.continueCancellation}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
