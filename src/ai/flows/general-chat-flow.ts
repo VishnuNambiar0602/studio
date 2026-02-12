@@ -32,7 +32,7 @@ If you don't know the answer to something, it's better to say you don't know tha
 User's message: ${input.message}
 Your response:`;
 
-  // Generate cache key for general chat (TTL: 30 minutes)
+  // Generate cache key for general chat (TTL: 1 minute for faster responses)
   const cacheKey = createHash('md5')
     .update(input.message)
     .digest('hex');
@@ -40,7 +40,7 @@ Your response:`;
   try {
     const response = await generateAIResponse(promptText, {
       cacheKey,
-      cacheTTL: 1800000, // 30 minutes for general queries
+      cacheTTL: 60000, // 1 minute for general queries (faster refresh)
       useCache: true,
     });
 
