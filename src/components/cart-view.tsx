@@ -10,18 +10,22 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 export function CartView() {
   const { cart, removeFromCart, updateCartItemQuantity, subtotal, taxAmount, grandTotal } = useCart();
   const router = useRouter();
+  const { language } = useSettings();
+  const t = getDictionary(language);
 
   if (cart.length === 0) {
     return (
       <div className="text-center">
-        <h1 className="text-3xl font-bold font-headline mb-4">Your Cart is Empty</h1>
-        <p className="text-muted-foreground mb-8">Looks like you haven't added anything to your cart yet.</p>
+        <h1 className="text-3xl font-bold font-headline mb-4">{t.cart.emptyTitle}</h1>
+        <p className="text-muted-foreground mb-8">{t.cart.emptyDescription}</p>
         <Button asChild>
-          <Link href="/">Start Shopping</Link>
+          <Link href="/">{t.cart.startShopping}</Link>
         </Button>
       </div>
     );
@@ -30,7 +34,7 @@ export function CartView() {
   return (
     <div className="grid md:grid-cols-3 gap-12 items-start">
         <div className="md:col-span-2">
-            <h1 className="text-3xl font-bold font-headline mb-6">Your Cart</h1>
+            <h1 className="text-3xl font-bold font-headline mb-6">{t.cart.title}</h1>
             <div className="space-y-4">
             {cart.map((item) => (
                 <Card key={item.id} className="flex items-center p-4">
@@ -71,7 +75,7 @@ export function CartView() {
                         <p className="text-lg font-bold text-primary">{(item.price * item.purchaseQuantity).toFixed(2)} OMR</p>
                         <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
                             <Trash2 className="h-5 w-5" />
-                            <span className="sr-only">Remove item</span>
+                            <span className="sr-only">{t.cart.removeItem}</span>
                         </Button>
                     </div>
                 </Card>
@@ -81,30 +85,30 @@ export function CartView() {
         <div className="md:col-span-1">
             <Card className="sticky top-24">
                 <CardHeader>
-                    <CardTitle>Order Summary</CardTitle>
-                    <CardDescription>Review your order before proceeding.</CardDescription>
+                    <CardTitle>{t.cart.orderSummary}</CardTitle>
+                    <CardDescription>{t.cart.reviewOrder}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex justify-between">
-                        <span>Subtotal</span>
+                        <span>{t.cart.subtotal}</span>
                         <span>{subtotal.toFixed(2)} OMR</span>
                     </div>
                      <div className="flex justify-between">
-                        <span>Shipping</span>
-                        <span>Free</span>
+                        <span>{t.cart.shipping}</span>
+                        <span>{t.cart.free}</span>
                     </div>
                      <div className="flex justify-between">
-                        <span>Tax</span>
+                        <span>{t.cart.tax}</span>
                         <span>{taxAmount.toFixed(2)} OMR</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-bold text-lg">
-                        <span>Total</span>
+                        <span>{t.cart.total}</span>
                         <span>{grandTotal.toFixed(2)} OMR</span>
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button className="w-full" size="lg" onClick={() => router.push('/checkout')}>Proceed to Checkout</Button>
+                    <Button className="w-full" size="lg" onClick={() => router.push('/checkout')}>{t.cart.proceedToCheckout}</Button>
                 </CardFooter>
             </Card>
         </div>

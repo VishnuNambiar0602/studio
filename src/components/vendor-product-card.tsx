@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { EditPartForm } from "./edit-part-form";
 import { useRouter } from "next/navigation";
 import { useParts } from "@/context/part-context";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 
 interface VendorProductCardProps {
@@ -24,6 +26,8 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
   const { updatePartInContext } = useParts();
+  const { language } = useSettings();
+  const t = getDictionary(language);
 
 
   const handleToggleVisibility = () => {
@@ -48,12 +52,12 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
             <Image src={part.imageUrls[0]} alt={part.name} fill className="object-cover rounded-t-lg" data-ai-hint="car parts" />
           ) : (
             <div className="bg-muted h-full w-full flex items-center justify-center">
-                <span className="text-sm text-muted-foreground">No Image</span>
+                <span className="text-sm text-muted-foreground">{t.productCard.noImage}</span>
             </div>
           )}
           {!part.isVisibleForSale && (
              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <p className="text-white font-bold text-lg">SALE PAUSED</p>
+                <p className="text-white font-bold text-lg">{t.vendor.salePaused}</p>
             </div>
           )}
         </div>
@@ -61,7 +65,7 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
           <div className="flex justify-between items-start">
             <CardTitle className="pr-2 text-lg">{part.name}</CardTitle>
              <Badge variant={isInStock ? "secondary" : "destructive"} className="shrink-0 mt-1">
-              {isInStock ? `${part.quantity} in Stock` : "Out of Stock"}
+              {isInStock ? `${part.quantity} ${t.vendor.inStock}` : t.productCard.outOfStock}
             </Badge>
           </div>
           <CardDescription className="pt-2 text-sm line-clamp-2">{part.description}</CardDescription>
@@ -82,20 +86,20 @@ export function VendorProductCard({ part }: VendorProductCardProps) {
             disabled={!isInStock || isPending}
         >
           {part.isVisibleForSale ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-          {isPending ? 'Updating...' : part.isVisibleForSale ? "Hold" : "Resume"}
+          {isPending ? t.common.loading : part.isVisibleForSale ? t.vendor.hold : t.vendor.resume}
         </Button>
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full">
               <Pencil className="mr-2 h-4 w-4" />
-              Edit
+              {t.vendor.edit}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-2xl">
             <DialogHeader>
-                <DialogTitle>Edit Part</DialogTitle>
+                <DialogTitle>{t.vendor.editPart}</DialogTitle>
                 <DialogDescription>
-                    Update the details for this part. Click save when you're done.
+                    {t.vendor.updateDetails}
                 </DialogDescription>
             </DialogHeader>
             <EditPartForm part={part} onUpdate={handleUpdate} />

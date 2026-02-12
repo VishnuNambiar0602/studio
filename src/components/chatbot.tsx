@@ -11,6 +11,8 @@ import { generalChat } from "@/ai/flows/general-chat-flow";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,6 +23,8 @@ export function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const { language } = useSettings();
+  const t = getDictionary(language);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +40,7 @@ export function Chatbot() {
       const assistantMessage: Message = { role: 'assistant', content: response.response };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      const errorMessage: Message = { role: 'assistant', content: "Sorry, I'm having trouble connecting. Please try again later." };
+      const errorMessage: Message = { role: 'assistant', content: t.chatbot.connectionError };
       setMessages((prev) => [...prev, errorMessage]);
       console.error("Chatbot error:", error);
     } finally {
@@ -49,7 +53,7 @@ export function Chatbot() {
       <SheetTrigger asChild>
         <Button className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg" size="icon">
           <MessageSquare className="h-7 w-7" />
-          <span className="sr-only">Open Chatbot</span>
+          <span className="sr-only">{t.chatbot.openChatbot}</span>
         </Button>
       </SheetTrigger>
       <SheetContent className="flex flex-col">
@@ -57,7 +61,7 @@ export function Chatbot() {
           <SheetTitle>
             <div className="flex items-center gap-3">
               <Bot className="h-8 w-8 text-primary" />
-              <span>AI Assistant</span>
+              <span>{t.chatbot.aiAssistant}</span>
             </div>
           </SheetTitle>
            <SheetDescription>
