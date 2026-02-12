@@ -307,6 +307,7 @@ const dictionaries = {
         },
         addNewLanguage: "Add New Language",
         placeholder: "*This feature is a conceptual placeholder. A full implementation would require a backend translation management system.",
+        enabled: "Enabled",
       },
     },
     common: {
@@ -627,6 +628,7 @@ const dictionaries = {
         },
         addNewLanguage: "إضافة لغة جديدة",
         placeholder: "*هذه الميزة هي عنصر نائب مفاهيمي. التنفيذ الكامل سيتطلب نظام إدارة ترجمة خلفي.",
+        enabled: "مفعل",
       },
     },
     common: {

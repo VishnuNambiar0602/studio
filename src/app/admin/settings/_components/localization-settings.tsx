@@ -9,8 +9,8 @@ import { getDictionary } from "@/lib/i18n";
 
 
 const languages = [
-    { code: 'en', name: 'English', status: 'Enabled', progress: '100%' },
-    { code: 'ar', name: 'Arabic (العربية)', status: 'Enabled', progress: '100%' },
+    { code: 'en', name: 'English', progress: '100%' },
+    { code: 'ar', name: 'Arabic (العربية)', progress: '100%' },
 ]
 
 export function LocalizationSettings() {
@@ -34,7 +34,7 @@ export function LocalizationSettings() {
                 {languages.map(lang => (
                      <TableRow key={lang.code}>
                         <TableCell className="font-medium">{lang.name}</TableCell>
-                        <TableCell>{lang.status}</TableCell>
+                        <TableCell>{t.admin.localization.enabled}</TableCell>
                         <TableCell>{lang.progress}</TableCell>
                     </TableRow>
                 ))}

@@ -1,5 +1,7 @@
 // Edited
 
+"use client";
+
 import type { Part } from '@/lib/types';
 import { ProductGrid } from './product-grid';
 import { useSettings } from '@/context/settings-context';
