@@ -30,13 +30,15 @@ import { usePathname, useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { getDictionary } from "@/lib/i18n";
 
 
 export function VendorHeader() {
-    const { loggedInUser, logoutUser } = useSettings();
+    const { loggedInUser, logoutUser, language } = useSettings();
+    const t = getDictionary(language);
     const pathname = usePathname();
     const router = useRouter();
-    const [companyName, setCompanyName] = useState('Vendor Panel');
+    const [companyName, setCompanyName] = useState(t.vendor.vendorPanel);
 
     useEffect(() => {
         if (loggedInUser?.name) {
@@ -51,11 +53,11 @@ export function VendorHeader() {
     };
 
     const navItems = [
-        { href: "/vendor/dashboard", label: "Dashboard", icon: Home },
-        { href: "/vendor/inventory", label: "Inventory", icon: Package },
-        { href: "/vendor/tasks", label: "Tasks", icon: ListTodo },
-        { href: "/vendor/settings", label: "Settings", icon: Settings },
-        { href: "/vendor/account", label: "Account", icon: UserIcon },
+        { href: "/vendor/dashboard", label: t.vendor.dashboard, icon: Home },
+        { href: "/vendor/inventory", label: t.vendor.inventory, icon: Package },
+        { href: "/vendor/tasks", label: t.vendor.tasks, icon: ListTodo },
+        { href: "/vendor/settings", label: t.header.settings, icon: Settings },
+        { href: "/vendor/account", label: t.vendor.account, icon: UserIcon },
     ];
 
 

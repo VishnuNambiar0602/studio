@@ -4,6 +4,8 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle } from "lucide-react";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 
 const languages = [
@@ -12,17 +14,20 @@ const languages = [
 ]
 
 export function LocalizationSettings() {
+  const { language } = useSettings();
+  const t = getDictionary(language);
+
   return (
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-            This module allows for dynamic management of website languages. Adding a new language would typically require a full translation of all static text strings across the application.
+            {t.admin.localization.description}
         </p>
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Language</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Progress</TableHead>
+                    <TableHead>{t.admin.localization.tableHeaders.language}</TableHead>
+                    <TableHead>{t.admin.localization.tableHeaders.status}</TableHead>
+                    <TableHead>{t.admin.localization.tableHeaders.progress}</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -37,11 +42,11 @@ export function LocalizationSettings() {
         </Table>
         <div className="flex justify-end">
             <Button disabled>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Language
+                <PlusCircle className="mr-2 h-4 w-4" /> {t.admin.localization.addNewLanguage}
             </Button>
         </div>
          <p className="text-xs text-muted-foreground pt-2">
-            *This feature is a conceptual placeholder. A full implementation would require a backend translation management system.
+            {t.admin.localization.placeholder}
         </p>
       </div>
   );
