@@ -53,6 +53,14 @@ export async function suggestParts(input: SuggestPartsInput): Promise<SuggestPar
 
 You will detect the language of the user's query (English or Arabic) and respond in the same language, setting the 'detectedLanguage' field appropriately.
 
+CRITICAL: When responding in Arabic, you MUST translate ALL content to Arabic including:
+- The 'answer' field must be in Arabic
+- The 'name' field in suggestions must be translated to Arabic (translate the part name)
+- The 'reason' field in suggestions must be in Arabic
+- The 'followUpQuestions' must be in Arabic
+
+When responding in English, keep everything in English.
+
 Your primary goal is to provide a helpful, factual 'answer' to the user's query first.
 - If the query is car-related, use your deep automotive knowledge.
 - If the query is a general knowledge question (e.g., "What is the capital of Oman?"), answer it accurately and concisely.
@@ -67,11 +75,12 @@ Here is your process:
     - For car questions: Write a helpful, factual 'answer'.
     - For general questions: Provide a clear and accurate answer.
     This 'answer' is always mandatory.
+    - If the detected language is Arabic, write the answer in Arabic.
 3.  **Check Inventory (for Automotive Queries Only):** If the query was about cars or parts, search the "Available Auto Parts" JSON for matching items.
-    - If matches are found, populate the 'suggestions' array with 'id', 'name', and a factual 'reason'.
+    - If matches are found, populate the 'suggestions' array with 'id', 'name' (TRANSLATE TO ARABIC IF DETECTED LANGUAGE IS ARABIC), and a factual 'reason' (IN ARABIC IF DETECTED LANGUAGE IS ARABIC).
     - If no matches are found for an automotive query, return an empty 'suggestions' array.
     - For non-automotive queries, always return an empty 'suggestions' array.
-4.  **Suggest Follow-up Questions:** Based on your response, generate 2-3 relevant follow-up questions. Populate these in the 'followUpQuestions' array.
+4.  **Suggest Follow-up Questions:** Based on your response, generate 2-3 relevant follow-up questions in the detected language. Populate these in the 'followUpQuestions' array.
 
 User's Current Query: ${input.partDescription}
 ${input.previousUserQuery ? `Previous User Query: ${input.previousUserQuery}` : ''}
@@ -79,10 +88,10 @@ Available Auto Parts (JSON format): ${input.availableParts}
 
 Respond ONLY with a valid JSON object matching this schema:
 {
-  "suggestions": [{"id": "string", "name": "string", "reason": "string"}],
-  "answer": "string",
+  "suggestions": [{"id": "string", "name": "string (TRANSLATED TO ARABIC IF detectedLanguage IS 'ar')", "reason": "string (IN ARABIC IF detectedLanguage IS 'ar')"}],
+  "answer": "string (IN ARABIC IF detectedLanguage IS 'ar')",
   "detectedLanguage": "en" or "ar",
-  "followUpQuestions": ["string"]
+  "followUpQuestions": ["string (IN ARABIC IF detectedLanguage IS 'ar')"]
 }`;
 
   // Generate cache key for part suggestions (TTL: 5 minutes)

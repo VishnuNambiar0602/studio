@@ -11,6 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/cart-context";
 import Link from "next/link";
 import { Skeleton } from "./ui/skeleton";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
+import { translateText } from "@/lib/translate";
 
 interface ProductCardProps {
   part: Part;
@@ -40,19 +43,25 @@ function ProductCardSkeleton() {
 export function ProductCard({ part }: ProductCardProps) {
   const { toast } = useToast();
   const { addToCart } = useCart();
+  const { language } = useSettings();
+  const t = getDictionary(language);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent link navigation if it's somehow still wrapped
     addToCart(part, 1);
     toast({
-      title: "Added to Cart",
-      description: `${part.name} has been added to your cart.`,
+      title: t.product.addedToCart,
+      description: `${part.name} ${t.product.addedToCartDescription}`,
     });
   }
 
   if (!part) {
     return <ProductCardSkeleton />;
   }
+
+  const translatedName = translateText(part.name, language);
+  const translatedDescription = translateText(part.description, language);
+  const translatedVendor = translateText(part.vendorAddress, language);
 
   return (
     <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl group">
@@ -69,37 +78,37 @@ export function ProductCard({ part }: ProductCardProps) {
                     />
                 ) : (
                     <div className="bg-muted h-full w-full flex items-center justify-center">
-                        <span className="text-sm text-muted-foreground">No Image</span>
+                        <span className="text-sm text-muted-foreground">{t.product.noImage}</span>
                     </div>
                 )}
                 </div>
                 <div className="p-4 sm:p-6 pb-2">
                 <div className="flex justify-between items-start">
                     <CardTitle className="pr-2 text-base sm:text-lg">
-                        {part.name}
+                        {translatedName}
                     </CardTitle>
                     <Badge variant={part.quantity > 0 ? "secondary" : "destructive"} className="shrink-0 mt-1 hidden sm:flex">
-                    {part.quantity > 0 ? "In Stock" : "Out of Stock"}
+                    {part.quantity > 0 ? t.product.inStock : t.product.outOfStock}
                     </Badge>
                 </div>
-                <CardDescription className="pt-2 text-sm line-clamp-2 hidden sm:block">{part.description}</CardDescription>
+                <CardDescription className="pt-2 text-sm line-clamp-2 hidden sm:block">{translatedDescription}</CardDescription>
                 </div>
             </CardHeader>
             <CardContent className="flex-grow space-y-4 p-4 sm:p-6 pt-0 sm:pt-2">
                 <div className="items-center text-sm text-muted-foreground hidden sm:flex">
                     <div className="flex items-center">
                         <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                        <span className="truncate">{part.vendorAddress}</span>
+                        <span className="truncate">{translatedVendor}</span>
                     </div>
                 </div>
                 <div className="text-xl sm:text-3xl font-bold text-primary">{part.price.toFixed(2)} OMR</div>
             </CardContent>
             <CardFooter className="p-4 sm:p-6 pt-0 mt-auto hidden sm:flex justify-between items-center">
                 <span className="text-sm font-medium text-primary flex items-center">
-                    View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    {t.product.viewDetails} <ArrowRight className="ml-2 h-4 w-4" />
                 </span>
                 <Button variant="secondary" size="sm" onClick={handleAddToCart} disabled={part.quantity === 0}>
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                    <ShoppingCart className="mr-2 h-4 w-4" /> {t.product.addToCart}
                 </Button>
             </CardFooter>
         </Link>

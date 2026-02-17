@@ -15,6 +15,8 @@ import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, Command
 import { getPopularParts } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { Input } from "./ui/input";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 const MAX_RECENT_SEARCHES = 5;
 
@@ -24,6 +26,8 @@ interface ProductGridProps {
 
 export function ProductGrid({ category }: ProductGridProps) {
   const { parts } = useParts();
+  const { language } = useSettings();
+  const t = getDictionary(language);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [popularParts, setPopularParts] = useState<Part[]>([]);
   const router = useRouter();
@@ -168,7 +172,7 @@ export function ProductGrid({ category }: ProductGridProps) {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
-                        placeholder="Search by part name, description or manufacturer..."
+                        placeholder={t.home.searchPlaceholder}
                         value={searchQuery}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         onFocus={() => setIsSearchPopoverOpen(true)}
@@ -180,15 +184,15 @@ export function ProductGrid({ category }: ProductGridProps) {
                   <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                     <Command shouldFilter={false}>
                       <CommandInput 
-                        placeholder="Search by part name, description or manufacturer..."
+                        placeholder={t.home.searchPlaceholder}
                         value={searchQuery}
                         onValueChange={handleSearchChange}
                         onKeyDown={(e) => { if(e.key === 'Enter') handleSearchSubmit() }}
                       />
                       <CommandList>
-                        <CommandEmpty>No results found.</CommandEmpty>
+                        <CommandEmpty>{t.home.noResultsFound}</CommandEmpty>
                           {searchQuery.length === 0 && recentSearches.length > 0 && (
-                              <CommandGroup heading="Recent Searches">
+                              <CommandGroup heading={t.home.recentSearches}>
                                   {recentSearches.map((searchTerm) => (
                                   <CommandItem
                                       key={searchTerm}
@@ -206,7 +210,7 @@ export function ProductGrid({ category }: ProductGridProps) {
                               </CommandGroup>
                           )}
                         <CommandSeparator />
-                        <CommandGroup heading={searchQuery ? "Suggestions" : "Recommended Products"}>
+                        <CommandGroup heading={searchQuery ? t.home.suggestions : t.home.recommendedProducts}>
                           {searchSuggestions.map((part) => (
                             <CommandItem
                               key={part.id}
@@ -225,17 +229,17 @@ export function ProductGrid({ category }: ProductGridProps) {
                 </Popover>
             </div>
             <Button onClick={handleSearchSubmit} className="w-full sm:w-auto h-12">
-                <Search className="mr-2 h-4 w-4" /> Search
+                <Search className="mr-2 h-4 w-4" /> {t.home.search}
             </Button>
             <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
               <SheetTrigger asChild>
                   <Button variant="outline" className="w-full sm:w-auto h-12">
-                      <SlidersHorizontal className="mr-2 h-4 w-4" /> Advanced
+                      <SlidersHorizontal className="mr-2 h-4 w-4" /> {t.home.advanced}
                   </Button>
               </SheetTrigger>
               <SheetContent className="w-full sm:max-w-md">
                   <SheetHeader>
-                      <SheetTitle>Advanced Search & Filter</SheetTitle>
+                      <SheetTitle>{t.home.advancedSearchFilter}</SheetTitle>
                   </SheetHeader>
                   <div className="py-4">
                     <ProductFilters 
@@ -259,8 +263,8 @@ export function ProductGrid({ category }: ProductGridProps) {
         </div>
       ) : (
         <div className="text-center py-16">
-          <h3 className="text-xl font-semibold">No Matching Parts Found</h3>
-          <p className="text-muted-foreground mt-2">Try adjusting your search or filters.</p>
+          <h3 className="text-xl font-semibold">{t.home.noMatchingParts}</h3>
+          <p className="text-muted-foreground mt-2">{t.home.tryAdjusting}</p>
         </div>
       )}
     </>

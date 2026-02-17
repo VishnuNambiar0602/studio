@@ -22,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { ImageCaptureDialog } from "./image-capture-dialog";
 import ReactMarkdown from "react-markdown";
 import { useToast } from "@/hooks/use-toast";
+import { getDictionary } from "@/lib/i18n";
 
 interface Message {
   role: "user" | "assistant";
@@ -35,19 +36,13 @@ const formSchema = z.object({
   prompt: z.string(), // Prompt is now optional
 });
 
-const examplePrompts = [
-  { title: "Find a part", description: "Brake pads for a 2021 Toyota Land Cruiser" },
-  { title: "Ask a question", description: "What's the difference between OEM and aftermarket parts?" },
-  { title: "Get a recommendation", description: "I need a durable oil filter for off-road use" },
-  { title: "Identify from description", description: "A filter that sits in a black box in the engine bay" },
-];
-
 export function GeminiChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { parts } = useParts();
   const { language, setLanguage } = useSettings();
+  const t = getDictionary(language);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -55,6 +50,13 @@ export function GeminiChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const { toast } = useToast();
+
+  const examplePrompts = [
+    { title: t.genie.examplePrompts.findPart, description: t.genie.examplePrompts.findPartDesc },
+    { title: t.genie.examplePrompts.askQuestion, description: t.genie.examplePrompts.askQuestionDesc },
+    { title: t.genie.examplePrompts.getRecommendation, description: t.genie.examplePrompts.getRecommendationDesc },
+    { title: t.genie.examplePrompts.identifyPart, description: t.genie.examplePrompts.identifyPartDesc },
+  ];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -184,8 +186,8 @@ export function GeminiChat() {
                 <div className="absolute -inset-2 bg-primary/10 rounded-full blur-2xl"></div>
                 <Image src="https://images.unsplash.com/photo-1559607723-ee16c9ecb103?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8ZGVzZXJ0JTIwY2FydG9vbiUyMHdpdGglMjBjYXJ8ZW58MHx8fHwxNzUyODI4MjAzfDA&ixlib=rb-4.1.0&q=80&w=1080" width={96} height={96} alt="Genie Avatar" className="relative rounded-full border" />
               </div>
-              <h1 className="text-4xl font-bold">Hello! I'm the Genie.</h1>
-              <p className="text-xl text-muted-foreground mt-2">How can I help you find the perfect part?</p>
+              <h1 className="text-4xl font-bold">{t.genie.welcome}</h1>
+              <p className="text-xl text-muted-foreground mt-2">{t.genie.welcomeSubtitle}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12 w-full">
                 {examplePrompts.map((prompt) => (
                   <Card key={prompt.title} className="hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => handleExamplePrompt(prompt.description)}>
@@ -205,7 +207,7 @@ export function GeminiChat() {
                 <AvatarFallback>{message.role === "user" ? <User /> : <Sparkles className="text-primary" />}</AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-2">
-                <p className="font-semibold">{message.role === "user" ? "You" : "Genie"}</p>
+                <p className="font-semibold">{message.role === "user" ? t.genie.you : t.genie.genie}</p>
                 {message.imagePreview && (
                   <div className="relative w-48 h-48 rounded-lg overflow-hidden border">
                     <Image src={message.imagePreview} alt="User upload" layout="fill" objectFit="cover" />
@@ -304,7 +306,7 @@ export function GeminiChat() {
             </Popover>
             <Input
               {...form.register("prompt")}
-              placeholder="Message the Genie..."
+              placeholder={t.genie.messagePlaceholder}
               className="flex-grow border-none focus-visible:ring-0 shadow-none text-base"
               disabled={loading}
               autoComplete="off"

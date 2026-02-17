@@ -133,6 +133,46 @@ const dictionaries = {
       large: "Large",
       language: "Language",
       languageDescription: "Choose your preferred language for the dashboard."
+    },
+    product: {
+      inStock: "In Stock",
+      outOfStock: "Out of Stock",
+      viewDetails: "View Details",
+      addToCart: "Add to Cart",
+      noImage: "No Image",
+      addedToCart: "Added to Cart",
+      addedToCartDescription: "has been added to your cart."
+    },
+    home: {
+      featuredInventory: "Featured Inventory",
+      featuredDescription: "A curated selection of high-quality parts, available for local pickup or fast delivery.",
+      advanced: "Advanced",
+      search: "Search",
+      searchPlaceholder: "Search by part name, description or manufacturer",
+      noMatchingParts: "No Matching Parts Found",
+      tryAdjusting: "Try adjusting your search or filters.",
+      recentSearches: "Recent Searches",
+      suggestions: "Suggestions",
+      recommendedProducts: "Recommended Products",
+      noResultsFound: "No results found.",
+      advancedSearchFilter: "Advanced Search & Filter"
+    },
+    genie: {
+      welcome: "Hello! I'm the Genie.",
+      welcomeSubtitle: "How can I help you find the perfect part?",
+      you: "You",
+      genie: "Genie",
+      messagePlaceholder: "Message the Genie...",
+      examplePrompts: {
+        findPart: "Find a part",
+        findPartDesc: "Brake pads for a 2021 Toyota Land Cruiser",
+        askQuestion: "Ask a question",
+        askQuestionDesc: "What's the difference between OEM and aftermarket parts?",
+        getRecommendation: "Get a recommendation",
+        getRecommendationDesc: "I need a durable oil filter for off-road use",
+        identifyPart: "Identify from description",
+        identifyPartDesc: "A filter that sits in a black box in the engine bay"
+      }
     }
   },
   ar: {
@@ -266,6 +306,46 @@ const dictionaries = {
       large: "كبير",
       language: "اللغة",
       languageDescription: "اختر لغتك المفضلة للوحة التحكم."
+    },
+    product: {
+      inStock: "متوفر",
+      outOfStock: "غير متوفر",
+      viewDetails: "عرض التفاصيل",
+      addToCart: "أضف إلى السلة",
+      noImage: "لا توجد صورة",
+      addedToCart: "تمت الإضافة إلى السلة",
+      addedToCartDescription: "تمت إضافته إلى سلة التسوق الخاصة بك."
+    },
+    home: {
+      featuredInventory: "المخزون المميز",
+      featuredDescription: "مجموعة مختارة من القطع عالية الجودة، متاحة للاستلام المحلي أو التوصيل السريع.",
+      advanced: "متقدم",
+      search: "بحث",
+      searchPlaceholder: "ابحث باسم القطعة أو الوصف أو الشركة المصنعة",
+      noMatchingParts: "لم يتم العثور على قطع مطابقة",
+      tryAdjusting: "حاول تعديل البحث أو الفلاتر.",
+      recentSearches: "عمليات البحث الأخيرة",
+      suggestions: "اقتراحات",
+      recommendedProducts: "منتجات موصى بها",
+      noResultsFound: "لم يتم العثور على نتائج.",
+      advancedSearchFilter: "بحث وفلترة متقدمة"
+    },
+    genie: {
+      welcome: "مرحباً! أنا الجني.",
+      welcomeSubtitle: "كيف يمكنني مساعدتك في العثور على القطعة المثالية؟",
+      you: "أنت",
+      genie: "الجني",
+      messagePlaceholder: "أرسل رسالة للجني...",
+      examplePrompts: {
+        findPart: "ابحث عن قطعة",
+        findPartDesc: "فرامل لسيارة تويوتا لاند كروزر 2021",
+        askQuestion: "اسأل سؤالاً",
+        askQuestionDesc: "ما الفرق بين القطع الأصلية وقطع ما بعد البيع؟",
+        getRecommendation: "احصل على توصية",
+        getRecommendationDesc: "أحتاج إلى فلتر زيت متين للاستخدام على الطرق الوعرة",
+        identifyPart: "تحديد من الوصف",
+        identifyPartDesc: "فلتر يوجد في صندوق أسود في حجرة المحرك"
+      }
     }
   },
 };
