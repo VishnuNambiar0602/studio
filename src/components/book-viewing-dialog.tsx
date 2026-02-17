@@ -18,6 +18,8 @@ import { useToast } from "@/hooks/use-toast";
 import type { Part } from "@/lib/types";
 import { submitBooking } from "@/lib/actions";
 import { Loader2 } from "lucide-react";
+import { useSettings } from "@/context/settings-context";
+import { getDictionary } from "@/lib/i18n";
 
 interface BookViewingDialogProps {
   part: Part;
@@ -29,13 +31,15 @@ export function BookViewingDialog({ part, children }: BookViewingDialogProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { language } = useSettings();
+  const t = getDictionary(language);
 
   const handleSubmit = async () => {
     if (!date) {
       toast({
         variant: "destructive",
-        title: "No Date Selected",
-        description: "Please select a date for the viewing.",
+        title: t.dialogs.noDateSelected,
+        description: t.dialogs.selectDate,
       });
       return;
     }
@@ -46,14 +50,14 @@ export function BookViewingDialog({ part, children }: BookViewingDialogProps) {
 
     if (result.success) {
       toast({
-        title: "Booking Successful!",
+        title: t.dialogs.bookingSuccessful,
         description: `Your viewing for ${part.name} on ${date.toLocaleDateString()} has been requested. The vendor will be notified.`,
       });
       setOpen(false);
     } else {
       toast({
         variant: "destructive",
-        title: "Booking Failed",
+        title: t.dialogs.bookingFailed,
         description: "There was a problem submitting your request. Please try again.",
       });
     }
@@ -65,11 +69,9 @@ export function BookViewingDialog({ part, children }: BookViewingDialogProps) {
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Book a Viewing for: {part.name}</DialogTitle>
+          <DialogTitle>{t.dialogs.bookViewing} {part.name}</DialogTitle>
           <DialogDescription>
-            Select a date to inspect the part. The vendor at{" "}
-            <span className="font-semibold">{part.vendorAddress}</span> will be
-            notified of your request.
+            {t.dialogs.selectDate}
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center py-4">
@@ -83,11 +85,11 @@ export function BookViewingDialog({ part, children }: BookViewingDialogProps) {
         </div>
         <DialogFooter>
           <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
-            Cancel
+            {t.dialogs.cancel}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || part.quantity === 0}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Confirm Booking
+            {t.dialogs.confirmBooking}
           </Button>
         </DialogFooter>
       </DialogContent>
