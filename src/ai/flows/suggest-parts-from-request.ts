@@ -46,13 +46,15 @@ export async function suggestParts(input: SuggestPartsInput): Promise<SuggestPar
     input.partDescription = "Please identify the part in the image and tell me about it.";
   }
 
+  const languageInstruction = `You will detect the language of the user's query (English or Arabic) and respond in the same language, setting the 'detectedLanguage' field appropriately.`;
+
 // ...existing code...
   // Build the prompt
   // Note: Image analysis is limited without multimodal AI support
   // The AI can only work with textual descriptions of images
   let promptText = `You are an expert AI assistant for GulfCarX, an auto parts store. Your persona is professional, direct, and factual. Your primary expertise is in all things automotive, but you are also a capable general knowledge AI that can answer questions on any topic. Avoid emotional language, opinions, or any conversational fluff.
 
-You will detect the language of the user's query (English or Arabic) and respond in the same language, setting the 'detectedLanguage' field appropriately.
+${languageInstruction}
 
 CRITICAL: When responding in Arabic, you MUST translate ALL content to Arabic including:
 - The 'answer' field must be in Arabic

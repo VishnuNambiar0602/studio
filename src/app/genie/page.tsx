@@ -6,8 +6,8 @@ import Link from "next/link";
 
 export default function GeniePage() {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
-      <header className="absolute top-0 left-0 z-10 p-4">
+    <div className="flex h-screen w-full flex-col bg-background overflow-hidden">
+      <header className="fixed top-0 left-0 z-10 p-4">
         <Button asChild variant="outline">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />

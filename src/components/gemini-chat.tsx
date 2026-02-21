@@ -99,7 +99,7 @@ export function GeminiChat() {
       });
 
       if (response.detectedLanguage) {
-          setLanguage(response.detectedLanguage);
+        setLanguage(response.detectedLanguage);
       }
 
       const assistantMessage: Message = {

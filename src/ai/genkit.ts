@@ -293,5 +293,5 @@ export async function generateAIResponse(
 // Legacy Genkit export for TTS flow (will be deprecated)
 export const ai = genkit({
   plugins: [googleAI()],
-  model: 'googleai/gemini-2.0-flash',
+  model: 'googleai/gemini-2.5-flash',
 });
