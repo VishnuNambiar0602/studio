@@ -13,10 +13,7 @@ import Link from "next/link";
 import { Skeleton } from "./ui/skeleton";
 import { useSettings } from "@/context/settings-context";
 import { getDictionary } from "@/lib/i18n";
-<<<<<<< HEAD
 import { translateText } from "@/lib/translate";
-=======
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
 
 interface ProductCardProps {
   part: Part;
@@ -53,13 +50,8 @@ export function ProductCard({ part }: ProductCardProps) {
     e.preventDefault(); // Prevent link navigation if it's somehow still wrapped
     addToCart(part, 1);
     toast({
-<<<<<<< HEAD
       title: t.product.addedToCart,
       description: `${part.name} ${t.product.addedToCartDescription}`,
-=======
-      title: t.productCard.addedToCart,
-      description: `${part.name} ${t.productCard.addedToCartDescription}`,
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
     });
   }
 
@@ -86,11 +78,7 @@ export function ProductCard({ part }: ProductCardProps) {
                     />
                 ) : (
                     <div className="bg-muted h-full w-full flex items-center justify-center">
-<<<<<<< HEAD
                         <span className="text-sm text-muted-foreground">{t.product.noImage}</span>
-=======
-                        <span className="text-sm text-muted-foreground">{t.productCard.noImage}</span>
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
                     </div>
                 )}
                 </div>
@@ -100,11 +88,7 @@ export function ProductCard({ part }: ProductCardProps) {
                         {translatedName}
                     </CardTitle>
                     <Badge variant={part.quantity > 0 ? "secondary" : "destructive"} className="shrink-0 mt-1 hidden sm:flex">
-<<<<<<< HEAD
                     {part.quantity > 0 ? t.product.inStock : t.product.outOfStock}
-=======
-                    {part.quantity > 0 ? t.productCard.inStock : t.productCard.outOfStock}
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
                     </Badge>
                 </div>
                 <CardDescription className="pt-2 text-sm line-clamp-2 hidden sm:block">{translatedDescription}</CardDescription>
@@ -121,17 +105,10 @@ export function ProductCard({ part }: ProductCardProps) {
             </CardContent>
             <CardFooter className="p-4 sm:p-6 pt-0 mt-auto hidden sm:flex justify-between items-center">
                 <span className="text-sm font-medium text-primary flex items-center">
-<<<<<<< HEAD
                     {t.product.viewDetails} <ArrowRight className="ml-2 h-4 w-4" />
                 </span>
                 <Button variant="secondary" size="sm" onClick={handleAddToCart} disabled={part.quantity === 0}>
                     <ShoppingCart className="mr-2 h-4 w-4" /> {t.product.addToCart}
-=======
-                    {t.productCard.viewDetails} <ArrowRight className="ml-2 h-4 w-4" />
-                </span>
-                <Button variant="secondary" size="sm" onClick={handleAddToCart} disabled={part.quantity === 0}>
-                    <ShoppingCart className="mr-2 h-4 w-4" /> {t.productCard.addToCart}
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
                 </Button>
             </CardFooter>
         </Link>
