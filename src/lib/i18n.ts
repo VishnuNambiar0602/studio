@@ -134,17 +134,11 @@ const dictionaries = {
       language: "Language",
       languageDescription: "Choose your preferred language for the dashboard."
     },
-<<<<<<< HEAD
     product: {
-=======
-    productCard: {
-      noImage: "No Image",
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
       inStock: "In Stock",
       outOfStock: "Out of Stock",
       viewDetails: "View Details",
       addToCart: "Add to Cart",
-<<<<<<< HEAD
       noImage: "No Image",
       addedToCart: "Added to Cart",
       addedToCartDescription: "has been added to your cart."
@@ -179,9 +173,6 @@ const dictionaries = {
         identifyPart: "Identify from description",
         identifyPartDesc: "A filter that sits in a black box in the engine bay"
       }
-=======
-      addedToCart: "Added to Cart",
-      addedToCartDescription: "has been added to your cart."
     },
     cart: {
       title: "Your Cart",
@@ -322,7 +313,6 @@ const dictionaries = {
       search: "Search",
       filter: "Filter",
       reset: "Reset"
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
     }
   },
   ar: {
@@ -457,7 +447,6 @@ const dictionaries = {
       language: "اللغة",
       languageDescription: "اختر لغتك المفضلة للوحة التحكم."
     },
-<<<<<<< HEAD
     product: {
       inStock: "متوفر",
       outOfStock: "غير متوفر",
@@ -497,20 +486,11 @@ const dictionaries = {
         identifyPart: "تحديد من الوصف",
         identifyPartDesc: "فلتر يوجد في صندوق أسود في حجرة المحرك"
       }
-=======
-    productCard: {
-      noImage: "لا توجد صورة",
-      inStock: "متوفر",
-      outOfStock: "غير متوفر",
-      viewDetails: "عرض التفاصيل",
-      addToCart: "إضافة إلى السلة",
-      addedToCart: "تمت الإضافة إلى السلة",
-      addedToCartDescription: "تمت إضافته إلى سلة التسوق الخاصة بك."
     },
     cart: {
-      title: "سلة التسوق الخاصة بك",
+      title: "سلة التسوق",
       emptyTitle: "سلة التسوق فارغة",
-      emptyDescription: "يبدو أنك لم تضف أي شيء إلى سلة التسوق حتى الآن.",
+      emptyDescription: "يبدو أنك لم تضف أي شيء إلى سلة التسوق بعد.",
       startShopping: "ابدأ التسوق",
       orderSummary: "ملخص الطلب",
       reviewOrder: "راجع طلبك قبل المتابعة.",
@@ -525,7 +505,7 @@ const dictionaries = {
     },
     checkout: {
       title: "الدفع",
-      emptyCart: "أضف عناصر إلى سلة التسوق الخاصة بك لمتابعة الدفع.",
+      emptyCart: "أضف عناصر إلى سلة التسوق للمتابعة إلى الدفع.",
       shippingInformation: "معلومات الشحن",
       fullName: "الاسم الكامل",
       fullNamePlaceholder: "فلان الفلاني",
@@ -544,7 +524,7 @@ const dictionaries = {
       subtotal: "المجموع الفرعي",
       tax: "الضريبة",
       total: "الإجمالي",
-      placeOrder: "إتمام الطلب",
+      placeOrder: "تأكيد الطلب",
       processingOrder: "جاري معالجة الطلب...",
       continueShopping: "متابعة التسوق",
       yourCartIsEmpty: "سلة التسوق فارغة.",
@@ -554,7 +534,7 @@ const dictionaries = {
       choosePayment: "اختر كيف تريد الدفع.",
       cardPayment: "الدفع بالبطاقة",
       cashOnDelivery: "الدفع عند الاستلام",
-      upiPayment: "الدفع الإلكتروني / UPI",
+      upiPayment: "الدفع عبر الإنترنت",
       netBanking: "الخدمات المصرفية عبر الإنترنت",
       cardNumber: "رقم البطاقة",
       expiryDate: "تاريخ الانتهاء",
@@ -562,22 +542,22 @@ const dictionaries = {
       cardNumberPlaceholder: "0000 0000 0000 0000",
       expiryPlaceholder: "MM/YY",
       cvcPlaceholder: "123",
-      codMessage: "سوف تدفع نقدًا عند استلام العناصر.",
-      upiMessage: "سيتم إعادة توجيهك إلى بوابة الدفع UPI بعد تقديم الطلب. (محاكاة)",
-      netbankingMessage: "سيتم إعادة توجيهك إلى بوابة البنك الخاص بك بعد تقديم الطلب. (محاكاة)",
+      codMessage: "ستدفع نقدًا عند استلام العناصر الخاصة بك.",
+      upiMessage: "سيتم إعادة توجيهك إلى بوابة الدفع بعد تقديم الطلب. (محاكاة)",
+      netbankingMessage: "سيتم إعادة توجيهك إلى بوابة البنك بعد تقديم الطلب. (محاكاة)",
       orderPlaced: "تم تقديم الطلب!",
       orderPlacedDescription: "تم تقديم طلبك بنجاح.",
       orderFailed: "فشل الطلب",
       validation: {
         nameRequired: "الاسم مطلوب.",
-        emailInvalid: "عنوان بريد إلكتروني غير صالح.",
+        emailInvalid: "عنوان البريد الإلكتروني غير صالح.",
         addressRequired: "العنوان مطلوب.",
         cityRequired: "المدينة مطلوبة.",
         zipRequired: "الرمز البريدي مطلوب.",
         postalRequired: "الرمز البريدي مطلوب.",
         phoneRequired: "رقم الهاتف مطلوب.",
-        paymentRequired: "يجب عليك تحديد طريقة الدفع.",
-        cardIncomplete: "تفاصيل البطاقة غير كاملة أو غير صالحة."
+        paymentRequired: "يجب عليك اختيار طريقة دفع.",
+        cardIncomplete: "تفاصيل البطاقة غير مكتملة أو غير صالحة."
       }
     },
     dialogs: {
@@ -587,7 +567,7 @@ const dictionaries = {
       cancelling: "جاري الإلغاء...",
       keepOrder: "الاحتفاظ بالطلب",
       continueCancellation: "متابعة الإلغاء",
-      cancelOrderQuestion: "هل أنت متأكد أنك تريد إلغاء هذا الطلب؟",
+      cancelOrderQuestion: "هل أنت متأكد من أنك تريد إلغاء هذا الطلب؟",
       cancelOrderWarning: "لا يمكن التراجع عن هذا الإجراء. سيتم استرداد أموالك وفقًا لسياسة الإلغاء الخاصة بنا.",
       orderCancelled: "تم إلغاء الطلب",
       cancellationFailed: "فشل الإلغاء",
@@ -606,7 +586,7 @@ const dictionaries = {
     },
     productSection: {
       featuredInventory: "المخزون المميز",
-      featuredDescription: "مجموعة مختارة من القطع عالية الجودة من بائعينا الموثوق بهم."
+      featuredDescription: "مجموعة مختارة من القطع عالية الجودة من بائعينا الموثوقين."
     },
     vendor: {
       hold: "إيقاف",
@@ -615,7 +595,7 @@ const dictionaries = {
       editPart: "تعديل القطعة",
       updateDetails: "تحديث تفاصيل هذه القطعة...",
       salePaused: "البيع متوقف",
-      inStock: "متوفر في المخزون",
+      inStock: "متوفر",
       addPart: "إضافة قطعة",
       partName: "اسم القطعة",
       description: "الوصف",
@@ -635,7 +615,7 @@ const dictionaries = {
       delete: "حذف",
       success: "نجح",
       error: "خطأ",
-      confirmDelete: "هل أنت متأكد أنك تريد حذف هذا العنصر؟"
+      confirmDelete: "هل أنت متأكد من أنك تريد حذف هذا العنصر؟"
     },
     common: {
       loading: "جاري التحميل...",
@@ -646,7 +626,6 @@ const dictionaries = {
       search: "بحث",
       filter: "تصفية",
       reset: "إعادة تعيين"
->>>>>>> 9e7cd3b66f86ca5916c61192896a5c996610c8c5
     }
   },
 };
